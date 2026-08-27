@@ -6,6 +6,7 @@
   <meta name="description" content="Formulario de registro para nuevos usuarios de FreeGames.">
   <title>Registro | FreeGames</title>
   <link rel="stylesheet" href="css/style.css">
+  <script src="js/validaciones.js" defer></script>
 </head>
 <body>
   <header class="site-header compact">
@@ -33,39 +34,46 @@
     </section>
 
     <section class="registration-card" aria-label="Datos de registro">
-      <form class="registration-form" id="registro-form" action="#" method="post">
+      <form class="registration-form" id="registro-form" action="#" method="post" novalidate>
         <fieldset>
           <legend>Datos personales</legend>
 
           <div class="form-grid">
             <div class="form-group full-width">
               <label for="nombre-completo">Nombre completo <span aria-hidden="true">*</span></label>
-              <input type="text" id="nombre-completo" name="nombre_completo" autocomplete="name" placeholder="Ejemplo: Alex González" required>
+              <input type="text" id="nombre-completo" name="nombre_completo" autocomplete="name" placeholder="Ejemplo: Alex González" aria-describedby="error-nombre-completo" required>
+              <small class="field-error" id="error-nombre-completo" aria-live="polite"></small>
             </div>
 
             <div class="form-group">
               <label for="nombre-usuario">Nombre de usuario <span aria-hidden="true">*</span></label>
-              <input type="text" id="nombre-usuario" name="nombre_usuario" autocomplete="username" placeholder="Ejemplo: alexgamer" required>
+              <input type="text" id="nombre-usuario" name="nombre_usuario" autocomplete="username" placeholder="Ejemplo: alexgamer" aria-describedby="error-nombre-usuario" required>
+              <small class="field-error" id="error-nombre-usuario" aria-live="polite"></small>
             </div>
 
             <div class="form-group">
               <label for="correo">Correo electrónico <span aria-hidden="true">*</span></label>
-              <input type="email" id="correo" name="correo" autocomplete="email" placeholder="nombre@correo.cl" required>
+              <input type="email" id="correo" name="correo" autocomplete="email" placeholder="nombre@correo.cl" aria-describedby="error-correo" required>
+              <small class="field-error" id="error-correo" aria-live="polite"></small>
             </div>
 
             <div class="form-group">
               <label for="clave">Contraseña <span aria-hidden="true">*</span></label>
-              <input type="password" id="clave" name="clave" autocomplete="new-password" placeholder="Entre 6 y 18 caracteres" required>
+              <input type="password" id="clave" name="clave" autocomplete="new-password" placeholder="Entre 6 y 18 caracteres" minlength="6" maxlength="18" aria-describedby="ayuda-clave error-clave" required>
+              <small class="field-hint" id="ayuda-clave">Debe incluir al menos una mayúscula y un número.</small>
+              <small class="field-error" id="error-clave" aria-live="polite"></small>
             </div>
 
             <div class="form-group">
               <label for="repetir-clave">Repetir contraseña <span aria-hidden="true">*</span></label>
-              <input type="password" id="repetir-clave" name="repetir_clave" autocomplete="new-password" placeholder="Escribe nuevamente tu contraseña" required>
+              <input type="password" id="repetir-clave" name="repetir_clave" autocomplete="new-password" placeholder="Escribe nuevamente tu contraseña" minlength="6" maxlength="18" aria-describedby="error-repetir-clave" required>
+              <small class="field-error" id="error-repetir-clave" aria-live="polite"></small>
             </div>
 
             <div class="form-group">
               <label for="fecha-nacimiento">Fecha de nacimiento <span aria-hidden="true">*</span></label>
-              <input type="date" id="fecha-nacimiento" name="fecha_nacimiento" autocomplete="bday" required>
+              <input type="date" id="fecha-nacimiento" name="fecha_nacimiento" autocomplete="bday" aria-describedby="error-fecha-nacimiento" required>
+              <small class="field-error" id="error-fecha-nacimiento" aria-live="polite"></small>
             </div>
 
             <div class="form-group full-width">
@@ -79,6 +87,8 @@
           <button class="button button-primary" type="submit">Crear cuenta</button>
           <button class="button button-secondary" type="reset">Limpiar formulario</button>
         </div>
+
+        <p class="form-status" id="form-status" role="status" aria-live="polite" hidden></p>
       </form>
     </section>
   </main>
