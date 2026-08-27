@@ -35,7 +35,7 @@ if (formulario) {
 
     campo.classList.remove('is-invalid');
     campo.classList.add('is-valid');
-    campo.removeAttribute('aria-invalid');
+    campo.setAttribute('aria-invalid', 'false');
 
     if (error) {
       error.textContent = '';
@@ -162,6 +162,7 @@ if (formulario) {
     estadoFormulario.textContent = 'Formulario validado correctamente. El registro se conectará al servidor en una próxima etapa.';
     estadoFormulario.className = 'form-status success';
     estadoFormulario.hidden = false;
+    estadoFormulario.focus();
   });
 
   validaciones.forEach((validar, campo) => {
