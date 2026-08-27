@@ -300,19 +300,13 @@ h1 { margin-bottom: 8px; font: 800 clamp(2rem, 5vw, 3.2rem)/1.15 Orbitron, sans-
 }
 
 .registration-form legend {
+  float: none;
+  width: auto;
   padding: 0 0 22px;
   font: 800 1.25rem/1.2 Orbitron, sans-serif;
 }
 
-.form-grid {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 22px;
-}
-
 .form-group { display: flex; flex-direction: column; gap: 8px; }
-
-.form-group.full-width { grid-column: 1 / -1; }
 
 .form-group label { font-size: .9rem; font-weight: 700; }
 
@@ -423,8 +417,6 @@ footer p { margin: 0; font-size: .85rem; }
   .main-nav { justify-content: flex-start; }
   .game-card { grid-template-columns: 1fr; }
   .game-card > img { min-height: 0; aspect-ratio: 3 / 2; }
-  .form-grid { grid-template-columns: 1fr; }
-  .form-group.full-width { grid-column: auto; }
 }
 
 @media (max-width: 430px) {
