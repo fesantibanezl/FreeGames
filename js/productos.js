@@ -82,6 +82,35 @@
     return copiar(productos[posicion]);
   }
 
+  function actualizarProducto(id, cambios) {
+    const productos = listar();
+    const posicion = productos.findIndex((producto) => producto.id === id);
+    const precio = Number(cambios.precio);
+    const stock = Number(cambios.stock);
+
+    // El mantenedor solo acepta valores numéricos que tengan sentido para el catálogo.
+    if (
+      posicion === -1
+      || !Number.isInteger(precio)
+      || precio < 0
+      || !Number.isInteger(stock)
+      || stock < 0
+      || typeof cambios.activo !== 'boolean'
+    ) {
+      return null;
+    }
+
+    productos[posicion] = {
+      ...productos[posicion],
+      precio,
+      stock,
+      activo: cambios.activo
+    };
+
+    almacenamiento.guardar(CLAVE_PRODUCTOS, productos);
+    return copiar(productos[posicion]);
+  }
+
   function formatearPrecio(precio) {
     return precio === 0 ? 'Gratis' : `$${precio.toLocaleString('es-CL')}`;
   }
@@ -100,6 +129,7 @@
     listar,
     buscar,
     actualizarStock,
+    actualizarProducto,
     formatearPrecio,
     textoStock
   });

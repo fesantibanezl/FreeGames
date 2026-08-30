@@ -119,7 +119,8 @@
       sesionActual = datos.obtenerSesion();
       actualizarNavegacion();
 
-      const destino = usuario.rol === 'administrador' ? 'perfil.html' : 'index.html';
+      // Cada rol llega a su área principal después de iniciar sesión.
+      const destino = usuario.rol === 'administrador' ? 'administracion.html' : 'index.html';
       mostrarEstado(estado, `Sesión iniciada como ${nombreRol(usuario.rol)}. Redirigiendo…`, 'success');
       window.setTimeout(() => {
         window.location.href = destino;

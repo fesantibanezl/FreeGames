@@ -214,7 +214,8 @@
   window.FreeGamesPurchases = Object.freeze({
     crearCompra,
     buscarPorId,
-    listarPorUsuario
+    listarPorUsuario,
+    listar
   });
 
   renderizarCompraExitosa();

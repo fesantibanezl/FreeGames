@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Panel administrativo simulado de FreeGames.">
+  <title>Administración | FreeGames</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
+  <link rel="stylesheet" href="css/style.css">
+  <!-- El panel usa la misma fuente de datos temporal que el catálogo y las compras. -->
+  <script src="js/datos-demo.js" defer></script>
+  <script src="js/productos.js" defer></script>
+  <script src="js/compras.js" defer></script>
+  <script src="js/carrito.js" defer></script>
+  <script src="js/validaciones.js" defer></script>
+  <script src="js/autenticacion.js" defer></script>
+  <script src="js/administracion.js" defer></script>
+</head>
+<body>
+  <a class="skip-link" href="#contenido-principal">Saltar al contenido principal</a>
+
+  <!-- Encabezado compacto y navegación compartida. -->
+  <header class="site-header compact">
+    <a class="brand" href="index.html" aria-label="Ir al inicio de FreeGames">
+      <span class="brand-mark" aria-hidden="true">FG</span>
+      <span>FreeGames</span>
+    </a>
+  </header>
+
+  <nav class="navbar navbar-expand-lg navbar-dark main-nav" aria-label="Navegación principal">
+    <div class="container">
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navegacion-principal" aria-controls="navegacion-principal" aria-expanded="false" aria-label="Mostrar u ocultar el menú principal">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+
+      <div class="collapse navbar-collapse" id="navegacion-principal">
+        <div class="navbar-nav mx-auto">
+          <a class="nav-link" href="index.html">Inicio</a>
+          <a class="nav-link" href="accion.html">Acción</a>
+          <a class="nav-link" href="aventura.html">Aventura</a>
+          <a class="nav-link" href="deportes.html">Deportes</a>
+          <a class="nav-link" href="carreras.html">Carreras</a>
+          <a class="nav-link" href="estrategia.html">Estrategia</a>
+          <a class="nav-link" href="carrito.html">Carrito <span class="cart-count" data-cart-count hidden>0</span></a>
+          <a class="nav-link" data-session="guest" href="login.html">Iniciar sesión</a>
+          <a class="nav-link register-link" data-session="guest" href="registro.html">Registrarse</a>
+          <a class="nav-link" data-session="user" href="perfil.html" hidden>Mi perfil: <span data-user-name></span></a>
+          <a class="nav-link" data-session="user" data-role="cliente" href="mis-compras.html" hidden>Mis compras</a>
+          <a class="nav-link active" aria-current="page" data-session="user" data-role="administrador" href="administracion.html" hidden>Administración</a>
+          <button class="nav-link logout-link" data-session="user" data-action="logout" type="button" hidden>Cerrar sesión</button>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <main class="admin-page container" id="contenido-principal">
+    <section class="page-intro">
+      <p class="eyebrow">Rol administrador</p>
+      <h1>Administración</h1>
+      <p>Gestiona la disponibilidad y precios del catálogo, además de los roles y estados de las cuentas. Los cambios se guardan solo en este navegador.</p>
+    </section>
+
+    <!-- El módulo valida que la sesión pertenezca a un administrador. -->
+    <section id="administration-guard" class="access-notice" role="status" hidden></section>
+
+    <section id="administration-content" hidden>
+      <div id="admin-summary" class="admin-summary" aria-label="Resumen administrativo"></div>
+
+      <section class="admin-section" aria-labelledby="inventory-title">
+        <div class="admin-section-title">
+          <div>
+            <p class="eyebrow">Mantenedor de catálogo</p>
+            <h2 id="inventory-title">Inventario y disponibilidad</h2>
+          </div>
+          <p>Selecciona “Editar” para modificar un juego sin cambiar su imagen ni categoría.</p>
+        </div>
+
+        <div class="admin-layout">
+          <div class="table-wrapper" tabindex="0">
+            <table class="admin-table">
+              <caption>Juegos registrados en el catálogo</caption>
+              <thead>
+                <tr><th scope="col">Juego</th><th scope="col">Precio</th><th scope="col">Disponibilidad</th><th scope="col">Estado</th><th scope="col"><span class="visually-hidden">Acción</span></th></tr>
+              </thead>
+              <tbody id="admin-products-body"></tbody>
+            </table>
+          </div>
+
+          <section class="admin-card" aria-labelledby="product-form-title">
+            <h3 id="product-form-title">Editar juego</h3>
+            <form id="admin-product-form" novalidate>
+              <input type="hidden" id="admin-product-id">
+              <div class="form-group">
+                <label class="form-label" for="admin-product-name">Juego</label>
+                <input class="form-control readonly-field" type="text" id="admin-product-name" readonly>
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="admin-product-category">Categoría</label>
+                <input class="form-control readonly-field" type="text" id="admin-product-category" readonly>
+              </div>
+              <div class="row g-3">
+                <div class="form-group col-12 col-sm-6">
+                  <label class="form-label" for="admin-product-price">Precio en pesos</label>
+                  <input class="form-control" type="number" id="admin-product-price" min="0" step="1" inputmode="numeric" required>
+                </div>
+                <div class="form-group col-12 col-sm-6">
+                  <label class="form-label" for="admin-product-stock">Licencias disponibles</label>
+                  <input class="form-control" type="number" id="admin-product-stock" min="0" step="1" inputmode="numeric" required>
+                </div>
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="admin-product-active">Estado de publicación</label>
+                <select class="form-select" id="admin-product-active">
+                  <option value="true">Publicado</option>
+                  <option value="false">Oculto del catálogo</option>
+                </select>
+              </div>
+              <div class="form-actions"><button class="button button-primary" type="submit">Guardar juego</button></div>
+              <p id="product-status" class="form-status" role="status" aria-live="polite" tabindex="-1" hidden></p>
+            </form>
+          </section>
+        </div>
+      </section>
+
+      <section class="admin-section" aria-labelledby="users-title">
+        <div class="admin-section-title">
+          <div>
+            <p class="eyebrow">Mantenedor de usuarios</p>
+            <h2 id="users-title">Roles y estado de cuentas</h2>
+          </div>
+          <p>Las contraseñas no se muestran ni se administran desde esta pantalla.</p>
+        </div>
+
+        <div class="admin-layout">
+          <div class="table-wrapper" tabindex="0">
+            <table class="admin-table">
+              <caption>Usuarios registrados en FreeGames</caption>
+              <thead>
+                <tr><th scope="col">Nombre y correo</th><th scope="col">Usuario</th><th scope="col">Rol</th><th scope="col">Estado</th><th scope="col"><span class="visually-hidden">Acción</span></th></tr>
+              </thead>
+              <tbody id="admin-users-body"></tbody>
+            </table>
+          </div>
+
+          <section class="admin-card" aria-labelledby="user-form-title">
+            <h3 id="user-form-title">Editar cuenta</h3>
+            <form id="admin-user-form" novalidate>
+              <input type="hidden" id="admin-user-id">
+              <div class="form-group">
+                <label class="form-label" for="admin-user-name">Nombre completo</label>
+                <input class="form-control readonly-field" type="text" id="admin-user-name" readonly>
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="admin-user-email">Correo electrónico</label>
+                <input class="form-control readonly-field" type="email" id="admin-user-email" readonly>
+              </div>
+              <div class="row g-3">
+                <div class="form-group col-12 col-sm-6">
+                  <label class="form-label" for="admin-user-role">Rol</label>
+                  <select class="form-select" id="admin-user-role">
+                    <option value="cliente">Cliente</option>
+                    <option value="administrador">Administrador</option>
+                  </select>
+                </div>
+                <div class="form-group col-12 col-sm-6">
+                  <label class="form-label" for="admin-user-active">Estado</label>
+                  <select class="form-select" id="admin-user-active">
+                    <option value="true">Cuenta activa</option>
+                    <option value="false">Cuenta inactiva</option>
+                  </select>
+                </div>
+              </div>
+              <div class="form-actions"><button class="button button-primary" type="submit">Guardar cuenta</button></div>
+              <p id="user-status" class="form-status" role="status" aria-live="polite" tabindex="-1" hidden></p>
+            </form>
+          </section>
+        </div>
+      </section>
+    </section>
+  </main>
+
+  <footer><p>© 2026 FreeGames · Tu catálogo gamer</p></footer>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js" integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI" crossorigin="anonymous"></script>
+</body>
+</html>
