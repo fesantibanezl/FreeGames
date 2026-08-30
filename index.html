@@ -9,7 +9,10 @@
   <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
+  <!-- Acceso rápido para quienes navegan con teclado. -->
   <a class="skip-link" href="#contenido-principal">Saltar al contenido principal</a>
+
+  <!-- Encabezado de la portada. -->
   <header class="site-header">
     <a class="brand" href="index.html" aria-label="Ir al inicio de FreeGames">
       <span class="brand-mark" aria-hidden="true">FG</span>
@@ -18,6 +21,28 @@
     <p>Encuentra tu próxima aventura</p>
   </header>
 
+  <!-- Navegación compartida; Bootstrap la colapsa en pantallas pequeñas. -->
+  <nav class="navbar navbar-expand-lg navbar-dark main-nav" aria-label="Navegación principal">
+    <div class="container">
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navegacion-principal" aria-controls="navegacion-principal" aria-expanded="false" aria-label="Mostrar u ocultar el menú principal">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+
+      <div class="collapse navbar-collapse" id="navegacion-principal">
+        <div class="navbar-nav mx-auto">
+          <a class="nav-link active" aria-current="page" href="index.html">Inicio</a>
+          <a class="nav-link" href="accion.html">Acción</a>
+          <a class="nav-link" href="aventura.html">Aventura</a>
+          <a class="nav-link" href="deportes.html">Deportes</a>
+          <a class="nav-link" href="carreras.html">Carreras</a>
+          <a class="nav-link" href="estrategia.html">Estrategia</a>
+          <a class="nav-link register-link" href="registro.html">Registrarse</a>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Presentación y acceso a las categorías disponibles. -->
   <main class="home-main container" id="contenido-principal">
     <section class="intro" aria-labelledby="categories-title">
       <p class="eyebrow">Catálogo de videojuegos</p>
@@ -55,6 +80,7 @@
     </nav>
   </main>
 
+  <!-- Información general del sitio. -->
   <footer><p>© 2026 FreeGames · Tu catálogo gamer</p></footer>
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js" integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI" crossorigin="anonymous"></script>
 </body>
