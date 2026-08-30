@@ -7,6 +7,8 @@
   <title>Estrategia | FreeGames</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
   <link rel="stylesheet" href="css/style.css">
+  <script src="js/datos-demo.js" defer></script>
+  <script src="js/autenticacion.js" defer></script>
 </head>
 <body>
   <!-- Acceso rápido para quienes navegan con teclado. -->
@@ -35,7 +37,10 @@
           <a class="nav-link" href="deportes.html">Deportes</a>
           <a class="nav-link" href="carreras.html">Carreras</a>
           <a class="nav-link active" aria-current="page" href="estrategia.html">Estrategia</a>
-          <a class="nav-link register-link" href="registro.html">Registrarse</a>
+          <a class="nav-link" data-session="guest" href="login.html">Iniciar sesión</a>
+          <a class="nav-link register-link" data-session="guest" href="registro.html">Registrarse</a>
+          <a class="nav-link" data-session="user" href="perfil.html" hidden>Mi perfil: <span data-user-name></span></a>
+          <button class="nav-link logout-link" data-session="user" data-action="logout" type="button" hidden>Cerrar sesión</button>
         </div>
       </div>
     </div>

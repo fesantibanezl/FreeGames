@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Modificación de datos del perfil de FreeGames.">
+  <title>Mi perfil | FreeGames</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
+  <link rel="stylesheet" href="css/style.css">
+  <script src="js/datos-demo.js" defer></script>
+  <script src="js/validaciones.js" defer></script>
+  <script src="js/autenticacion.js" defer></script>
+</head>
+<body>
+  <!-- Acceso rápido para quienes navegan con teclado. -->
+  <a class="skip-link" href="#contenido-principal">Saltar al contenido principal</a>
+
+  <!-- Encabezado compacto de las páginas de cuenta. -->
+  <header class="site-header compact">
+    <a class="brand" href="index.html" aria-label="Ir al inicio de FreeGames">
+      <span class="brand-mark" aria-hidden="true">FG</span>
+      <span>FreeGames</span>
+    </a>
+  </header>
+
+  <!-- Navegación compartida con opciones distintas según la sesión. -->
+  <nav class="navbar navbar-expand-lg navbar-dark main-nav" aria-label="Navegación principal">
+    <div class="container">
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navegacion-principal" aria-controls="navegacion-principal" aria-expanded="false" aria-label="Mostrar u ocultar el menú principal">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+
+      <div class="collapse navbar-collapse" id="navegacion-principal">
+        <div class="navbar-nav mx-auto">
+          <a class="nav-link" href="index.html">Inicio</a>
+          <a class="nav-link" href="accion.html">Acción</a>
+          <a class="nav-link" href="aventura.html">Aventura</a>
+          <a class="nav-link" href="deportes.html">Deportes</a>
+          <a class="nav-link" href="carreras.html">Carreras</a>
+          <a class="nav-link" href="estrategia.html">Estrategia</a>
+          <a class="nav-link" data-session="guest" href="login.html">Iniciar sesión</a>
+          <a class="nav-link register-link" data-session="guest" href="registro.html">Registrarse</a>
+          <a class="nav-link active" data-session="user" aria-current="page" href="perfil.html" hidden>Mi perfil: <span data-user-name></span></a>
+          <button class="nav-link logout-link" data-session="user" data-action="logout" type="button" hidden>Cerrar sesión</button>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Edición local del perfil del usuario que mantiene la sesión activa. -->
+  <main class="account-page container" id="contenido-principal">
+    <section class="registration-intro" aria-labelledby="profile-title">
+      <p class="eyebrow">Configuración de cuenta</p>
+      <h1 id="profile-title">Mi perfil</h1>
+      <p>Actualiza tus datos personales. Los cambios se guardan temporalmente en este navegador.</p>
+    </section>
+
+    <section class="access-notice" id="profile-guard" role="status" hidden>
+      <h2>Necesitas iniciar sesión</h2>
+      <p>El perfil solo está disponible para usuarios con una sesión activa.</p>
+      <a class="primary-link" href="login.html">Ir al inicio de sesión</a>
+    </section>
+
+    <section class="registration-card" id="profile-card" aria-label="Datos del perfil">
+      <form class="registration-form" id="perfil-form" action="#" method="post" hidden novalidate>
+        <fieldset>
+          <legend>Datos personales</legend>
+
+          <div class="row g-4">
+            <div class="form-group col-12">
+              <label class="form-label" for="perfil-nombre-completo">Nombre completo <span aria-hidden="true">*</span></label>
+              <input class="form-control" type="text" id="perfil-nombre-completo" name="nombre_completo" autocomplete="name" minlength="3" maxlength="60" aria-describedby="error-perfil-nombre-completo" aria-errormessage="error-perfil-nombre-completo" required>
+              <small class="field-error" id="error-perfil-nombre-completo" aria-live="polite"></small>
+            </div>
+
+            <div class="form-group col-12 col-md-6">
+              <label class="form-label" for="perfil-nombre-usuario">Nombre de usuario <span aria-hidden="true">*</span></label>
+              <input class="form-control" type="text" id="perfil-nombre-usuario" name="nombre_usuario" autocomplete="username" minlength="4" maxlength="16" aria-describedby="ayuda-perfil-usuario error-perfil-nombre-usuario" aria-errormessage="error-perfil-nombre-usuario" required>
+              <small class="field-hint" id="ayuda-perfil-usuario">Usa entre 4 y 16 caracteres, sin espacios.</small>
+              <small class="field-error" id="error-perfil-nombre-usuario" aria-live="polite"></small>
+            </div>
+
+            <div class="form-group col-12 col-md-6">
+              <label class="form-label" for="perfil-correo">Correo electrónico <span aria-hidden="true">*</span></label>
+              <input class="form-control" type="email" id="perfil-correo" name="correo" autocomplete="email" maxlength="100" aria-describedby="error-perfil-correo" aria-errormessage="error-perfil-correo" required>
+              <small class="field-error" id="error-perfil-correo" aria-live="polite"></small>
+            </div>
+
+            <div class="form-group col-12 col-md-6">
+              <label class="form-label" for="perfil-fecha-nacimiento">Fecha de nacimiento <span aria-hidden="true">*</span></label>
+              <input class="form-control" type="date" id="perfil-fecha-nacimiento" name="fecha_nacimiento" autocomplete="bday" aria-describedby="error-perfil-fecha-nacimiento" aria-errormessage="error-perfil-fecha-nacimiento" required>
+              <small class="field-error" id="error-perfil-fecha-nacimiento" aria-live="polite"></small>
+            </div>
+
+            <div class="form-group col-12 col-md-6">
+              <label class="form-label" for="perfil-rol">Tipo de usuario</label>
+              <input class="form-control readonly-field" type="text" id="perfil-rol" name="rol" readonly aria-describedby="ayuda-perfil-rol">
+              <small class="field-hint" id="ayuda-perfil-rol">El rol solo podrá modificarse desde la administración.</small>
+            </div>
+
+            <div class="form-group col-12">
+              <label class="form-label" for="perfil-direccion">Dirección de despacho <span class="optional">(opcional)</span></label>
+              <textarea class="form-control" id="perfil-direccion" name="direccion" rows="3" maxlength="160" autocomplete="street-address" aria-describedby="ayuda-perfil-direccion error-perfil-direccion" aria-errormessage="error-perfil-direccion"></textarea>
+              <small class="field-hint" id="ayuda-perfil-direccion">Si la completas, utiliza al menos 10 caracteres.</small>
+              <small class="field-error" id="error-perfil-direccion" aria-live="polite"></small>
+            </div>
+          </div>
+        </fieldset>
+
+        <div class="form-actions">
+          <button class="button button-primary btn btn-primary" type="submit">Guardar cambios</button>
+          <button class="button button-secondary btn btn-outline-light" type="reset">Restablecer datos</button>
+        </div>
+
+        <p class="form-status" id="form-status" role="status" aria-live="polite" tabindex="-1" hidden></p>
+      </form>
+    </section>
+  </main>
+
+  <!-- Información general del sitio. -->
+  <footer><p>© 2026 FreeGames · Tu catálogo gamer</p></footer>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js" integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI" crossorigin="anonymous"></script>
+</body>
+</html>

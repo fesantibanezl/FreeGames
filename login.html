@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Inicio de sesión para clientes y administradores de FreeGames.">
+  <title>Iniciar sesión | FreeGames</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
+  <link rel="stylesheet" href="css/style.css">
+  <script src="js/datos-demo.js" defer></script>
+  <script src="js/validaciones.js" defer></script>
+  <script src="js/autenticacion.js" defer></script>
+</head>
+<body>
+  <!-- Acceso rápido para quienes navegan con teclado. -->
+  <a class="skip-link" href="#contenido-principal">Saltar al contenido principal</a>
+
+  <!-- Encabezado compacto de las páginas de cuenta. -->
+  <header class="site-header compact">
+    <a class="brand" href="index.html" aria-label="Ir al inicio de FreeGames">
+      <span class="brand-mark" aria-hidden="true">FG</span>
+      <span>FreeGames</span>
+    </a>
+  </header>
+
+  <!-- Navegación compartida con opciones distintas según la sesión. -->
+  <nav class="navbar navbar-expand-lg navbar-dark main-nav" aria-label="Navegación principal">
+    <div class="container">
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navegacion-principal" aria-controls="navegacion-principal" aria-expanded="false" aria-label="Mostrar u ocultar el menú principal">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+
+      <div class="collapse navbar-collapse" id="navegacion-principal">
+        <div class="navbar-nav mx-auto">
+          <a class="nav-link" href="index.html">Inicio</a>
+          <a class="nav-link" href="accion.html">Acción</a>
+          <a class="nav-link" href="aventura.html">Aventura</a>
+          <a class="nav-link" href="deportes.html">Deportes</a>
+          <a class="nav-link" href="carreras.html">Carreras</a>
+          <a class="nav-link" href="estrategia.html">Estrategia</a>
+          <a class="nav-link active" data-session="guest" aria-current="page" href="login.html">Iniciar sesión</a>
+          <a class="nav-link register-link" data-session="guest" href="registro.html">Registrarse</a>
+          <a class="nav-link" data-session="user" href="perfil.html" hidden>Mi perfil: <span data-user-name></span></a>
+          <button class="nav-link logout-link" data-session="user" data-action="logout" type="button" hidden>Cerrar sesión</button>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Acceso simulado para probar los dos roles solicitados. -->
+  <main class="account-page container" id="contenido-principal">
+    <section class="registration-intro" aria-labelledby="login-title">
+      <p class="eyebrow">Bienvenido nuevamente</p>
+      <h1 id="login-title">Inicia sesión</h1>
+      <p>Accede con tu correo o nombre de usuario. Esta etapa utiliza datos demostrativos guardados en el navegador.</p>
+    </section>
+
+    <div class="account-layout">
+      <section class="registration-card" aria-label="Formulario de inicio de sesión">
+        <form class="registration-form" id="login-form" action="#" method="post" novalidate>
+          <fieldset>
+            <legend>Datos de acceso</legend>
+
+            <div class="row g-4">
+              <div class="form-group col-12">
+                <label class="form-label" for="acceso">Correo o nombre de usuario <span aria-hidden="true">*</span></label>
+                <input class="form-control" type="text" id="acceso" name="acceso" autocomplete="username" placeholder="cliente o cliente@freegames.cl" aria-describedby="error-acceso" aria-errormessage="error-acceso" required>
+                <small class="field-error" id="error-acceso" aria-live="polite"></small>
+              </div>
+
+              <div class="form-group col-12">
+                <label class="form-label" for="clave-login">Contraseña <span aria-hidden="true">*</span></label>
+                <input class="form-control" type="password" id="clave-login" name="clave" autocomplete="current-password" placeholder="Ingresa tu contraseña" aria-describedby="error-clave-login" aria-errormessage="error-clave-login" required>
+                <small class="field-error" id="error-clave-login" aria-live="polite"></small>
+              </div>
+            </div>
+          </fieldset>
+
+          <div class="form-actions">
+            <button class="button button-primary btn btn-primary" type="submit">Iniciar sesión</button>
+          </div>
+
+          <p class="form-status" id="form-status" role="status" aria-live="polite" tabindex="-1" hidden></p>
+          <p class="form-switch"><a href="recuperar-clave.html">¿Olvidaste tu contraseña?</a></p>
+          <p class="form-switch">¿No tienes una cuenta? <a href="registro.html">Regístrate</a>.</p>
+        </form>
+      </section>
+
+      <aside class="demo-panel" aria-labelledby="demo-title">
+        <p class="eyebrow">Prueba de roles</p>
+        <h2 id="demo-title">Cuentas demostrativas</h2>
+        <p>Estas credenciales existen solo para comprobar el comportamiento del FrontEnd.</p>
+
+        <article class="demo-account">
+          <h3>Felipe Santibáñez · Cliente</h3>
+          <dl>
+            <div><dt>Usuario</dt><dd>cliente</dd></div>
+            <div><dt>Contraseña</dt><dd>Cliente#2026</dd></div>
+          </dl>
+        </article>
+
+        <article class="demo-account">
+          <h3>Administrador</h3>
+          <dl>
+            <div><dt>Usuario</dt><dd>admin</dd></div>
+            <div><dt>Contraseña</dt><dd>Admin#2026</dd></div>
+          </dl>
+        </article>
+      </aside>
+    </div>
+  </main>
+
+  <!-- Información general del sitio. -->
+  <footer><p>© 2026 FreeGames · Tu catálogo gamer</p></footer>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js" integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI" crossorigin="anonymous"></script>
+</body>
+</html>

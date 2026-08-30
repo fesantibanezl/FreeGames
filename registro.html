@@ -7,7 +7,9 @@
   <title>Registro | FreeGames</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
   <link rel="stylesheet" href="css/style.css">
+  <script src="js/datos-demo.js" defer></script>
   <script src="js/validaciones.js" defer></script>
+  <script src="js/autenticacion.js" defer></script>
 </head>
 <body>
   <!-- Acceso rápido para quienes navegan con teclado. -->
@@ -36,7 +38,10 @@
           <a class="nav-link" href="deportes.html">Deportes</a>
           <a class="nav-link" href="carreras.html">Carreras</a>
           <a class="nav-link" href="estrategia.html">Estrategia</a>
-          <a class="nav-link active register-link" aria-current="page" href="registro.html">Registrarse</a>
+          <a class="nav-link" data-session="guest" href="login.html">Iniciar sesión</a>
+          <a class="nav-link active register-link" data-session="guest" aria-current="page" href="registro.html">Registrarse</a>
+          <a class="nav-link" data-session="user" href="perfil.html" hidden>Mi perfil: <span data-user-name></span></a>
+          <button class="nav-link logout-link" data-session="user" data-action="logout" type="button" hidden>Cerrar sesión</button>
         </div>
       </div>
     </div>
@@ -58,32 +63,33 @@
           <div class="row g-4">
             <div class="form-group col-12">
               <label class="form-label" for="nombre-completo">Nombre completo <span aria-hidden="true">*</span></label>
-              <input class="form-control" type="text" id="nombre-completo" name="nombre_completo" autocomplete="name" placeholder="Ejemplo: Alex González" aria-describedby="error-nombre-completo" aria-errormessage="error-nombre-completo" required>
+              <input class="form-control" type="text" id="nombre-completo" name="nombre_completo" autocomplete="name" placeholder="Ejemplo: Alex González" minlength="3" maxlength="60" aria-describedby="error-nombre-completo" aria-errormessage="error-nombre-completo" required>
               <small class="field-error" id="error-nombre-completo" aria-live="polite"></small>
             </div>
 
             <div class="form-group col-12 col-md-6">
               <label class="form-label" for="nombre-usuario">Nombre de usuario <span aria-hidden="true">*</span></label>
-              <input class="form-control" type="text" id="nombre-usuario" name="nombre_usuario" autocomplete="username" placeholder="Ejemplo: alexgamer" aria-describedby="error-nombre-usuario" aria-errormessage="error-nombre-usuario" required>
+              <input class="form-control" type="text" id="nombre-usuario" name="nombre_usuario" autocomplete="username" placeholder="Ejemplo: alexgamer" minlength="4" maxlength="16" aria-describedby="ayuda-nombre-usuario error-nombre-usuario" aria-errormessage="error-nombre-usuario" required>
+              <small class="field-hint" id="ayuda-nombre-usuario">Usa entre 4 y 16 caracteres, sin espacios.</small>
               <small class="field-error" id="error-nombre-usuario" aria-live="polite"></small>
             </div>
 
             <div class="form-group col-12 col-md-6">
               <label class="form-label" for="correo">Correo electrónico <span aria-hidden="true">*</span></label>
-              <input class="form-control" type="email" id="correo" name="correo" autocomplete="email" placeholder="nombre@correo.cl" aria-describedby="error-correo" aria-errormessage="error-correo" required>
+              <input class="form-control" type="email" id="correo" name="correo" autocomplete="email" placeholder="nombre@correo.cl" maxlength="100" aria-describedby="error-correo" aria-errormessage="error-correo" required>
               <small class="field-error" id="error-correo" aria-live="polite"></small>
             </div>
 
             <div class="form-group col-12 col-md-6">
               <label class="form-label" for="clave">Contraseña <span aria-hidden="true">*</span></label>
-              <input class="form-control" type="password" id="clave" name="clave" autocomplete="new-password" placeholder="Entre 6 y 18 caracteres" minlength="6" maxlength="18" aria-describedby="ayuda-clave error-clave" aria-errormessage="error-clave" required>
-              <small class="field-hint" id="ayuda-clave">Debe incluir al menos una mayúscula y un número.</small>
+              <input class="form-control" type="password" id="clave" name="clave" autocomplete="new-password" placeholder="Entre 8 y 18 caracteres" minlength="8" maxlength="18" aria-describedby="ayuda-clave error-clave" aria-errormessage="error-clave" required>
+              <small class="field-hint" id="ayuda-clave">Incluye mayúscula, minúscula, número y carácter especial.</small>
               <small class="field-error" id="error-clave" aria-live="polite"></small>
             </div>
 
             <div class="form-group col-12 col-md-6">
               <label class="form-label" for="repetir-clave">Repetir contraseña <span aria-hidden="true">*</span></label>
-              <input class="form-control" type="password" id="repetir-clave" name="repetir_clave" autocomplete="new-password" placeholder="Escribe nuevamente tu contraseña" minlength="6" maxlength="18" aria-describedby="error-repetir-clave" aria-errormessage="error-repetir-clave" required>
+              <input class="form-control" type="password" id="repetir-clave" name="repetir_clave" autocomplete="new-password" placeholder="Escribe nuevamente tu contraseña" minlength="8" maxlength="18" aria-describedby="error-repetir-clave" aria-errormessage="error-repetir-clave" required>
               <small class="field-error" id="error-repetir-clave" aria-live="polite"></small>
             </div>
 
@@ -95,7 +101,9 @@
 
             <div class="form-group col-12 col-md-6 col-lg-8">
               <label class="form-label" for="direccion">Dirección de despacho <span class="optional">(opcional)</span></label>
-              <textarea class="form-control" id="direccion" name="direccion" rows="3" autocomplete="street-address" placeholder="Calle, número, comuna y ciudad"></textarea>
+              <textarea class="form-control" id="direccion" name="direccion" rows="3" maxlength="160" autocomplete="street-address" placeholder="Calle, número, comuna y ciudad" aria-describedby="ayuda-direccion error-direccion" aria-errormessage="error-direccion"></textarea>
+              <small class="field-hint" id="ayuda-direccion">Si la completas, utiliza al menos 10 caracteres.</small>
+              <small class="field-error" id="error-direccion" aria-live="polite"></small>
             </div>
           </div>
         </fieldset>
@@ -106,6 +114,7 @@
         </div>
 
         <p class="form-status" id="form-status" role="status" aria-live="polite" tabindex="-1" hidden></p>
+        <p class="form-switch">¿Ya tienes una cuenta? <a href="login.html">Inicia sesión</a>.</p>
       </form>
     </section>
   </main>
