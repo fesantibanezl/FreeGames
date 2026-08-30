@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Carrito de compra simulado de FreeGames.">
+  <title>Carrito | FreeGames</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
+  <link rel="stylesheet" href="css/style.css">
+  <!-- Los módulos se cargan en este orden porque el carrito usa el catálogo y las compras. -->
+  <script src="js/datos-demo.js" defer></script>
+  <script src="js/productos.js" defer></script>
+  <script src="js/compras.js" defer></script>
+  <script src="js/carrito.js" defer></script>
+  <script src="js/autenticacion.js" defer></script>
+</head>
+<body>
+  <a class="skip-link" href="#contenido-principal">Saltar al contenido principal</a>
+
+  <header class="site-header compact-header">
+    <nav class="navbar navbar-expand-lg main-nav" aria-label="Navegación principal">
+      <div class="container-fluid">
+        <a class="navbar-brand brand" href="index.html" aria-label="FreeGames, ir al inicio">
+          <span class="brand-mark" aria-hidden="true">FG</span><span>FreeGames</span>
+        </a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#main-navigation" aria-controls="main-navigation" aria-expanded="false" aria-label="Mostrar navegación">
+          <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="main-navigation">
+          <div class="navbar-nav ms-auto align-items-lg-center">
+            <a class="nav-link" href="index.html">Inicio</a>
+            <a class="nav-link" href="accion.html">Acción</a>
+            <a class="nav-link" href="aventura.html">Aventura</a>
+            <a class="nav-link" href="deportes.html">Deportes</a>
+            <a class="nav-link" href="carreras.html">Carreras</a>
+            <a class="nav-link" href="estrategia.html">Estrategia</a>
+            <a class="nav-link active" aria-current="page" href="carrito.html">Carrito <span class="cart-count" data-cart-count hidden>0</span></a>
+            <a class="nav-link" data-session="guest" href="login.html">Iniciar sesión</a>
+            <a class="nav-link register-link" data-session="guest" href="registro.html">Registrarse</a>
+            <a class="nav-link" data-session="user" href="perfil.html" hidden>Mi perfil: <span data-user-name></span></a>
+            <a class="nav-link" data-session="user" data-role="cliente" href="mis-compras.html" hidden>Mis compras</a>
+            <button class="nav-link logout-link" data-session="user" data-action="logout" type="button" hidden>Cerrar sesión</button>
+          </div>
+        </div>
+      </div>
+    </nav>
+  </header>
+
+  <main class="cart-page" id="contenido-principal">
+    <section class="page-intro">
+      <p class="eyebrow">Compra simulada</p>
+      <h1>Tu carrito</h1>
+      <p>Revisa los juegos seleccionados, ajusta sus cantidades y confirma tu pedido. No se realiza ningún cobro real.</p>
+    </section>
+
+    <section id="cart-page" aria-label="Juegos seleccionados">
+      <div class="cart-layout">
+        <div>
+          <div id="cart-empty" class="empty-state" hidden>
+            <h2>Tu carrito está vacío</h2>
+            <p>Cuando agregues un juego desde el catálogo, aparecerá aquí.</p>
+            <a class="button button-primary" href="accion.html">Explorar juegos</a>
+          </div>
+          <div id="cart-items" class="cart-list"></div>
+        </div>
+
+        <aside id="cart-summary" class="cart-summary" hidden aria-label="Resumen del pedido">
+          <h2>Resumen del pedido</h2>
+          <p class="summary-total"><span>Total</span><strong data-cart-total>$0</strong></p>
+          <button class="button button-primary" type="button" data-action="checkout">Finalizar compra simulada</button>
+          <button class="button button-secondary" type="button" data-action="empty-cart">Vaciar carrito</button>
+          <p class="cart-note">Para confirmar el pedido debes iniciar sesión con una cuenta de cliente.</p>
+        </aside>
+      </div>
+      <p id="cart-status" class="form-status" role="status" aria-live="polite" hidden></p>
+    </section>
+  </main>
+
+  <footer><p>© 2026 FreeGames · Tu catálogo gamer</p></footer>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js" integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI" crossorigin="anonymous"></script>
+</body>
+</html>

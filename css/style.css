@@ -338,6 +338,188 @@ h1 { margin-bottom: 8px; font: 800 clamp(2rem, 5vw, 3.2rem)/1.15 Orbitron, sans-
 
 .game-footer strong { color: #8affca; font-size: 1.65rem; }
 
+/* Acciones disponibles en cada producto del catálogo. */
+.product-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding-top: 16px;
+}
+
+.stock-status {
+  color: var(--muted);
+  font-size: .82rem;
+  font-weight: 700;
+}
+
+.stock-status.sold-out { color: #ffc1b3; }
+
+.add-to-cart { width: 100%; }
+
+.card-status {
+  min-height: 1.5em;
+  margin: 10px 0 0;
+  font-size: .84rem;
+  font-weight: 700;
+}
+
+.card-status.success { color: #8affca; }
+.card-status.error { color: #ffc1b3; }
+
+/* Indicador compacto que muestra la cantidad de juegos en el carrito. */
+.cart-count {
+  display: inline-grid;
+  place-items: center;
+  min-width: 1.35rem;
+  height: 1.35rem;
+  margin-left: 4px;
+  padding: 0 4px;
+  color: #07101d;
+  background: #8affca;
+  border-radius: 99px;
+  font-size: .72rem;
+  line-height: 1;
+}
+
+/* El encabezado de las nuevas vistas usa la misma barra de navegación interna. */
+.site-header.compact-header {
+  min-height: 0;
+  display: block;
+  padding: 0;
+  text-align: left;
+  background: none;
+}
+
+.site-header.compact-header::after { content: none; }
+
+.compact-header .main-nav { padding: 8px 20px; }
+.compact-header .brand { font-size: clamp(1.45rem, 3vw, 2rem); }
+.compact-header .navbar-brand { margin-right: 18px; }
+
+/* Carrito, comprobante e historial de pedidos del cliente. */
+.cart-page,
+.purchase-page,
+.history-page {
+  width: min(1080px, calc(100% - 40px));
+  min-height: 600px;
+  padding: 60px 0 90px;
+  margin: 0 auto;
+}
+
+.page-intro { max-width: 760px; margin-bottom: 34px; }
+.page-intro > p:last-child { color: var(--muted); }
+
+.cart-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(270px, 340px);
+  align-items: start;
+  gap: 24px;
+}
+
+.cart-list,
+.orders-list { display: grid; gap: 16px; }
+
+.cart-item,
+.cart-summary,
+.empty-state,
+.purchase-success,
+.purchase-details,
+.order-card {
+  background: linear-gradient(135deg, var(--surface-light), var(--surface));
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  box-shadow: var(--shadow);
+}
+
+.cart-item {
+  display: grid;
+  grid-template-columns: 120px minmax(0, 1fr) auto auto auto;
+  align-items: center;
+  gap: 18px;
+  padding: 16px;
+}
+
+.cart-item > img {
+  width: 120px;
+  height: 82px;
+  border-radius: 10px;
+  object-fit: cover;
+}
+
+.cart-item-info h2 { margin-bottom: 5px; font: 800 1.05rem/1.25 Orbitron, sans-serif; }
+.cart-item-info p:last-child { margin: 0; color: var(--muted); font-size: .86rem; }
+
+.cart-quantity { display: inline-flex; align-items: center; overflow: hidden; border: 1px solid var(--border); border-radius: 9px; }
+
+.cart-quantity button,
+.cart-quantity input {
+  height: 36px;
+  color: var(--text);
+  background: transparent;
+  border: 0;
+  text-align: center;
+}
+
+.cart-quantity button { width: 32px; font-size: 1.2rem; cursor: pointer; }
+.cart-quantity button:hover, .cart-quantity button:focus-visible { color: var(--cyan); background: rgba(52, 217, 255, .08); }
+.cart-quantity button:disabled { color: #65708d; cursor: not-allowed; }
+.cart-quantity input { width: 42px; -moz-appearance: textfield; }
+.cart-quantity input::-webkit-inner-spin-button,
+.cart-quantity input::-webkit-outer-spin-button { margin: 0; -webkit-appearance: none; }
+
+.cart-subtotal { min-width: 82px; color: #8affca; text-align: right; }
+
+.remove-item {
+  padding: 6px 0;
+  color: #ffc1b3;
+  background: transparent;
+  border: 0;
+  font: 700 .82rem/1 Inter, Arial, sans-serif;
+  cursor: pointer;
+}
+
+.remove-item:hover, .remove-item:focus-visible { color: #fff; text-decoration: underline; }
+
+.cart-summary { padding: 26px; }
+.cart-summary h2 { font: 800 1.22rem/1.25 Orbitron, sans-serif; }
+.summary-total { display: flex; justify-content: space-between; align-items: center; padding: 20px 0; margin: 20px 0; border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
+.summary-total span { color: var(--muted); font-weight: 700; }
+.summary-total strong { color: #8affca; font-size: 1.7rem; }
+.cart-summary .button { width: 100%; margin-top: 10px; }
+.cart-note { margin: 18px 0 0; color: var(--muted); font-size: .82rem; }
+
+.empty-state,
+.purchase-success,
+.purchase-details,
+.order-card { padding: clamp(24px, 4vw, 36px); }
+
+.empty-state { text-align: center; }
+.empty-state h2 { font: 800 1.35rem/1.25 Orbitron, sans-serif; }
+.empty-state p { color: var(--muted); }
+
+.purchase-success { margin-bottom: 20px; }
+.purchase-success h1 { color: #8affca; }
+.purchase-success > p:not(.eyebrow) { color: var(--muted); }
+
+.purchase-details h2,
+.order-card h2 { font: 800 1.25rem/1.25 Orbitron, sans-serif; }
+
+.purchase-items { display: grid; gap: 10px; padding: 0; margin: 22px 0; list-style: none; }
+.purchase-items li { display: flex; justify-content: space-between; gap: 18px; color: var(--muted); }
+.purchase-items strong { color: var(--text); }
+.purchase-total { display: flex; justify-content: space-between; align-items: center; padding-top: 18px; margin: 0; border-top: 1px solid var(--border); }
+.purchase-total strong { color: #8affca; font-size: 1.5rem; }
+
+.purchase-actions { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 26px; }
+.purchase-actions .button { text-decoration: none; }
+
+.order-card { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 18px; }
+.order-card header { display: flex; align-items: start; justify-content: space-between; gap: 18px; }
+.order-card header h2 { margin-bottom: 0; }
+.order-card p { color: var(--muted); }
+.order-card ul { padding-left: 20px; margin-bottom: 0; color: var(--muted); }
+.order-card-total { color: #8affca; font-size: 1.35rem; text-align: right; }
+
 /* Formularios de cuenta y estados de validación. */
 .registration-page,
 .account-page {
@@ -357,6 +539,9 @@ h1 { margin-bottom: 8px; font: 800 clamp(2rem, 5vw, 3.2rem)/1.15 Orbitron, sans-
   align-items: start;
   gap: 24px;
 }
+
+/* El acceso queda centrado cuando no hay un panel lateral complementario. */
+.account-layout-single { grid-template-columns: minmax(0, 1fr); max-width: 680px; }
 
 .registration-intro { max-width: 720px; margin-bottom: 32px; }
 
@@ -504,7 +689,6 @@ a.button-secondary {
   border-color: rgba(255, 118, 87, .35);
 }
 
-.demo-panel,
 .access-notice {
   padding: clamp(24px, 4vw, 34px);
   background: rgba(17, 24, 42, .78);
@@ -513,36 +697,9 @@ a.button-secondary {
   box-shadow: var(--shadow);
 }
 
-.demo-panel > h2,
 .access-notice > h2 { font: 800 1.35rem/1.25 Orbitron, sans-serif; }
 
-.demo-panel > p:not(.eyebrow),
 .access-notice > p { color: var(--muted); }
-
-.demo-account {
-  padding: 18px;
-  margin-top: 16px;
-  background: rgba(7, 11, 22, .58);
-  border: 1px solid var(--border);
-  border-radius: 14px;
-}
-
-.demo-account h3 { margin-bottom: 12px; color: #8affca; font-size: 1rem; }
-
-.demo-account dl,
-.demo-account dd { margin: 0; }
-
-.demo-account dl { display: grid; gap: 8px; }
-
-.demo-account dl > div {
-  display: grid;
-  grid-template-columns: 90px minmax(0, 1fr);
-  gap: 10px;
-}
-
-.demo-account dt { color: var(--muted); font-size: .8rem; }
-
-.demo-account dd { overflow-wrap: anywhere; font-size: .86rem; font-weight: 700; }
 
 .access-notice { max-width: 720px; }
 
@@ -568,6 +725,8 @@ textarea:focus-visible {
   .main-nav .logout-link { width: 100%; text-align: center; }
   .games-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .account-layout { grid-template-columns: 1fr; }
+  .cart-layout { grid-template-columns: 1fr; }
+  .cart-summary { max-width: 520px; }
 }
 
 @media (max-width: 700px) {
@@ -577,10 +736,17 @@ textarea:focus-visible {
   .category-copy small { display: none; }
   .category-arrow { padding-right: 18px; }
   .games-grid { grid-template-columns: 1fr; }
+  .cart-item { grid-template-columns: 88px minmax(0, 1fr) auto; gap: 14px; }
+  .cart-item > img { width: 88px; height: 70px; }
+  .cart-quantity { grid-column: 2; justify-self: start; }
+  .cart-subtotal { grid-column: 3; grid-row: 2; }
+  .remove-item { grid-column: 1 / -1; justify-self: start; }
+  .order-card { grid-template-columns: 1fr; }
+  .order-card-total { text-align: left; }
 }
 
 @media (max-width: 430px) {
-  .home-main, .category-page, .registration-page, .account-page { width: min(100% - 24px, 1080px); }
+  .home-main, .category-page, .registration-page, .account-page, .cart-page, .purchase-page, .history-page { width: min(100% - 24px, 1080px); }
   .brand { gap: 10px; }
   .category-row { grid-template-columns: 88px 1fr auto; border-radius: 13px; }
   .category-row img { height: 105px; }
@@ -588,6 +754,9 @@ textarea:focus-visible {
   .category-title > span { width: 64px; height: 64px; }
   .game-info { padding: 25px 22px; }
   .form-actions, .button { width: 100%; }
+  .compact-header .main-nav { padding: 8px 12px; }
+  .compact-header .navbar-brand { margin-right: 8px; }
+  .purchase-actions .button { width: 100%; }
 }
 
 /* Respeta la preferencia del usuario de reducir movimientos. */

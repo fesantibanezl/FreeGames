@@ -8,6 +8,8 @@
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
   <link rel="stylesheet" href="css/style.css">
   <script src="js/datos-demo.js" defer></script>
+  <script src="js/productos.js" defer></script>
+  <script src="js/carrito.js" defer></script>
   <script src="js/autenticacion.js" defer></script>
 </head>
 <body>
@@ -37,9 +39,11 @@
           <a class="nav-link" href="deportes.html">Deportes</a>
           <a class="nav-link active" aria-current="page" href="carreras.html">Carreras</a>
           <a class="nav-link" href="estrategia.html">Estrategia</a>
+          <a class="nav-link" href="carrito.html">Carrito <span class="cart-count" data-cart-count hidden>0</span></a>
           <a class="nav-link" data-session="guest" href="login.html">Iniciar sesión</a>
           <a class="nav-link register-link" data-session="guest" href="registro.html">Registrarse</a>
           <a class="nav-link" data-session="user" href="perfil.html" hidden>Mi perfil: <span data-user-name></span></a>
+          <a class="nav-link" data-session="user" data-role="cliente" href="mis-compras.html" hidden>Mis compras</a>
           <button class="nav-link logout-link" data-session="user" data-action="logout" type="button" hidden>Cerrar sesión</button>
         </div>
       </div>
@@ -60,7 +64,7 @@
       <h2 id="games-title" class="section-title">Juegos disponibles</h2>
 
       <div class="games-grid">
-        <article class="game-card">
+        <article class="game-card" data-product-id="need-for-speed">
           <img src="img/carreras.png" alt="Arte original de un automóvil deportivo en una carrera nocturna">
           <div class="game-info">
             <div class="game-labels">
@@ -70,12 +74,17 @@
             <p>Acelera por calles iluminadas, mejora tu vehículo y demuestra quién domina las carreras urbanas.</p>
             <div class="game-footer">
               <span>Precio</span>
-              <strong>$17.990</strong>
+              <strong data-product-price>$17.990</strong>
             </div>
+            <div class="product-actions">
+              <span class="stock-status" data-product-stock></span>
+              <button class="button button-primary add-to-cart" type="button" data-action="add-to-cart">Agregar al carrito</button>
+            </div>
+            <p class="card-status" data-product-status role="status" aria-live="polite"></p>
           </div>
         </article>
 
-        <article class="game-card">
+        <article class="game-card" data-product-id="forza-horizon">
           <img src="img/forza-horizon.png" alt="Automóvil deportivo recorriendo una carretera de montaña al atardecer">
           <div class="game-info">
             <div class="game-labels">
@@ -85,12 +94,17 @@
             <p>Conduce por paisajes abiertos, participa en festivales y colecciona vehículos de alto rendimiento.</p>
             <div class="game-footer">
               <span>Precio</span>
-              <strong>$32.990</strong>
+              <strong data-product-price>$32.990</strong>
             </div>
+            <div class="product-actions">
+              <span class="stock-status" data-product-stock></span>
+              <button class="button button-primary add-to-cart" type="button" data-action="add-to-cart">Agregar al carrito</button>
+            </div>
+            <p class="card-status" data-product-status role="status" aria-live="polite"></p>
           </div>
         </article>
 
-        <article class="game-card">
+        <article class="game-card" data-product-id="trackmania">
           <img src="img/trackmania.png" alt="Automóvil de carreras en una pista elevada con curvas y giros extremos">
           <div class="game-info">
             <div class="game-labels">
@@ -101,8 +115,13 @@
             <p>Supera circuitos imposibles, mejora tus tiempos y compite contra jugadores de todo el mundo.</p>
             <div class="game-footer">
               <span>Precio</span>
-              <strong>Gratis</strong>
+              <strong data-product-price>Gratis</strong>
             </div>
+            <div class="product-actions">
+              <span class="stock-status" data-product-stock></span>
+              <button class="button button-primary add-to-cart" type="button" data-action="add-to-cart">Obtener gratis</button>
+            </div>
+            <p class="card-status" data-product-status role="status" aria-live="polite"></p>
           </div>
         </article>
       </div>

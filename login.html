@@ -8,6 +8,8 @@
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
   <link rel="stylesheet" href="css/style.css">
   <script src="js/datos-demo.js" defer></script>
+  <script src="js/productos.js" defer></script>
+  <script src="js/carrito.js" defer></script>
   <script src="js/validaciones.js" defer></script>
   <script src="js/autenticacion.js" defer></script>
 </head>
@@ -38,9 +40,11 @@
           <a class="nav-link" href="deportes.html">Deportes</a>
           <a class="nav-link" href="carreras.html">Carreras</a>
           <a class="nav-link" href="estrategia.html">Estrategia</a>
+          <a class="nav-link" href="carrito.html">Carrito <span class="cart-count" data-cart-count hidden>0</span></a>
           <a class="nav-link active" data-session="guest" aria-current="page" href="login.html">Iniciar sesión</a>
           <a class="nav-link register-link" data-session="guest" href="registro.html">Registrarse</a>
           <a class="nav-link" data-session="user" href="perfil.html" hidden>Mi perfil: <span data-user-name></span></a>
+          <a class="nav-link" data-session="user" data-role="cliente" href="mis-compras.html" hidden>Mis compras</a>
           <button class="nav-link logout-link" data-session="user" data-action="logout" type="button" hidden>Cerrar sesión</button>
         </div>
       </div>
@@ -55,7 +59,8 @@
       <p>Accede con tu correo o nombre de usuario. Esta etapa utiliza datos demostrativos guardados en el navegador.</p>
     </section>
 
-    <div class="account-layout">
+    <!-- Al no exhibir credenciales, el formulario usa una columna más concentrada. -->
+    <div class="account-layout account-layout-single">
       <section class="registration-card" aria-label="Formulario de inicio de sesión">
         <form class="registration-form" id="login-form" action="#" method="post" novalidate>
           <fieldset>
@@ -64,7 +69,7 @@
             <div class="row g-4">
               <div class="form-group col-12">
                 <label class="form-label" for="acceso">Correo o nombre de usuario <span aria-hidden="true">*</span></label>
-                <input class="form-control" type="text" id="acceso" name="acceso" autocomplete="username" placeholder="cliente o cliente@freegames.cl" aria-describedby="error-acceso" aria-errormessage="error-acceso" required>
+                <input class="form-control" type="text" id="acceso" name="acceso" autocomplete="username" placeholder="Ejemplo: usuario o correo@ejemplo.cl" aria-describedby="error-acceso" aria-errormessage="error-acceso" required>
                 <small class="field-error" id="error-acceso" aria-live="polite"></small>
               </div>
 
@@ -86,27 +91,6 @@
         </form>
       </section>
 
-      <aside class="demo-panel" aria-labelledby="demo-title">
-        <p class="eyebrow">Prueba de roles</p>
-        <h2 id="demo-title">Cuentas demostrativas</h2>
-        <p>Estas credenciales existen solo para comprobar el comportamiento del FrontEnd.</p>
-
-        <article class="demo-account">
-          <h3>Felipe Santibáñez · Cliente</h3>
-          <dl>
-            <div><dt>Usuario</dt><dd>cliente</dd></div>
-            <div><dt>Contraseña</dt><dd>Cliente#2026</dd></div>
-          </dl>
-        </article>
-
-        <article class="demo-account">
-          <h3>Administrador</h3>
-          <dl>
-            <div><dt>Usuario</dt><dd>admin</dd></div>
-            <div><dt>Contraseña</dt><dd>Admin#2026</dd></div>
-          </dl>
-        </article>
-      </aside>
     </div>
   </main>
 

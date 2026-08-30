@@ -26,6 +26,12 @@
       elemento.hidden = !haySesion;
     });
 
+    // Algunos enlaces solo corresponden a un rol; por ejemplo, el historial
+    // de compras es una vista de cliente y no aparece en la sesión administrativa.
+    document.querySelectorAll('[data-role]').forEach((elemento) => {
+      elemento.hidden = !haySesion || elemento.dataset.role !== sesionActual.usuario.rol;
+    });
+
     document.querySelectorAll('[data-user-name]').forEach((elemento) => {
       elemento.textContent = haySesion ? sesionActual.usuario.nombreUsuario : '';
     });

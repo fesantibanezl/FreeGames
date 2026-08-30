@@ -73,6 +73,21 @@
     return true;
   }
 
+  function eliminar(clave) {
+    if (almacenamientoLocalDisponible) {
+      try {
+        localStorage.removeItem(clave);
+        return true;
+      } catch (error) {
+        almacenamientoLocalDisponible = false;
+        console.warn('El navegador bloqueó el almacenamiento local; se usará memoria temporal.', error);
+      }
+    }
+
+    almacenamientoTemporal.delete(clave);
+    return true;
+  }
+
   function normalizar(valor) {
     return String(valor ?? '').trim().toLocaleLowerCase('es');
   }
@@ -192,17 +207,7 @@
   }
 
   function cerrarSesion() {
-    if (almacenamientoLocalDisponible) {
-      try {
-        localStorage.removeItem(CLAVES.sesion);
-        return;
-      } catch (error) {
-        almacenamientoLocalDisponible = false;
-        console.warn('El navegador bloqueó el almacenamiento local; se usará memoria temporal.', error);
-      }
-    }
-
-    almacenamientoTemporal.delete(CLAVES.sesion);
+    eliminar(CLAVES.sesion);
   }
 
   inicializarUsuarios();
@@ -219,4 +224,7 @@
     obtenerSesion,
     cerrarSesion
   });
+
+  // Los módulos de catálogo y compras reutilizan este acceso en vez de tocar localStorage.
+  window.FreeGamesStore = Object.freeze({ leer, guardar, eliminar });
 })();
