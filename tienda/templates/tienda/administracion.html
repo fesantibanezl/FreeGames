@@ -1,0 +1,138 @@
+{% extends 'tienda/base.html' %}
+{% load static %}
+
+{% block titulo %}Administración | FreeGames{% endblock %}
+{% block descripcion %}Administra el catálogo y las cuentas de usuario de FreeGames.{% endblock %}
+
+{% block scripts_extra %}
+  <script src="{% static 'tienda/js/administracion.js' %}" defer></script>
+{% endblock %}
+
+{% block contenido %}
+<main class="admin-page container" id="contenido-principal">
+  <section class="page-intro">
+    <p class="eyebrow">Rol administrador</p>
+    <h1>Administración</h1>
+    <p>Gestiona la disponibilidad y precios del catálogo, además de los roles y estados de las cuentas. Los cambios se guardan solo en este navegador.</p>
+  </section>
+
+  <section id="administration-guard" class="access-notice" role="status" hidden></section>
+
+  <section id="administration-content" hidden>
+    <div id="admin-summary" class="admin-summary" aria-label="Resumen administrativo"></div>
+
+    <section class="admin-section" aria-labelledby="inventory-title">
+      <div class="admin-section-title">
+        <div>
+          <p class="eyebrow">Mantenedor de catálogo</p>
+          <h2 id="inventory-title">Inventario y disponibilidad</h2>
+        </div>
+        <p>Selecciona “Editar” para modificar un juego sin cambiar su imagen ni categoría.</p>
+      </div>
+
+      <div class="admin-layout">
+        <div class="table-wrapper" tabindex="0">
+          <table class="admin-table">
+            <caption>Juegos registrados en el catálogo</caption>
+            <thead>
+              <tr><th scope="col">Juego</th><th scope="col">Precio</th><th scope="col">Disponibilidad</th><th scope="col">Estado</th><th scope="col"><span class="visually-hidden">Acción</span></th></tr>
+            </thead>
+            <tbody id="admin-products-body"></tbody>
+          </table>
+        </div>
+
+        <section class="admin-card" aria-labelledby="product-form-title">
+          <h3 id="product-form-title">Editar juego</h3>
+          <form id="admin-product-form" novalidate>
+            {% csrf_token %}
+            <input type="hidden" id="admin-product-id">
+            <div class="form-group">
+              <label class="form-label" for="admin-product-name">Juego</label>
+              <input class="form-control readonly-field" type="text" id="admin-product-name" readonly>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="admin-product-category">Categoría</label>
+              <input class="form-control readonly-field" type="text" id="admin-product-category" readonly>
+            </div>
+            <div class="row g-3">
+              <div class="form-group col-12 col-sm-6">
+                <label class="form-label" for="admin-product-price">Precio en pesos</label>
+                <input class="form-control" type="number" id="admin-product-price" min="0" step="1" inputmode="numeric" required>
+              </div>
+              <div class="form-group col-12 col-sm-6">
+                <label class="form-label" for="admin-product-stock">Licencias disponibles</label>
+                <input class="form-control" type="number" id="admin-product-stock" min="0" step="1" inputmode="numeric" required>
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="admin-product-active">Estado de publicación</label>
+              <select class="form-select" id="admin-product-active">
+                <option value="true">Publicado</option>
+                <option value="false">Oculto del catálogo</option>
+              </select>
+            </div>
+            <div class="form-actions"><button class="button button-primary" type="submit">Guardar juego</button></div>
+            <p id="product-status" class="form-status" role="status" aria-live="polite" tabindex="-1" hidden></p>
+          </form>
+        </section>
+      </div>
+    </section>
+
+    <section class="admin-section" aria-labelledby="users-title">
+      <div class="admin-section-title">
+        <div>
+          <p class="eyebrow">Mantenedor de usuarios</p>
+          <h2 id="users-title">Roles y estado de cuentas</h2>
+        </div>
+        <p>Las contraseñas no se muestran ni se administran desde esta pantalla.</p>
+      </div>
+
+      <div class="admin-layout">
+        <div class="table-wrapper" tabindex="0">
+          <table class="admin-table">
+            <caption>Usuarios registrados en FreeGames</caption>
+            <thead>
+              <tr><th scope="col">Nombre y correo</th><th scope="col">Usuario</th><th scope="col">Rol</th><th scope="col">Estado</th><th scope="col"><span class="visually-hidden">Acción</span></th></tr>
+            </thead>
+            <tbody id="admin-users-body"></tbody>
+          </table>
+        </div>
+
+        <section class="admin-card" aria-labelledby="user-form-title">
+          <h3 id="user-form-title">Editar cuenta</h3>
+          <form id="admin-user-form" novalidate>
+            {% csrf_token %}
+            <input type="hidden" id="admin-user-id">
+            <div class="form-group">
+              <label class="form-label" for="admin-user-name">Nombre completo</label>
+              <input class="form-control readonly-field" type="text" id="admin-user-name" readonly>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="admin-user-email">Correo electrónico</label>
+              <input class="form-control readonly-field" type="email" id="admin-user-email" readonly>
+            </div>
+            <div class="row g-3">
+              <div class="form-group col-12 col-sm-6">
+                <label class="form-label" for="admin-user-role">Rol</label>
+                <select class="form-select" id="admin-user-role">
+                  <option value="cliente">Cliente</option>
+                  <option value="administrador">Administrador</option>
+                </select>
+              </div>
+              <div class="form-group col-12 col-sm-6">
+                <label class="form-label" for="admin-user-active">Estado</label>
+                <select class="form-select" id="admin-user-active">
+                  <option value="true">Cuenta activa</option>
+                  <option value="false">Cuenta inactiva</option>
+                </select>
+              </div>
+            </div>
+            <div class="form-actions"><button class="button button-primary" type="submit">Guardar cuenta</button></div>
+            <p id="user-status" class="form-status" role="status" aria-live="polite" tabindex="-1" hidden></p>
+          </form>
+        </section>
+      </div>
+    </section>
+  </section>
+</main>
+{% endblock %}

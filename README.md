@@ -1,18 +1,20 @@
 # FreeGames
 
-Proyecto FrontEnd para la asignatura **Programación Web — Experiencia 3**. FreeGames es un catálogo de videojuegos con registro de usuarios, roles, carrito y administración simulada, construido sin backend ni base de datos.
+Proyecto para la asignatura **Programación Web — Experiencia de Aprendizaje 2**. En la semana 4, FreeGames migra su interfaz FrontEnd a Django y conserva de forma temporal los datos demostrativos en el navegador.
 
 ## Cómo ejecutar el proyecto
 
-No requiere instalar dependencias. Abre [index.html](index.html) en un navegador moderno.
-
-Para que el navegador trate todos los archivos como un sitio local, también se puede iniciar un servidor estático desde la carpeta del proyecto:
+Se necesita Python 3.10 o una versión posterior. Desde PowerShell, ejecuta los siguientes comandos en la carpeta del proyecto:
 
 ```powershell
-python -m http.server 8000
+python -m venv .venv
+.\.venv\Scripts\Activate.ps1
+python -m pip install -r requirements.txt
+python manage.py migrate
+python manage.py runserver
 ```
 
-Luego visita `http://localhost:8000`.
+Luego visita `http://127.0.0.1:8000/` en un navegador moderno. Visual Studio Code puede utilizarse para editar el proyecto, pero no es obligatorio.
 
 ## Funcionalidades implementadas
 
@@ -24,22 +26,25 @@ Luego visita `http://localhost:8000`.
 - Carrito con cantidades, total, disponibilidad y compra simulada sin cobro real.
 - Historial de pedidos para el cliente.
 - Panel administrativo para actualizar precio, disponibilidad, publicación, rol y estado de cuentas.
+- Vistas, plantillas y archivos estáticos organizados mediante Django.
 
 ## Rutas principales
 
 | Ruta | Propósito |
 | --- | --- |
-| `index.html` | Página inicial y acceso a categorías. |
-| `registro.html` | Registro de una cuenta de cliente. |
-| `login.html` | Inicio de sesión. |
-| `perfil.html` | Consulta y edición del perfil activo. |
-| `carrito.html` | Carrito y confirmación de una compra simulada. |
-| `mis-compras.html` | Historial exclusivo del rol cliente. |
-| `administracion.html` | Panel exclusivo del rol administrador. |
+| `/` | Página inicial y acceso a categorías. |
+| `/accion/`, `/aventura/`, `/deportes/`, `/carreras/`, `/estrategia/` | Catálogo por categoría. |
+| `/registro/` | Registro de una cuenta de cliente. |
+| `/login/` | Inicio de sesión. |
+| `/recuperar-clave/` | Recuperación simulada de contraseña. |
+| `/perfil/` | Consulta y edición del perfil activo. |
+| `/carrito/` | Carrito y confirmación de una compra simulada. |
+| `/mis-compras/` | Historial exclusivo del rol cliente. |
+| `/administracion/` | Panel exclusivo del rol administrador. |
 
 ## Cuentas de prueba
 
-Estas cuentas existen únicamente para revisar los roles y funcionalidades del FrontEnd. Las credenciales no se muestran dentro del formulario de inicio de sesión.
+Estas cuentas existen únicamente para revisar los roles y funcionalidades del proyecto. Las credenciales no se muestran dentro del formulario de inicio de sesión.
 
 | Rol | Usuario | Contraseña |
 | --- | --- | --- |
@@ -50,34 +55,35 @@ Estas cuentas existen únicamente para revisar los roles y funcionalidades del F
 
 ```text
 FreeGames/
-├── css/
-│   └── style.css              # Estilos, diseño adaptable y estados visuales.
-├── img/                       # Ilustraciones PNG del catálogo.
-├── js/
-│   ├── datos-demo.js          # Usuarios, sesión y almacenamiento simulado.
-│   ├── validaciones.js        # Reglas de validación de formularios.
-│   ├── autenticacion.js       # Inicio de sesión, perfil y navegación por rol.
-│   ├── productos.js           # Catálogo, precios y disponibilidad.
-│   ├── carrito.js             # Carrito y cantidades seleccionadas.
-│   ├── compras.js             # Confirmación e historial de pedidos.
-│   └── administracion.js      # Mantenedores del administrador.
-└── *.html                     # Páginas públicas, de cliente y administración.
+├── freegames/                 # Configuración y rutas principales de Django.
+├── tienda/
+│   ├── static/tienda/
+│   │   ├── css/               # Estilos y diseño adaptable.
+│   │   ├── img/               # Ilustraciones PNG del catálogo.
+│   │   └── js/                # Funcionalidad FrontEnd y datos simulados.
+│   ├── templates/tienda/      # Plantilla base y páginas de la aplicación.
+│   ├── catalogo.py            # Categorías y contenido de presentación.
+│   ├── tests.py               # Pruebas de vistas, rutas y plantillas.
+│   ├── urls.py                # Rutas de la aplicación tienda.
+│   └── views.py               # Vistas que renderizan las plantillas.
+├── manage.py
+└── requirements.txt
 ```
 
-## Consideraciones 
+## Consideraciones
 
-- Los datos se almacenan temporalmente en el navegador mediante `localStorage`; si este no está disponible, se usa memoria mientras la página permanezca abierta.
-- Las contraseñas y la compra son demostrativas. En una versión real, el backend debe autenticar, proteger contraseñas, validar permisos y procesar pagos.
-- WebPay u otro medio de pago no están integrados, el comprobante solo confirma una simulación.
-- Las imágenes del proyecto están en formato PNG y cada imagen relevante incluye texto alternativo.
+- Django entrega las páginas y los recursos estáticos; los usuarios, la sesión, el carrito y las compras todavía se almacenan en `localStorage`.
+- Si `localStorage` no está disponible, se usa memoria mientras la página permanezca abierta.
+- Las contraseñas y la compra son demostrativas. No existe un cobro real ni una integración con WebPay.
 - La interfaz considera navegación por teclado, foco visible, enlace para saltar al contenido y adaptación a móvil, tableta y escritorio.
 
-## Pruebas realizadas
+## Pruebas
 
-- Validación de sintaxis de los archivos JavaScript.
-- Registro, inicio de sesión y recuperación simulada.
-- Restricción de rutas según el rol activo.
-- Agregado de juegos, ajuste de cantidades, stock y compra simulada.
-- Historial de compras del cliente.
-- Edición administrativa de catálogo y cuentas.
-- Revisión de diseño en móvil, tableta y escritorio.
+Para ejecutar la revisión automatizada:
+
+```powershell
+python manage.py check
+python manage.py test tienda
+```
+
+También se revisaron manualmente el registro, la recuperación, los dos roles, las restricciones de acceso, el perfil, el carrito, la compra simulada, el historial y el panel administrativo.

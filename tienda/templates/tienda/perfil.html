@@ -1,0 +1,76 @@
+{% extends 'tienda/base.html' %}
+
+{% block titulo %}Mi perfil | FreeGames{% endblock %}
+{% block descripcion %}Consulta y actualiza los datos de tu perfil en FreeGames.{% endblock %}
+
+{% block contenido %}
+<main class="account-page container" id="contenido-principal">
+  <section class="registration-intro" aria-labelledby="profile-title">
+    <p class="eyebrow">Configuración de cuenta</p>
+    <h1 id="profile-title">Mi perfil</h1>
+    <p>Actualiza tus datos personales. Los cambios se guardan temporalmente en este navegador.</p>
+  </section>
+
+  <section class="access-notice" id="profile-guard" role="status" hidden>
+    <h2>Necesitas iniciar sesión</h2>
+    <p>El perfil solo está disponible para usuarios con una sesión activa.</p>
+    <a class="primary-link" href="{% url 'tienda:login' %}">Ir al inicio de sesión</a>
+  </section>
+
+  <section class="registration-card" id="profile-card" aria-label="Datos del perfil">
+    <form class="registration-form" id="perfil-form" action="#" method="post" hidden novalidate>
+      {% csrf_token %}
+      <fieldset>
+        <legend>Datos personales</legend>
+
+        <div class="row g-4">
+          <div class="form-group col-12">
+            <label class="form-label" for="perfil-nombre-completo">Nombre completo <span aria-hidden="true">*</span></label>
+            <input class="form-control" type="text" id="perfil-nombre-completo" name="nombre_completo" autocomplete="name" minlength="3" maxlength="60" aria-describedby="error-perfil-nombre-completo" aria-errormessage="error-perfil-nombre-completo" required>
+            <small class="field-error" id="error-perfil-nombre-completo" aria-live="polite"></small>
+          </div>
+
+          <div class="form-group col-12 col-md-6">
+            <label class="form-label" for="perfil-nombre-usuario">Nombre de usuario <span aria-hidden="true">*</span></label>
+            <input class="form-control" type="text" id="perfil-nombre-usuario" name="nombre_usuario" autocomplete="username" minlength="4" maxlength="16" aria-describedby="ayuda-perfil-usuario error-perfil-nombre-usuario" aria-errormessage="error-perfil-nombre-usuario" required>
+            <small class="field-hint" id="ayuda-perfil-usuario">Usa entre 4 y 16 caracteres, sin espacios.</small>
+            <small class="field-error" id="error-perfil-nombre-usuario" aria-live="polite"></small>
+          </div>
+
+          <div class="form-group col-12 col-md-6">
+            <label class="form-label" for="perfil-correo">Correo electrónico <span aria-hidden="true">*</span></label>
+            <input class="form-control" type="email" id="perfil-correo" name="correo" autocomplete="email" maxlength="100" aria-describedby="error-perfil-correo" aria-errormessage="error-perfil-correo" required>
+            <small class="field-error" id="error-perfil-correo" aria-live="polite"></small>
+          </div>
+
+          <div class="form-group col-12 col-md-6">
+            <label class="form-label" for="perfil-fecha-nacimiento">Fecha de nacimiento <span aria-hidden="true">*</span></label>
+            <input class="form-control" type="date" id="perfil-fecha-nacimiento" name="fecha_nacimiento" autocomplete="bday" aria-describedby="error-perfil-fecha-nacimiento" aria-errormessage="error-perfil-fecha-nacimiento" required>
+            <small class="field-error" id="error-perfil-fecha-nacimiento" aria-live="polite"></small>
+          </div>
+
+          <div class="form-group col-12 col-md-6">
+            <label class="form-label" for="perfil-rol">Tipo de usuario</label>
+            <input class="form-control readonly-field" type="text" id="perfil-rol" name="rol" readonly aria-describedby="ayuda-perfil-rol">
+            <small class="field-hint" id="ayuda-perfil-rol">El rol solo podrá modificarse desde la administración.</small>
+          </div>
+
+          <div class="form-group col-12">
+            <label class="form-label" for="perfil-direccion">Dirección de despacho <span class="optional">(opcional)</span></label>
+            <textarea class="form-control" id="perfil-direccion" name="direccion" rows="3" maxlength="160" autocomplete="street-address" aria-describedby="ayuda-perfil-direccion error-perfil-direccion" aria-errormessage="error-perfil-direccion"></textarea>
+            <small class="field-hint" id="ayuda-perfil-direccion">Si la completas, utiliza al menos 10 caracteres.</small>
+            <small class="field-error" id="error-perfil-direccion" aria-live="polite"></small>
+          </div>
+        </div>
+      </fieldset>
+
+      <div class="form-actions">
+        <button class="button button-primary btn btn-primary" type="submit">Guardar cambios</button>
+        <button class="button button-secondary btn btn-outline-light" type="reset">Restablecer datos</button>
+      </div>
+
+      <p class="form-status" id="form-status" role="status" aria-live="polite" tabindex="-1" hidden></p>
+    </form>
+  </section>
+</main>
+{% endblock %}

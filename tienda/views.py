@@ -28,11 +28,57 @@ def categoria(request, slug):
     return render(request, 'tienda/categoria.html', contexto)
 
 
-def pagina_pendiente(request, nombre, seccion):
-    """Mantiene navegables las rutas que serán migradas en la Parte 3."""
-    contexto = {
-        'titulo': nombre,
+def registro(request):
+    return render(request, 'tienda/registro.html', {
         'encabezado_compacto': True,
-        'seccion_activa': seccion,
-    }
-    return render(request, 'tienda/migracion_pendiente.html', contexto)
+        'seccion_activa': 'registro',
+    })
+
+
+def login(request):
+    return render(request, 'tienda/login.html', {
+        'encabezado_compacto': True,
+        'seccion_activa': 'login',
+    })
+
+
+def recuperar_clave(request):
+    return render(request, 'tienda/recuperar_clave.html', {
+        'encabezado_compacto': True,
+        'seccion_activa': 'recuperar_clave',
+    })
+
+
+def perfil(request):
+    return render(request, 'tienda/perfil.html', {
+        'encabezado_compacto': True,
+        'seccion_activa': 'perfil',
+    })
+
+
+def carrito(request):
+    return render(request, 'tienda/carrito.html', {
+        'encabezado_compacto': True,
+        'seccion_activa': 'carrito',
+    })
+
+
+def compra_exitosa(request):
+    return render(request, 'tienda/compra_exitosa.html', {
+        'encabezado_compacto': True,
+        'seccion_activa': 'compra_exitosa',
+    })
+
+
+def mis_compras(request):
+    return render(request, 'tienda/mis_compras.html', {
+        'encabezado_compacto': True,
+        'seccion_activa': 'mis_compras',
+    })
+
+
+def administracion(request):
+    return render(request, 'tienda/administracion.html', {
+        'encabezado_compacto': True,
+        'seccion_activa': 'administracion',
+    })
