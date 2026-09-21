@@ -10,53 +10,111 @@
 
   const CLAVE_PRODUCTOS = 'freegames_productos';
   const rutaEstatica = window.FreeGamesConfig?.staticBase ?? '/static/tienda/';
+  const CATEGORIAS = Object.freeze({
+    accion: Object.freeze({ slug: 'accion', nombre: 'Acción', imagen: `${rutaEstatica}img/accion.png` }),
+    aventura: Object.freeze({ slug: 'aventura', nombre: 'Aventura', imagen: `${rutaEstatica}img/aventura.png` }),
+    deportes: Object.freeze({ slug: 'deportes', nombre: 'Deportes', imagen: `${rutaEstatica}img/deportes.png` }),
+    carreras: Object.freeze({ slug: 'carreras', nombre: 'Carreras', imagen: `${rutaEstatica}img/carreras.png` }),
+    estrategia: Object.freeze({ slug: 'estrategia', nombre: 'Estrategia', imagen: `${rutaEstatica}img/estrategia.png` })
+  });
 
-  // El catálogo queda centralizado para que las tarjetas, el carrito y las compras usen la misma información.
+  // La descripción y la categoría permiten reconstruir el catálogo con los cambios del mantenedor.
   const PRODUCTOS_BASE = Object.freeze([
-    { id: 'call-of-duty', nombre: 'Call of Duty', categoria: 'Acción', precio: 19990, imagen: `${rutaEstatica}img/accion.png`, stock: 12, activo: true },
-    { id: 'gta-v', nombre: 'Grand Theft Auto V', categoria: 'Acción', precio: 14990, imagen: `${rutaEstatica}img/gta-v.png`, stock: 8, activo: true },
-    { id: 'valorant', nombre: 'Valorant', categoria: 'Acción', precio: 0, imagen: `${rutaEstatica}img/valorant.png`, stock: 50, activo: true },
-    { id: 'pokemon', nombre: 'Pokémon', categoria: 'Aventura', precio: 24990, imagen: `${rutaEstatica}img/aventura.png`, stock: 7, activo: true },
-    { id: 'dungeon-quest', nombre: 'Dungeon Quest', categoria: 'Aventura', precio: 0, imagen: `${rutaEstatica}img/dungeon-quest.png`, stock: 25, activo: true },
-    { id: 'zelda', nombre: 'The Legend of Zelda', categoria: 'Aventura', precio: 29990, imagen: `${rutaEstatica}img/zelda.png`, stock: 5, activo: true },
-    { id: 'ping-pong', nombre: 'Ping Pong', categoria: 'Deportes', precio: 8990, imagen: `${rutaEstatica}img/deportes.png`, stock: 14, activo: true },
-    { id: 'ea-sports-fc', nombre: 'EA Sports FC', categoria: 'Deportes', precio: 27990, imagen: `${rutaEstatica}img/ea-sports-fc.png`, stock: 6, activo: true },
-    { id: 'rocket-league', nombre: 'Rocket League', categoria: 'Deportes', precio: 0, imagen: `${rutaEstatica}img/rocket-league.png`, stock: 30, activo: true },
-    { id: 'need-for-speed', nombre: 'Need for Speed', categoria: 'Carreras', precio: 17990, imagen: `${rutaEstatica}img/carreras.png`, stock: 9, activo: true },
-    { id: 'forza-horizon', nombre: 'Forza Horizon', categoria: 'Carreras', precio: 32990, imagen: `${rutaEstatica}img/forza-horizon.png`, stock: 4, activo: true },
-    { id: 'trackmania', nombre: 'Trackmania', categoria: 'Carreras', precio: 0, imagen: `${rutaEstatica}img/trackmania.png`, stock: 40, activo: true },
-    { id: 'damas', nombre: 'Damas (Checkers)', categoria: 'Estrategia', precio: 4990, imagen: `${rutaEstatica}img/estrategia.png`, stock: 18, activo: true },
-    { id: 'ajedrez-online', nombre: 'Ajedrez Online', categoria: 'Estrategia', precio: 0, imagen: `${rutaEstatica}img/ajedrez-online.png`, stock: 45, activo: true },
-    { id: 'age-of-empires', nombre: 'Age of Empires', categoria: 'Estrategia', precio: 19990, imagen: `${rutaEstatica}img/age-of-empires.png`, stock: 7, activo: true }
+    { id: 'call-of-duty', nombre: 'Call of Duty', categoriaSlug: 'accion', precio: 19990, imagen: `${rutaEstatica}img/accion.png`, stock: 12, activo: true, descripcion: 'Entra en intensas misiones tácticas donde la rapidez, la precisión y el trabajo en equipo deciden cada combate.' },
+    { id: 'gta-v', nombre: 'Grand Theft Auto V', categoriaSlug: 'accion', precio: 14990, imagen: `${rutaEstatica}img/gta-v.png`, stock: 8, activo: true, descripcion: 'Explora una ciudad abierta, completa misiones y conduce vehículos en una aventura urbana llena de posibilidades.' },
+    { id: 'valorant', nombre: 'Valorant', categoriaSlug: 'accion', precio: 0, imagen: `${rutaEstatica}img/valorant.png`, stock: 50, activo: true, descripcion: 'Combina precisión táctica y habilidades especiales en partidas competitivas por equipos.' },
+    { id: 'pokemon', nombre: 'Pokémon', categoriaSlug: 'aventura', precio: 24990, imagen: `${rutaEstatica}img/aventura.png`, stock: 7, activo: true, descripcion: 'Recorre regiones llenas de sorpresas, conoce criaturas extraordinarias y vive una aventura donde cada encuentro cuenta.' },
+    { id: 'dungeon-quest', nombre: 'Dungeon Quest', categoriaSlug: 'aventura', precio: 0, imagen: `${rutaEstatica}img/dungeon-quest.png`, stock: 25, activo: true, descripcion: 'Explora mazmorras, encuentra tesoros y mejora a tu héroe mientras descubres secretos bajo tierra.' },
+    { id: 'zelda', nombre: 'The Legend of Zelda', categoriaSlug: 'aventura', precio: 29990, imagen: `${rutaEstatica}img/zelda.png`, stock: 5, activo: true, descripcion: 'Recorre un reino abierto, resuelve antiguos acertijos y enfréntate a desafíos en una travesía legendaria.' },
+    { id: 'ping-pong', nombre: 'Ping Pong', categoriaSlug: 'deportes', precio: 8990, imagen: `${rutaEstatica}img/deportes.png`, stock: 14, activo: true, descripcion: 'Domina el saque, responde con efecto y reta a tus rivales en partidos rápidos de tenis de mesa.' },
+    { id: 'ea-sports-fc', nombre: 'EA Sports FC', categoriaSlug: 'deportes', precio: 27990, imagen: `${rutaEstatica}img/ea-sports-fc.png`, stock: 6, activo: true, descripcion: 'Forma tu equipo, compite en grandes estadios y disfruta partidos de fútbol con ritmo profesional.' },
+    { id: 'rocket-league', nombre: 'Rocket League', categoriaSlug: 'deportes', precio: 0, imagen: `${rutaEstatica}img/rocket-league.png`, stock: 30, activo: true, descripcion: 'Combina fútbol y vehículos acrobáticos en encuentros rápidos donde cada salto puede cambiar el marcador.' },
+    { id: 'need-for-speed', nombre: 'Need for Speed', categoriaSlug: 'carreras', precio: 17990, imagen: `${rutaEstatica}img/carreras.png`, stock: 9, activo: true, descripcion: 'Acelera por calles iluminadas, mejora tu vehículo y demuestra quién domina las carreras urbanas.' },
+    { id: 'forza-horizon', nombre: 'Forza Horizon', categoriaSlug: 'carreras', precio: 32990, imagen: `${rutaEstatica}img/forza-horizon.png`, stock: 4, activo: true, descripcion: 'Conduce por paisajes abiertos, participa en festivales y colecciona vehículos de alto rendimiento.' },
+    { id: 'trackmania', nombre: 'Trackmania', categoriaSlug: 'carreras', precio: 0, imagen: `${rutaEstatica}img/trackmania.png`, stock: 40, activo: true, descripcion: 'Supera circuitos imposibles, mejora tus tiempos y compite contra jugadores de todo el mundo.' },
+    { id: 'damas', nombre: 'Damas (Checkers)', categoriaSlug: 'estrategia', precio: 4990, imagen: `${rutaEstatica}img/estrategia.png`, stock: 18, activo: true, descripcion: 'Anticipa a tu rival, protege tus fichas y conquista el tablero en este clásico desafío de estrategia.' },
+    { id: 'ajedrez-online', nombre: 'Ajedrez Online', categoriaSlug: 'estrategia', precio: 0, imagen: `${rutaEstatica}img/ajedrez-online.png`, stock: 45, activo: true, descripcion: 'Planea cada movimiento, practica aperturas y desafía a rivales en partidas de distintos ritmos.' },
+    { id: 'age-of-empires', nombre: 'Age of Empires', categoriaSlug: 'estrategia', precio: 19990, imagen: `${rutaEstatica}img/age-of-empires.png`, stock: 7, activo: true, descripcion: 'Construye tu civilización, administra recursos y dirige ejércitos en batallas históricas de estrategia en tiempo real.' }
   ]);
 
   function copiar(valor) {
     return JSON.parse(JSON.stringify(valor));
   }
 
+  function normalizar(valor) {
+    return String(valor ?? '').trim().toLocaleLowerCase('es');
+  }
+
+  function obtenerCategoria(slug) {
+    return CATEGORIAS[String(slug ?? '').trim().toLocaleLowerCase('es')] ?? null;
+  }
+
+  function inferirCategoriaSlug(nombre) {
+    const valor = normalizar(nombre);
+    return Object.values(CATEGORIAS).find((categoria) => normalizar(categoria.nombre) === valor)?.slug ?? '';
+  }
+
+  function enteroNoNegativo(valor) {
+    const numero = Number(valor);
+    return Number.isInteger(numero) && numero >= 0 ? numero : null;
+  }
+
+  function normalizarProductoGuardado(producto, productoBase = null) {
+    const categoriaSlug = obtenerCategoria(producto?.categoriaSlug)?.slug
+      || inferirCategoriaSlug(producto?.categoria)
+      || productoBase?.categoriaSlug;
+    const categoria = obtenerCategoria(categoriaSlug);
+    const nombre = String(producto?.nombre ?? productoBase?.nombre ?? '').trim();
+    const descripcion = String(producto?.descripcion ?? productoBase?.descripcion ?? '').trim();
+    const precio = enteroNoNegativo(producto?.precio ?? productoBase?.precio);
+    const stock = enteroNoNegativo(producto?.stock ?? productoBase?.stock);
+
+    if (!producto?.id || !categoria || nombre.length < 2 || !descripcion || precio === null || stock === null) {
+      return null;
+    }
+
+    const usaImagenCategoria = producto?.usaImagenCategoria === true || (!productoBase && !producto?.imagen);
+    const imagen = usaImagenCategoria
+      ? categoria.imagen
+      : String(producto?.imagen ?? productoBase?.imagen ?? categoria.imagen);
+
+    return {
+      id: String(producto.id),
+      nombre,
+      categoriaSlug: categoria.slug,
+      categoria: categoria.nombre,
+      descripcion,
+      precio,
+      imagen,
+      imagenAlt: String(producto?.imagenAlt ?? `Portada de ${nombre}`),
+      stock,
+      activo: producto?.activo !== false,
+      personalizado: producto?.personalizado === true || !productoBase,
+      usaImagenCategoria
+    };
+  }
+
   function inicializarProductos() {
     const guardados = almacenamiento.leer(CLAVE_PRODUCTOS, []);
-    const productos = Array.isArray(guardados) ? guardados : [];
+    const productosGuardados = Array.isArray(guardados) ? guardados : [];
+    const productos = [];
 
     PRODUCTOS_BASE.forEach((productoBase) => {
-      const productoGuardado = productos.find((producto) => producto.id === productoBase.id);
+      const productoGuardado = productosGuardados.find((producto) => producto.id === productoBase.id);
+      const normalizado = normalizarProductoGuardado(
+        productoGuardado ?? { ...productoBase, personalizado: false, usaImagenCategoria: false },
+        productoBase
+      );
 
-      if (!productoGuardado) {
-        productos.push(copiar(productoBase));
-        return;
-      }
-
-      // Nombre, precio e imagen vienen del catálogo; el stock se conserva entre visitas.
-      productoGuardado.nombre = productoBase.nombre;
-      productoGuardado.categoria = productoBase.categoria;
-      productoGuardado.precio = productoBase.precio;
-      productoGuardado.imagen = productoBase.imagen;
-      productoGuardado.activo = productoGuardado.activo !== false;
-
-      if (!Number.isInteger(productoGuardado.stock) || productoGuardado.stock < 0) {
-        productoGuardado.stock = productoBase.stock;
-      }
+      if (normalizado) productos.push(normalizado);
     });
+
+    productosGuardados
+      .filter((producto) => !PRODUCTOS_BASE.some((productoBase) => productoBase.id === producto.id))
+      .forEach((producto) => {
+        const normalizado = normalizarProductoGuardado(producto);
+        if (normalizado) productos.push(normalizado);
+      });
 
     almacenamiento.guardar(CLAVE_PRODUCTOS, productos);
     return productos;
@@ -70,15 +128,90 @@
     return listar().find((producto) => producto.id === id) ?? null;
   }
 
-  function actualizarStock(id, nuevoStock) {
-    const productos = listar();
-    const posicion = productos.findIndex((producto) => producto.id === id);
+  function existeNombre(nombre, idExcluido = '') {
+    const valorBuscado = normalizar(nombre);
+    return listar().some((producto) => producto.id !== idExcluido && normalizar(producto.nombre) === valorBuscado);
+  }
 
-    if (posicion === -1 || !Number.isInteger(nuevoStock) || nuevoStock < 0) {
+  function generarId(nombre) {
+    const base = normalizar(nombre)
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-|-$/g, '') || 'juego';
+    let id = `juego-${base}`;
+    let correlativo = 2;
+
+    while (buscar(id)) {
+      id = `juego-${base}-${correlativo}`;
+      correlativo += 1;
+    }
+
+    return id;
+  }
+
+  function validarDatosProducto(datos, idExcluido = '') {
+    const nombre = String(datos?.nombre ?? '').trim();
+    const descripcion = String(datos?.descripcion ?? '').trim();
+    const categoria = obtenerCategoria(datos?.categoriaSlug);
+    const precio = enteroNoNegativo(datos?.precio);
+    const stock = enteroNoNegativo(datos?.stock);
+
+    if (
+      nombre.length < 2
+      || nombre.length > 60
+      || descripcion.length < 10
+      || descripcion.length > 220
+      || !categoria
+      || precio === null
+      || stock === null
+      || typeof datos?.activo !== 'boolean'
+      || existeNombre(nombre, idExcluido)
+    ) {
       return null;
     }
 
-    productos[posicion].stock = nuevoStock;
+    return { nombre, descripcion, categoria, precio, stock, activo: datos.activo };
+  }
+
+  function crearProducto(datos) {
+    const valores = validarDatosProducto(datos);
+
+    if (!valores) {
+      return null;
+    }
+
+    const productos = listar();
+    const producto = {
+      id: generarId(valores.nombre),
+      nombre: valores.nombre,
+      categoriaSlug: valores.categoria.slug,
+      categoria: valores.categoria.nombre,
+      descripcion: valores.descripcion,
+      precio: valores.precio,
+      imagen: valores.categoria.imagen,
+      imagenAlt: `Imagen representativa de ${valores.nombre}`,
+      stock: valores.stock,
+      activo: valores.activo,
+      personalizado: true,
+      usaImagenCategoria: true
+    };
+
+    productos.push(producto);
+    almacenamiento.guardar(CLAVE_PRODUCTOS, productos);
+    return copiar(producto);
+  }
+
+  function actualizarStock(id, nuevoStock) {
+    const productos = listar();
+    const posicion = productos.findIndex((producto) => producto.id === id);
+    const stock = enteroNoNegativo(nuevoStock);
+
+    if (posicion === -1 || stock === null) {
+      return null;
+    }
+
+    productos[posicion].stock = stock;
     almacenamiento.guardar(CLAVE_PRODUCTOS, productos);
     return copiar(productos[posicion]);
   }
@@ -86,30 +219,45 @@
   function actualizarProducto(id, cambios) {
     const productos = listar();
     const posicion = productos.findIndex((producto) => producto.id === id);
-    const precio = Number(cambios.precio);
-    const stock = Number(cambios.stock);
+    const valores = validarDatosProducto(cambios, id);
 
-    // El mantenedor solo acepta valores numéricos que tengan sentido para el catálogo.
-    if (
-      posicion === -1
-      || !Number.isInteger(precio)
-      || precio < 0
-      || !Number.isInteger(stock)
-      || stock < 0
-      || typeof cambios.activo !== 'boolean'
-    ) {
+    if (posicion === -1 || !valores) {
       return null;
     }
 
+    const productoAnterior = productos[posicion];
     productos[posicion] = {
-      ...productos[posicion],
-      precio,
-      stock,
-      activo: cambios.activo
+      ...productoAnterior,
+      nombre: valores.nombre,
+      categoriaSlug: valores.categoria.slug,
+      categoria: valores.categoria.nombre,
+      descripcion: valores.descripcion,
+      precio: valores.precio,
+      stock: valores.stock,
+      activo: valores.activo,
+      imagen: productoAnterior.usaImagenCategoria ? valores.categoria.imagen : productoAnterior.imagen,
+      imagenAlt: `Portada de ${valores.nombre}`
     };
 
     almacenamiento.guardar(CLAVE_PRODUCTOS, productos);
     return copiar(productos[posicion]);
+  }
+
+  function cambiarEstadoProducto(id, activo) {
+    const productos = listar();
+    const posicion = productos.findIndex((producto) => producto.id === id);
+
+    if (posicion === -1 || typeof activo !== 'boolean') {
+      return null;
+    }
+
+    productos[posicion].activo = activo;
+    almacenamiento.guardar(CLAVE_PRODUCTOS, productos);
+    return copiar(productos[posicion]);
+  }
+
+  function listarCategorias() {
+    return copiar(Object.values(CATEGORIAS));
   }
 
   function formatearPrecio(precio) {
@@ -117,7 +265,11 @@
   }
 
   function textoStock(producto) {
-    if (!producto.activo || producto.stock === 0) {
+    if (!producto.activo) {
+      return 'Oculto del catálogo';
+    }
+
+    if (producto.stock === 0) {
       return 'Agotado';
     }
 
@@ -129,8 +281,12 @@
   window.FreeGamesProducts = Object.freeze({
     listar,
     buscar,
+    existeNombre,
+    crearProducto,
     actualizarStock,
     actualizarProducto,
+    cambiarEstadoProducto,
+    listarCategorias,
     formatearPrecio,
     textoStock
   });

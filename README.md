@@ -25,7 +25,7 @@ Luego visita `http://127.0.0.1:8000/` en un navegador moderno. Visual Studio Cod
 - Roles de **cliente** y **administrador** con vistas y permisos diferentes.
 - Carrito con cantidades, total, disponibilidad y compra simulada sin cobro real.
 - Historial de pedidos para el cliente.
-- Panel administrativo para actualizar precio, disponibilidad, publicación, rol y estado de cuentas.
+- Panel administrativo para registrar y modificar juegos, controlar su publicación y administrar roles y estados de cuentas.
 - Vistas, plantillas y archivos estáticos organizados mediante Django.
 
 ## Rutas principales
@@ -73,6 +73,7 @@ FreeGames/
 ## Consideraciones
 
 - Django entrega las páginas y los recursos estáticos; los usuarios, la sesión, el carrito y las compras todavía se almacenan en `localStorage`.
+- Los juegos creados desde el mantenedor usan la imagen representativa de la categoría seleccionada.
 - Si `localStorage` no está disponible, se usa memoria mientras la página permanezca abierta.
 - Las contraseñas y la compra son demostrativas. No existe un cobro real ni una integración con WebPay.
 - La interfaz considera navegación por teclado, foco visible, enlace para saltar al contenido y adaptación a móvil, tableta y escritorio.

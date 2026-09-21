@@ -16,7 +16,7 @@
 
     <section aria-labelledby="games-title">
       <h2 id="games-title" class="section-title">Juegos disponibles</h2>
-      <div class="games-grid">
+      <div class="games-grid" data-products-grid>
         {% for juego in categoria.juegos %}
           <article class="game-card" data-product-id="{{ juego.id }}">
             <img src="{% static juego.imagen %}" alt="{{ juego.imagen_alt }}">

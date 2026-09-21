@@ -54,12 +54,12 @@
     const usuarios = datos.listarUsuarios();
     const pedidos = compras.listar();
     const disponibles = inventario.filter((producto) => producto.activo && producto.stock > 0).length;
-    const agotados = inventario.filter((producto) => !producto.activo || producto.stock === 0).length;
+    const noDisponibles = inventario.filter((producto) => !producto.activo || producto.stock === 0).length;
     const clientes = usuarios.filter((usuario) => usuario.rol === 'cliente' && usuario.activo).length;
     const ventas = pedidos.reduce((total, pedido) => total + pedido.total, 0);
 
     document.querySelector('#admin-summary').innerHTML = `
-      <article class="admin-metric"><span>Juegos disponibles</span><strong>${disponibles}</strong><small>${agotados} sin disponibilidad</small></article>
+      <article class="admin-metric"><span>Juegos disponibles</span><strong>${disponibles}</strong><small>${noDisponibles} sin disponibilidad</small></article>
       <article class="admin-metric"><span>Clientes activos</span><strong>${clientes}</strong><small>${usuarios.length} cuentas registradas</small></article>
       <article class="admin-metric"><span>Pedidos simulados</span><strong>${pedidos.length}</strong><small>Compras confirmadas</small></article>
       <article class="admin-metric"><span>Total simulado</span><strong>${productos.formatearPrecio(ventas)}</strong><small>Sin medio de pago real</small></article>
@@ -73,15 +73,27 @@
       return;
     }
 
-    cuerpo.innerHTML = productos.listar().map((producto) => `
-      <tr>
-        <td><strong>${escaparHTML(producto.nombre)}</strong><small>${escaparHTML(producto.categoria)}</small></td>
-        <td>${productos.formatearPrecio(producto.precio)}</td>
-        <td>${producto.stock}</td>
-        <td><span class="status-badge ${producto.activo && producto.stock > 0 ? 'available' : 'unavailable'}">${producto.activo && producto.stock > 0 ? 'Disponible' : 'No disponible'}</span></td>
-        <td><button class="table-action" type="button" data-edit-product="${producto.id}">Editar</button></td>
-      </tr>
-    `).join('');
+    cuerpo.innerHTML = productos.listar().map((producto) => {
+      const publicado = producto.activo && producto.stock > 0;
+      const estado = producto.activo ? (producto.stock > 0 ? 'Publicado' : 'Sin stock') : 'Oculto';
+      const accionEstado = producto.activo ? 'Quitar' : 'Publicar';
+      const claseEstado = producto.activo ? 'danger' : 'restore';
+
+      return `
+        <tr>
+          <td><strong>${escaparHTML(producto.nombre)}</strong><small>${escaparHTML(producto.categoria)}</small></td>
+          <td>${productos.formatearPrecio(producto.precio)}</td>
+          <td>${producto.stock}</td>
+          <td><span class="status-badge ${publicado ? 'available' : 'unavailable'}">${estado}</span></td>
+          <td>
+            <div class="table-actions">
+              <button class="table-action" type="button" data-edit-product="${escaparHTML(producto.id)}">Editar</button>
+              <button class="table-action ${claseEstado}" type="button" data-toggle-product="${escaparHTML(producto.id)}" data-next-active="${!producto.activo}">${accionEstado}</button>
+            </div>
+          </td>
+        </tr>
+      `;
+    }).join('');
   }
 
   function renderizarUsuarios() {
@@ -97,9 +109,38 @@
         <td>${escaparHTML(usuario.nombreUsuario)}</td>
         <td>${nombreRol(usuario.rol)}</td>
         <td><span class="status-badge ${usuario.activo ? 'available' : 'unavailable'}">${usuario.activo ? 'Activa' : 'Inactiva'}</span></td>
-        <td><button class="table-action" type="button" data-edit-user="${usuario.id}">Editar</button></td>
+        <td><button class="table-action" type="button" data-edit-user="${escaparHTML(usuario.id)}">Editar</button></td>
       </tr>
     `).join('');
+  }
+
+  function obtenerCamposProducto() {
+    return {
+      id: document.querySelector('#admin-product-id'),
+      nombre: document.querySelector('#admin-product-name'),
+      categoria: document.querySelector('#admin-product-category'),
+      descripcion: document.querySelector('#admin-product-description'),
+      precio: document.querySelector('#admin-product-price'),
+      stock: document.querySelector('#admin-product-stock'),
+      activo: document.querySelector('#admin-product-active')
+    };
+  }
+
+  function prepararNuevoProducto(enfocar = true) {
+    const formulario = document.querySelector('#admin-product-form');
+    const campos = obtenerCamposProducto();
+
+    formulario.reset();
+    campos.id.value = '';
+    campos.categoria.value = 'accion';
+    campos.precio.value = '0';
+    campos.stock.value = '0';
+    campos.activo.value = 'true';
+    document.querySelector('#product-form-title').textContent = 'Registrar juego';
+    document.querySelector('#admin-product-submit').textContent = 'Registrar juego';
+    document.querySelector('[data-action="cancel-product-edit"]').hidden = true;
+    limpiarEstado('#product-status');
+    if (enfocar) campos.nombre.focus();
   }
 
   function cargarProducto(id) {
@@ -109,14 +150,19 @@
       return;
     }
 
-    document.querySelector('#admin-product-id').value = producto.id;
-    document.querySelector('#admin-product-name').value = producto.nombre;
-    document.querySelector('#admin-product-category').value = producto.categoria;
-    document.querySelector('#admin-product-price').value = producto.precio;
-    document.querySelector('#admin-product-stock').value = producto.stock;
-    document.querySelector('#admin-product-active').value = String(producto.activo);
+    const campos = obtenerCamposProducto();
+    campos.id.value = producto.id;
+    campos.nombre.value = producto.nombre;
+    campos.categoria.value = producto.categoriaSlug;
+    campos.descripcion.value = producto.descripcion;
+    campos.precio.value = producto.precio;
+    campos.stock.value = producto.stock;
+    campos.activo.value = String(producto.activo);
+    document.querySelector('#product-form-title').textContent = 'Editar juego';
+    document.querySelector('#admin-product-submit').textContent = 'Guardar cambios';
+    document.querySelector('[data-action="cancel-product-edit"]').hidden = false;
     limpiarEstado('#product-status');
-    document.querySelector('#admin-product-name').focus();
+    campos.nombre.focus();
   }
 
   function cargarUsuario(id) {
@@ -139,45 +185,123 @@
     return /^\d+$/.test(campo.value.trim()) ? Number.parseInt(campo.value, 10) : Number.NaN;
   }
 
+  function leerFormularioProducto() {
+    const campos = obtenerCamposProducto();
+    return {
+      id: campos.id.value,
+      nombre: campos.nombre.value.trim(),
+      categoriaSlug: campos.categoria.value,
+      descripcion: campos.descripcion.value.trim(),
+      precio: valorEntero(campos.precio),
+      stock: valorEntero(campos.stock),
+      activo: campos.activo.value === 'true'
+    };
+  }
+
+  function validarFormularioProducto(valores) {
+    if (valores.nombre.length < 2 || valores.nombre.length > 60) {
+      return 'El nombre debe tener entre 2 y 60 caracteres.';
+    }
+
+    if (productos.existeNombre(valores.nombre, valores.id)) {
+      return 'Ya existe un juego registrado con ese nombre.';
+    }
+
+    if (valores.descripcion.length < 10 || valores.descripcion.length > 220) {
+      return 'La descripción debe tener entre 10 y 220 caracteres.';
+    }
+
+    if (!productos.listarCategorias().some((categoria) => categoria.slug === valores.categoriaSlug)) {
+      return 'Selecciona una categoría válida.';
+    }
+
+    if (!Number.isInteger(valores.precio) || valores.precio < 0 || !Number.isInteger(valores.stock) || valores.stock < 0) {
+      return 'Precio y disponibilidad deben ser números enteros iguales o mayores que cero.';
+    }
+
+    return '';
+  }
+
   function conectarMantenedorProductos() {
     const formulario = document.querySelector('#admin-product-form');
     const tabla = document.querySelector('#admin-products-body');
+    const botonNuevo = document.querySelector('[data-action="new-product"]');
+    const botonCancelar = document.querySelector('[data-action="cancel-product-edit"]');
 
-    if (!formulario || !tabla) {
+    if (!formulario || !tabla || !botonNuevo || !botonCancelar) {
       return;
     }
 
+    botonNuevo.addEventListener('click', () => prepararNuevoProducto());
+    botonCancelar.addEventListener('click', () => prepararNuevoProducto());
+
     tabla.addEventListener('click', (evento) => {
-      const boton = evento.target.closest('[data-edit-product]');
-      if (boton) cargarProducto(boton.dataset.editProduct);
+      const botonEditar = evento.target.closest('[data-edit-product]');
+      const botonEstado = evento.target.closest('[data-toggle-product]');
+
+      if (botonEditar) {
+        cargarProducto(botonEditar.dataset.editProduct);
+        return;
+      }
+
+      if (!botonEstado) {
+        return;
+      }
+
+      const activo = botonEstado.dataset.nextActive === 'true';
+      const producto = productos.cambiarEstadoProducto(botonEstado.dataset.toggleProduct, activo);
+
+      if (!producto) {
+        mostrarEstado('#product-status', 'No fue posible cambiar la publicación del juego.', 'error');
+        return;
+      }
+
+      renderizarResumen();
+      renderizarProductos();
+
+      if (document.querySelector('#admin-product-id').value === producto.id) {
+        document.querySelector('#admin-product-active').value = String(producto.activo);
+      }
+
+      mostrarEstado(
+        '#product-status',
+        producto.activo ? `${producto.nombre} volvió a publicarse.` : `${producto.nombre} fue quitado del catálogo.`,
+        'success'
+      );
     });
 
     formulario.addEventListener('submit', (evento) => {
       evento.preventDefault();
       limpiarEstado('#product-status');
 
-      const precio = valorEntero(document.querySelector('#admin-product-price'));
-      const stock = valorEntero(document.querySelector('#admin-product-stock'));
+      const valores = leerFormularioProducto();
+      const error = validarFormularioProducto(valores);
 
-      if (!Number.isInteger(precio) || precio < 0 || !Number.isInteger(stock) || stock < 0) {
-        mostrarEstado('#product-status', 'Precio y disponibilidad deben ser números enteros iguales o mayores que cero.', 'error');
+      if (error) {
+        mostrarEstado('#product-status', error, 'error');
         return;
       }
 
-      const producto = productos.actualizarProducto(document.querySelector('#admin-product-id').value, {
-        precio,
-        stock,
-        activo: document.querySelector('#admin-product-active').value === 'true'
-      });
+      const esEdicion = Boolean(valores.id);
+      const producto = esEdicion
+        ? productos.actualizarProducto(valores.id, valores)
+        : productos.crearProducto(valores);
 
       if (!producto) {
-        mostrarEstado('#product-status', 'No fue posible actualizar este juego. Revisa los valores ingresados.', 'error');
+        mostrarEstado('#product-status', 'No fue posible guardar el juego. Revisa los valores ingresados.', 'error');
         return;
       }
 
       renderizarResumen();
       renderizarProductos();
-      mostrarEstado('#product-status', `${producto.nombre} fue actualizado correctamente.`, 'success');
+
+      if (esEdicion) {
+        cargarProducto(producto.id);
+        mostrarEstado('#product-status', `${producto.nombre} fue actualizado correctamente.`, 'success');
+      } else {
+        prepararNuevoProducto();
+        mostrarEstado('#product-status', `${producto.nombre} fue registrado correctamente.`, 'success');
+      }
     });
   }
 
@@ -202,7 +326,6 @@
       const rol = document.querySelector('#admin-user-role').value;
       const activo = document.querySelector('#admin-user-active').value === 'true';
 
-      // Evita que el único administrador de la sesión se quite permisos por accidente.
       if (id === sesion.usuario.id && (rol !== 'administrador' || !activo)) {
         mostrarEstado('#user-status', 'No puedes cambiar tu propio rol ni desactivar tu sesión desde este panel.', 'error');
         return;
@@ -247,7 +370,7 @@
     renderizarResumen();
     renderizarProductos();
     renderizarUsuarios();
-    cargarProducto(productos.listar()[0].id);
+    prepararNuevoProducto(false);
     cargarUsuario(datos.listarUsuarios()[0].id);
     conectarMantenedorProductos();
     conectarMantenedorUsuarios(sesion);

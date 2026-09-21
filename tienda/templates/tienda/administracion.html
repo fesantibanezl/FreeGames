@@ -13,7 +13,7 @@
   <section class="page-intro">
     <p class="eyebrow">Rol administrador</p>
     <h1>Administración</h1>
-    <p>Gestiona la disponibilidad y precios del catálogo, además de los roles y estados de las cuentas. Los cambios se guardan solo en este navegador.</p>
+    <p>Registra, modifica y controla la publicación de los juegos, además de administrar los roles y estados de las cuentas. Los cambios se guardan solo en este navegador.</p>
   </section>
 
   <section id="administration-guard" class="access-notice" role="status" hidden></section>
@@ -27,7 +27,10 @@
           <p class="eyebrow">Mantenedor de catálogo</p>
           <h2 id="inventory-title">Inventario y disponibilidad</h2>
         </div>
-        <p>Selecciona “Editar” para modificar un juego sin cambiar su imagen ni categoría.</p>
+        <div class="admin-section-actions">
+          <p>Registra juegos nuevos o selecciona uno para modificarlo y controlar su publicación.</p>
+          <button class="button button-primary" type="button" data-action="new-product">Registrar juego</button>
+        </div>
       </div>
 
       <div class="admin-layout">
@@ -42,17 +45,28 @@
         </div>
 
         <section class="admin-card" aria-labelledby="product-form-title">
-          <h3 id="product-form-title">Editar juego</h3>
+          <h3 id="product-form-title">Registrar juego</h3>
           <form id="admin-product-form" novalidate>
             {% csrf_token %}
             <input type="hidden" id="admin-product-id">
             <div class="form-group">
-              <label class="form-label" for="admin-product-name">Juego</label>
-              <input class="form-control readonly-field" type="text" id="admin-product-name" readonly>
+              <label class="form-label" for="admin-product-name">Nombre del juego</label>
+              <input class="form-control" type="text" id="admin-product-name" minlength="2" maxlength="60" placeholder="Ejemplo: Hollow Knight" required>
             </div>
             <div class="form-group">
               <label class="form-label" for="admin-product-category">Categoría</label>
-              <input class="form-control readonly-field" type="text" id="admin-product-category" readonly>
+              <select class="form-select" id="admin-product-category" required>
+                <option value="accion">Acción</option>
+                <option value="aventura">Aventura</option>
+                <option value="deportes">Deportes</option>
+                <option value="carreras">Carreras</option>
+                <option value="estrategia">Estrategia</option>
+              </select>
+              <small class="field-hint">Los juegos nuevos utilizan la imagen representativa de la categoría.</small>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="admin-product-description">Descripción</label>
+              <textarea class="form-control" id="admin-product-description" rows="4" minlength="10" maxlength="220" placeholder="Describe brevemente el juego" required></textarea>
             </div>
             <div class="row g-3">
               <div class="form-group col-12 col-sm-6">
@@ -71,7 +85,10 @@
                 <option value="false">Oculto del catálogo</option>
               </select>
             </div>
-            <div class="form-actions"><button class="button button-primary" type="submit">Guardar juego</button></div>
+            <div class="form-actions">
+              <button class="button button-primary" id="admin-product-submit" type="submit">Registrar juego</button>
+              <button class="button button-secondary" type="button" data-action="cancel-product-edit" hidden>Cancelar edición</button>
+            </div>
             <p id="product-status" class="form-status" role="status" aria-live="polite" tabindex="-1" hidden></p>
           </form>
         </section>

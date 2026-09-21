@@ -132,6 +132,53 @@
       .replaceAll("'", '&#039;');
   }
 
+  function renderizarCatalogo() {
+    const pagina = document.querySelector('.category-page[data-category-slug]');
+    const grilla = pagina?.querySelector('[data-products-grid]');
+
+    if (!pagina || !grilla) {
+      return;
+    }
+
+    const categoriaSlug = pagina.dataset.categorySlug;
+    const juegos = productos.listar().filter((producto) => (
+      producto.categoriaSlug === categoriaSlug && producto.activo
+    ));
+
+    if (juegos.length === 0) {
+      grilla.innerHTML = `
+        <div class="empty-state catalog-empty">
+          <h3>No hay juegos publicados</h3>
+          <p>El administrador todavía no ha publicado juegos en esta categoría.</p>
+        </div>
+      `;
+      return;
+    }
+
+    grilla.innerHTML = juegos.map((producto) => `
+      <article class="game-card" data-product-id="${escaparHTML(producto.id)}">
+        <img src="${escaparHTML(producto.imagen)}" alt="${escaparHTML(producto.imagenAlt)}">
+        <div class="game-info">
+          <div class="game-labels">
+            <span class="tag">${escaparHTML(producto.categoria)}</span>
+            ${producto.precio === 0 ? '<span class="free-badge">Gratis</span>' : ''}
+          </div>
+          <h3>${escaparHTML(producto.nombre)}</h3>
+          <p>${escaparHTML(producto.descripcion)}</p>
+          <div class="game-footer">
+            <span>Precio</span>
+            <strong data-product-price>${productos.formatearPrecio(producto.precio)}</strong>
+          </div>
+          <div class="product-actions">
+            <span class="stock-status" data-product-stock></span>
+            <button class="button button-primary add-to-cart" type="button" data-action="add-to-cart">${producto.precio === 0 ? 'Obtener gratis' : 'Agregar al carrito'}</button>
+          </div>
+          <p class="card-status" data-product-status role="status" aria-live="polite"></p>
+        </div>
+      </article>
+    `).join('');
+  }
+
   function prepararTarjetas() {
     document.querySelectorAll('[data-product-id]').forEach((tarjeta) => {
       const producto = productos.buscar(tarjeta.dataset.productId);
@@ -322,6 +369,7 @@
   }
 
   actualizarContadores();
+  renderizarCatalogo();
   prepararTarjetas();
   conectarCarrito();
 })();

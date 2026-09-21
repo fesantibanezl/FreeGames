@@ -46,3 +46,10 @@ class CatalogoViewsTests(SimpleTestCase):
         respuesta = self.client.get(reverse('tienda:administracion'))
 
         self.assertContains(respuesta, '/static/tienda/js/administracion.js')
+        self.assertContains(respuesta, 'data-action="new-product"')
+        self.assertContains(respuesta, 'id="admin-product-description"')
+
+    def test_categoria_expone_la_grilla_para_el_catalogo_guardado(self):
+        respuesta = self.client.get(reverse('tienda:categoria', kwargs={'slug': 'accion'}))
+
+        self.assertContains(respuesta, 'data-products-grid')
