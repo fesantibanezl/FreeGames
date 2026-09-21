@@ -1,0 +1,80 @@
+"""Datos de presentación del catálogo durante la migración inicial a Django."""
+
+
+CATEGORIAS = {
+    'accion': {
+        'slug': 'accion',
+        'nombre': 'Acción',
+        'icono': '⚡',
+        'clase': 'category-action',
+        'resumen': 'Combate y adrenalina',
+        'descripcion_meta': 'Juegos de acción disponibles en FreeGames.',
+        'imagen': 'tienda/img/accion.png',
+        'imagen_alt': 'Soldado futurista en una ciudad iluminada',
+        'juegos': [
+            {'id': 'call-of-duty', 'nombre': 'Call of Duty', 'imagen': 'tienda/img/accion.png', 'imagen_alt': 'Arte original de un soldado futurista en acción', 'descripcion': 'Entra en intensas misiones tácticas donde la rapidez, la precisión y el trabajo en equipo deciden cada combate.', 'precio': '$19.990', 'gratis': False},
+            {'id': 'gta-v', 'nombre': 'Grand Theft Auto V', 'imagen': 'tienda/img/gta-v.png', 'imagen_alt': 'Conductor junto a un automóvil deportivo en una ciudad nocturna', 'descripcion': 'Explora una ciudad abierta, completa misiones y conduce vehículos en una aventura urbana llena de posibilidades.', 'precio': '$14.990', 'gratis': False},
+            {'id': 'valorant', 'nombre': 'Valorant', 'imagen': 'tienda/img/valorant.png', 'imagen_alt': 'Agentes futuristas usando habilidades de energía en una arena', 'descripcion': 'Combina precisión táctica y habilidades especiales en partidas competitivas por equipos.', 'precio': 'Gratis', 'gratis': True},
+        ],
+    },
+    'aventura': {
+        'slug': 'aventura',
+        'nombre': 'Aventura',
+        'icono': '🧭',
+        'clase': 'category-adventure',
+        'resumen': 'Descubre nuevos mundos',
+        'descripcion_meta': 'Juegos de aventura disponibles en FreeGames.',
+        'imagen': 'tienda/img/aventura.png',
+        'imagen_alt': 'Explorador con una criatura fantástica en un valle',
+        'juegos': [
+            {'id': 'pokemon', 'nombre': 'Pokémon', 'imagen': 'tienda/img/aventura.png', 'imagen_alt': 'Arte original de un explorador y una criatura fantástica', 'descripcion': 'Recorre regiones llenas de sorpresas, conoce criaturas extraordinarias y vive una aventura donde cada encuentro cuenta.', 'precio': '$24.990', 'gratis': False},
+            {'id': 'dungeon-quest', 'nombre': 'Dungeon Quest', 'imagen': 'tienda/img/dungeon-quest.png', 'imagen_alt': 'Aventurero y criatura mágica entrando en una mazmorra antigua', 'descripcion': 'Explora mazmorras, encuentra tesoros y mejora a tu héroe mientras descubres secretos bajo tierra.', 'precio': 'Gratis', 'gratis': True},
+            {'id': 'zelda', 'nombre': 'The Legend of Zelda', 'imagen': 'tienda/img/zelda.png', 'imagen_alt': 'Explorador élfico observando un reino fantástico con islas flotantes', 'descripcion': 'Recorre un reino abierto, resuelve antiguos acertijos y enfréntate a desafíos en una travesía legendaria.', 'precio': '$29.990', 'gratis': False},
+        ],
+    },
+    'deportes': {
+        'slug': 'deportes',
+        'nombre': 'Deportes',
+        'icono': '🏓',
+        'clase': 'category-sports',
+        'resumen': 'Compite y supera tus marcas',
+        'descripcion_meta': 'Juegos de deportes disponibles en FreeGames.',
+        'imagen': 'tienda/img/deportes.png',
+        'imagen_alt': 'Partido de tenis de mesa en una arena moderna',
+        'juegos': [
+            {'id': 'ping-pong', 'nombre': 'Ping Pong', 'imagen': 'tienda/img/deportes.png', 'imagen_alt': 'Arte original de un partido de tenis de mesa', 'descripcion': 'Domina el saque, responde con efecto y reta a tus rivales en partidos rápidos de tenis de mesa.', 'precio': '$8.990', 'gratis': False},
+            {'id': 'ea-sports-fc', 'nombre': 'EA Sports FC', 'imagen': 'tienda/img/ea-sports-fc.png', 'imagen_alt': 'Dos futbolistas disputando el balón en un estadio iluminado', 'descripcion': 'Forma tu equipo, compite en grandes estadios y disfruta partidos de fútbol con ritmo profesional.', 'precio': '$27.990', 'gratis': False},
+            {'id': 'rocket-league', 'nombre': 'Rocket League', 'imagen': 'tienda/img/rocket-league.png', 'imagen_alt': 'Automóviles impulsados por cohetes disputando un balón futurista', 'descripcion': 'Combina fútbol y vehículos acrobáticos en encuentros rápidos donde cada salto puede cambiar el marcador.', 'precio': 'Gratis', 'gratis': True},
+        ],
+    },
+    'carreras': {
+        'slug': 'carreras',
+        'nombre': 'Carreras',
+        'icono': '🏁',
+        'clase': 'category-racing',
+        'resumen': 'Velocidad sin límites',
+        'descripcion_meta': 'Juegos de carreras disponibles en FreeGames.',
+        'imagen': 'tienda/img/carreras.png',
+        'imagen_alt': 'Automóvil deportivo corriendo por una ciudad nocturna',
+        'juegos': [
+            {'id': 'need-for-speed', 'nombre': 'Need for Speed', 'imagen': 'tienda/img/carreras.png', 'imagen_alt': 'Arte original de un automóvil deportivo en una carrera nocturna', 'descripcion': 'Acelera por calles iluminadas, mejora tu vehículo y demuestra quién domina las carreras urbanas.', 'precio': '$17.990', 'gratis': False},
+            {'id': 'forza-horizon', 'nombre': 'Forza Horizon', 'imagen': 'tienda/img/forza-horizon.png', 'imagen_alt': 'Automóvil deportivo recorriendo una carretera de montaña al atardecer', 'descripcion': 'Conduce por paisajes abiertos, participa en festivales y colecciona vehículos de alto rendimiento.', 'precio': '$32.990', 'gratis': False},
+            {'id': 'trackmania', 'nombre': 'Trackmania', 'imagen': 'tienda/img/trackmania.png', 'imagen_alt': 'Automóvil de carreras en una pista elevada con curvas y giros extremos', 'descripcion': 'Supera circuitos imposibles, mejora tus tiempos y compite contra jugadores de todo el mundo.', 'precio': 'Gratis', 'gratis': True},
+        ],
+    },
+    'estrategia': {
+        'slug': 'estrategia',
+        'nombre': 'Estrategia',
+        'icono': '♟',
+        'clase': 'category-strategy',
+        'resumen': 'Piensa cada movimiento',
+        'descripcion_meta': 'Juegos de estrategia disponibles en FreeGames.',
+        'imagen': 'tienda/img/estrategia.png',
+        'imagen_alt': 'Fichas de damas sobre un tablero oscuro',
+        'juegos': [
+            {'id': 'damas', 'nombre': 'Damas (Checkers)', 'imagen': 'tienda/img/estrategia.png', 'imagen_alt': 'Arte original de fichas de damas sobre un tablero', 'descripcion': 'Anticipa a tu rival, protege tus fichas y conquista el tablero en este clásico desafío de estrategia.', 'precio': '$4.990', 'gratis': False},
+            {'id': 'ajedrez-online', 'nombre': 'Ajedrez Online', 'imagen': 'tienda/img/ajedrez-online.png', 'imagen_alt': 'Piezas de ajedrez negras y marfil sobre un tablero iluminado', 'descripcion': 'Planea cada movimiento, practica aperturas y desafía a rivales en partidas de distintos ritmos.', 'precio': 'Gratis', 'gratis': True},
+            {'id': 'age-of-empires', 'nombre': 'Age of Empires', 'imagen': 'tienda/img/age-of-empires.png', 'imagen_alt': 'Civilización medieval con castillo, recursos y ejército preparado para la batalla', 'descripcion': 'Construye tu civilización, administra recursos y dirige ejércitos en batallas históricas de estrategia en tiempo real.', 'precio': '$19.990', 'gratis': False},
+        ],
+    },
+}

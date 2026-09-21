@@ -1,16 +1,26 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="Aplicación FreeGames configurada con Django.">
-  <title>{{ titulo }}</title>
-</head>
-<body>
-  <main>
-    <h1>{{ titulo }}</h1>
-    <p>{{ mensaje }}</p>
-    <p>La interfaz completa se incorporará progresivamente desde el FrontEnd de la semana 3.</p>
+{% extends 'tienda/base.html' %}
+{% load static %}
+
+{% block titulo %}FreeGames | Inicio{% endblock %}
+
+{% block contenido %}
+  <main class="home-main container" id="contenido-principal">
+    <section class="intro" aria-labelledby="categories-title">
+      <p class="eyebrow">Catálogo de videojuegos</p>
+      <h1 id="categories-title">Elige una categoría</h1>
+      <p>Explora nuestra selección y descubre un juego para cada estilo.</p>
+      <a class="primary-link" data-session="guest" href="{% url 'tienda:registro' %}">Crear una cuenta</a>
+      <a class="primary-link" data-session="user" href="{% url 'tienda:perfil' %}" hidden>Ver mi perfil</a>
+    </section>
+
+    <nav class="category-list d-grid gap-3" aria-label="Categorías de videojuegos">
+      {% for categoria in categorias %}
+        <a class="category-row {{ categoria.clase }}" href="{% url 'tienda:categoria' slug=categoria.slug %}">
+          <img src="{% static categoria.imagen %}" alt="{{ categoria.imagen_alt }}">
+          <span class="category-copy"><small>{{ categoria.resumen }}</small><strong>{{ categoria.nombre }}</strong></span>
+          <span class="category-arrow" aria-hidden="true">→</span>
+        </a>
+      {% endfor %}
+    </nav>
   </main>
-</body>
-</html>
+{% endblock %}

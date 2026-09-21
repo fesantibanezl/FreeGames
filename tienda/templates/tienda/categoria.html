@@ -1,0 +1,45 @@
+{% extends 'tienda/base.html' %}
+{% load static %}
+
+{% block titulo %}{{ categoria.nombre }} | FreeGames{% endblock %}
+{% block descripcion %}{{ categoria.descripcion_meta }}{% endblock %}
+
+{% block contenido %}
+  <main class="category-page container" id="contenido-principal" data-category-slug="{{ categoria.slug }}">
+    <header class="category-title">
+      <span aria-hidden="true">{{ categoria.icono }}</span>
+      <div>
+        <p class="eyebrow">Categoría</p>
+        <h1>{{ categoria.nombre }}</h1>
+      </div>
+    </header>
+
+    <section aria-labelledby="games-title">
+      <h2 id="games-title" class="section-title">Juegos disponibles</h2>
+      <div class="games-grid">
+        {% for juego in categoria.juegos %}
+          <article class="game-card" data-product-id="{{ juego.id }}">
+            <img src="{% static juego.imagen %}" alt="{{ juego.imagen_alt }}">
+            <div class="game-info">
+              <div class="game-labels">
+                <span class="tag">{{ categoria.nombre }}</span>
+                {% if juego.gratis %}<span class="free-badge">Gratis</span>{% endif %}
+              </div>
+              <h3>{{ juego.nombre }}</h3>
+              <p>{{ juego.descripcion }}</p>
+              <div class="game-footer">
+                <span>Precio</span>
+                <strong data-product-price>{{ juego.precio }}</strong>
+              </div>
+              <div class="product-actions">
+                <span class="stock-status" data-product-stock></span>
+                <button class="button button-primary add-to-cart" type="button" data-action="add-to-cart">{% if juego.gratis %}Obtener gratis{% else %}Agregar al carrito{% endif %}</button>
+              </div>
+              <p class="card-status" data-product-status role="status" aria-live="polite"></p>
+            </div>
+          </article>
+        {% endfor %}
+      </div>
+    </section>
+  </main>
+{% endblock %}
