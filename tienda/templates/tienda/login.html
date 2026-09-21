@@ -1,0 +1,47 @@
+{% extends 'tienda/base.html' %}
+
+{% block titulo %}Iniciar sesión | FreeGames{% endblock %}
+{% block descripcion %}Inicia sesión en FreeGames con tu cuenta de cliente o administrador.{% endblock %}
+
+{% block contenido %}
+<main class="account-page container" id="contenido-principal">
+  <section class="registration-intro" aria-labelledby="login-title">
+    <p class="eyebrow">Bienvenido nuevamente</p>
+    <h1 id="login-title">Inicia sesión</h1>
+    <p>Accede con tu correo o nombre de usuario. Esta etapa utiliza datos demostrativos guardados en el navegador.</p>
+  </section>
+
+  <div class="account-layout account-layout-single">
+    <section class="registration-card" aria-label="Formulario de inicio de sesión">
+      <form class="registration-form" id="login-form" action="#" method="post" novalidate>
+        {% csrf_token %}
+        <fieldset>
+          <legend>Datos de acceso</legend>
+
+          <div class="row g-4">
+            <div class="form-group col-12">
+              <label class="form-label" for="acceso">Correo o nombre de usuario <span aria-hidden="true">*</span></label>
+              <input class="form-control" type="text" id="acceso" name="acceso" autocomplete="username" placeholder="Ejemplo: usuario o correo@ejemplo.cl" aria-describedby="error-acceso" aria-errormessage="error-acceso" required>
+              <small class="field-error" id="error-acceso" aria-live="polite"></small>
+            </div>
+
+            <div class="form-group col-12">
+              <label class="form-label" for="clave-login">Contraseña <span aria-hidden="true">*</span></label>
+              <input class="form-control" type="password" id="clave-login" name="clave" autocomplete="current-password" placeholder="Ingresa tu contraseña" aria-describedby="error-clave-login" aria-errormessage="error-clave-login" required>
+              <small class="field-error" id="error-clave-login" aria-live="polite"></small>
+            </div>
+          </div>
+        </fieldset>
+
+        <div class="form-actions">
+          <button class="button button-primary btn btn-primary" type="submit">Iniciar sesión</button>
+        </div>
+
+        <p class="form-status" id="form-status" role="status" aria-live="polite" tabindex="-1" hidden></p>
+        <p class="form-switch"><a href="{% url 'tienda:recuperar_clave' %}">¿Olvidaste tu contraseña?</a></p>
+        <p class="form-switch">¿No tienes una cuenta? <a href="{% url 'tienda:registro' %}">Regístrate</a>.</p>
+      </form>
+    </section>
+  </div>
+</main>
+{% endblock %}

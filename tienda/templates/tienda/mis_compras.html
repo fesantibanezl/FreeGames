@@ -1,0 +1,17 @@
+{% extends 'tienda/base.html' %}
+
+{% block titulo %}Mis compras | FreeGames{% endblock %}
+{% block descripcion %}Consulta el historial de compras simuladas de tu cuenta FreeGames.{% endblock %}
+
+{% block contenido %}
+<main class="history-page" id="contenido-principal">
+  <section class="page-intro">
+    <p class="eyebrow">Cuenta de cliente</p>
+    <h1>Mis compras</h1>
+    <p>Aquí se muestran los pedidos creados en esta demostración. No existe un medio de pago conectado.</p>
+  </section>
+
+  <section id="history-guard" class="access-notice" hidden></section>
+  <section id="history-content" class="orders-list" aria-live="polite"></section>
+</main>
+{% endblock %}

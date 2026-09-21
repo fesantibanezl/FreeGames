@@ -1,0 +1,16 @@
+# Entorno virtual y variables locales
+.venv/
+.env
+
+# Archivos generados por Python
+__pycache__/
+*.py[cod]
+
+# Datos y archivos generados por Django
+db.sqlite3
+staticfiles/
+
+# Archivos del sistema y del editor
+.DS_Store
+Thumbs.db
+

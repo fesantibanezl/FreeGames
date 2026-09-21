@@ -1,0 +1,36 @@
+{% extends 'tienda/base.html' %}
+
+{% block titulo %}Carrito | FreeGames{% endblock %}
+{% block descripcion %}Revisa los videojuegos agregados a tu carrito de FreeGames.{% endblock %}
+
+{% block contenido %}
+<main class="cart-page" id="contenido-principal">
+  <section class="page-intro">
+    <p class="eyebrow">Compra simulada</p>
+    <h1>Tu carrito</h1>
+    <p>Revisa los juegos seleccionados, ajusta sus cantidades y confirma tu pedido. No se realiza ningún cobro real.</p>
+  </section>
+
+  <section id="cart-page" aria-label="Juegos seleccionados">
+    <div class="cart-layout">
+      <div>
+        <div id="cart-empty" class="empty-state" hidden>
+          <h2>Tu carrito está vacío</h2>
+          <p>Cuando agregues un juego desde el catálogo, aparecerá aquí.</p>
+          <a class="button button-primary" href="{% url 'tienda:categoria' slug='accion' %}">Explorar juegos</a>
+        </div>
+        <div id="cart-items" class="cart-list"></div>
+      </div>
+
+      <aside id="cart-summary" class="cart-summary" hidden aria-label="Resumen del pedido">
+        <h2>Resumen del pedido</h2>
+        <p class="summary-total"><span>Total</span><strong data-cart-total>$0</strong></p>
+        <button class="button button-primary" type="button" data-action="checkout">Finalizar compra simulada</button>
+        <button class="button button-secondary" type="button" data-action="empty-cart">Vaciar carrito</button>
+        <p class="cart-note">Para confirmar el pedido debes iniciar sesión con una cuenta de cliente.</p>
+      </aside>
+    </div>
+    <p id="cart-status" class="form-status" role="status" aria-live="polite" hidden></p>
+  </section>
+</main>
+{% endblock %}
