@@ -874,11 +874,21 @@ textarea:focus-visible {
   .purchase-actions .button { width: 100%; }
   .admin-summary { grid-template-columns: 1fr; }
   .admin-section { padding: 20px; }
+  .admin-table,
+  .admin-table tbody,
+  .admin-table tr,
+  .admin-table td { display: block; width: 100%; }
   .admin-table { min-width: 0; }
-  .admin-table th, .admin-table td { padding: 10px 8px; font-size: .76rem; }
-  .admin-table th { font-size: .63rem; }
-  .admin-table td small { font-size: .68rem; overflow-wrap: anywhere; }
+  .admin-table thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0, 0, 0, 0); }
+  .admin-table tbody { display: grid; gap: 12px; padding: 12px; }
+  .admin-table tbody tr { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; padding: 14px; background: rgba(7, 11, 22, .35); border: 1px solid var(--border); border-radius: 10px; }
+  .admin-table td { padding: 0; overflow-wrap: anywhere; border: 0; font-size: .82rem; }
+  .admin-table td:first-child,
+  .admin-table td:last-child { grid-column: 1 / -1; }
+  .admin-table td::before { content: attr(data-label); display: block; margin-bottom: 4px; color: var(--muted); font-size: .62rem; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; }
+  .admin-table td small { font-size: .72rem; overflow-wrap: anywhere; }
   .status-badge { padding: 3px 6px; font-size: .62rem; }
+  .table-actions { align-items: stretch; }
   .table-action { padding: 6px 7px; font-size: .67rem; }
 }
 

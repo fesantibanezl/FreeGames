@@ -81,11 +81,11 @@
 
       return `
         <tr>
-          <td><strong>${escaparHTML(producto.nombre)}</strong><small>${escaparHTML(producto.categoria)}</small></td>
-          <td>${productos.formatearPrecio(producto.precio)}</td>
-          <td>${producto.stock}</td>
-          <td><span class="status-badge ${publicado ? 'available' : 'unavailable'}">${estado}</span></td>
-          <td>
+          <td data-label="Juego"><strong>${escaparHTML(producto.nombre)}</strong><small>${escaparHTML(producto.categoria)}</small></td>
+          <td data-label="Precio">${productos.formatearPrecio(producto.precio)}</td>
+          <td data-label="Disponibilidad">${producto.stock}</td>
+          <td data-label="Estado"><span class="status-badge ${publicado ? 'available' : 'unavailable'}">${estado}</span></td>
+          <td data-label="Acciones">
             <div class="table-actions">
               <button class="table-action" type="button" data-edit-product="${escaparHTML(producto.id)}">Editar</button>
               <button class="table-action ${claseEstado}" type="button" data-toggle-product="${escaparHTML(producto.id)}" data-next-active="${!producto.activo}">${accionEstado}</button>
@@ -105,11 +105,11 @@
 
     cuerpo.innerHTML = datos.listarUsuarios().map((usuario) => `
       <tr>
-        <td><strong>${escaparHTML(usuario.nombreCompleto)}</strong><small>${escaparHTML(usuario.correo)}</small></td>
-        <td>${escaparHTML(usuario.nombreUsuario)}</td>
-        <td>${nombreRol(usuario.rol)}</td>
-        <td><span class="status-badge ${usuario.activo ? 'available' : 'unavailable'}">${usuario.activo ? 'Activa' : 'Inactiva'}</span></td>
-        <td><button class="table-action" type="button" data-edit-user="${escaparHTML(usuario.id)}">Editar</button></td>
+        <td data-label="Nombre y correo"><strong>${escaparHTML(usuario.nombreCompleto)}</strong><small>${escaparHTML(usuario.correo)}</small></td>
+        <td data-label="Usuario">${escaparHTML(usuario.nombreUsuario)}</td>
+        <td data-label="Rol">${nombreRol(usuario.rol)}</td>
+        <td data-label="Estado"><span class="status-badge ${usuario.activo ? 'available' : 'unavailable'}">${usuario.activo ? 'Activa' : 'Inactiva'}</span></td>
+        <td data-label="Acciones"><button class="table-action" type="button" data-edit-user="${escaparHTML(usuario.id)}">Editar</button></td>
       </tr>
     `).join('');
   }

@@ -18,7 +18,7 @@ Luego visita `http://127.0.0.1:8000/` en un navegador moderno. Visual Studio Cod
 
 ## Funcionalidades implementadas
 
-- Catálogo con cinco categorías y quince videojuegos.
+- Catálogo inicial con cinco categorías y quince videojuegos, ampliable desde el mantenedor.
 - Navegación adaptable con menú colapsable en pantallas pequeñas.
 - Registro, inicio de sesión, recuperación simulada y edición de perfil.
 - Validación inmediata de datos y mensajes accesibles en los formularios.
@@ -70,6 +70,23 @@ FreeGames/
 └── requirements.txt
 ```
 
+## Flujo de una solicitud en Django
+
+Por ejemplo, al visitar `/accion/` ocurre el siguiente recorrido:
+
+```text
+Navegador
+  → freegames/urls.py
+  → tienda/urls.py
+  → views.categoria
+  → contexto definido en catalogo.py
+  → templates/tienda/categoria.html
+  → templates/tienda/base.html y static/tienda/
+  → respuesta HTML
+```
+
+La plantilla base concentra la navegación, los estilos y los módulos JavaScript compartidos. Las vistas preparan el contexto y seleccionan la plantilla, mientras que las rutas nombradas permiten navegar sin depender de archivos HTML físicos.
+
 ## Consideraciones
 
 - Django entrega las páginas y los recursos estáticos; los usuarios, la sesión, el carrito y las compras todavía se almacenan en `localStorage`.
@@ -77,6 +94,17 @@ FreeGames/
 - Si `localStorage` no está disponible, se usa memoria mientras la página permanezca abierta.
 - Las contraseñas y la compra son demostrativas. No existe un cobro real ni una integración con WebPay.
 - La interfaz considera navegación por teclado, foco visible, enlace para saltar al contenido y adaptación a móvil, tableta y escritorio.
+- `models.py` todavía no define persistencia propia porque los Models, las migraciones de negocio y la base de datos corresponden a la semana 5.
+
+## Evidencias de la semana 4
+
+| Criterio | Evidencia en el proyecto |
+| --- | --- |
+| Aplicación creada con Django | Proyecto `freegames`, aplicación `tienda` y `manage.py`. |
+| Configuración interna | `TiendaConfig` registrada en `settings.py`; rutas separadas en los dos archivos `urls.py`; vistas en `tienda/views.py`. |
+| Migración de directorios | HTML en `templates/tienda` y CSS, JavaScript e imágenes en `static/tienda`. |
+| Visualización local | Ejecución con `python manage.py runserver` y rutas HTTP comprobadas. |
+| Continuidad en Git | Desarrollo incremental en la rama `semana-4`, mediante commits separados por parte. |
 
 ## Pruebas
 
