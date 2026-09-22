@@ -50,6 +50,17 @@ python manage.py check
 
 La configuración admite reemplazar los valores locales mediante las variables `FREEGAMES_DB_NAME`, `FREEGAMES_DB_USER` y `FREEGAMES_DB_PASSWORD`. Para ejecutar comprobaciones sin Oracle puede definirse temporalmente `FREEGAMES_USE_SQLITE=1`.
 
+## Entregables de base de datos
+
+La entrega incluye archivos independientes para revisar la estructura y los datos sin tener que interpretar las migraciones de Python:
+
+- [`01_estructura_oracle.sql`](base_datos/01_estructura_oracle.sql): DDL de las seis tablas propias, claves, restricciones, índices y relaciones.
+- [`02_datos_iniciales.sql`](base_datos/02_datos_iniciales.sql): roles, cuentas, perfiles, cinco categorías y quince juegos mediante operaciones `MERGE` reutilizables.
+- [`MER_FreeGames.pdf`](documentacion/MER_FreeGames.pdf): modelo entidad relación normalizado listo para revisión.
+- [`MER_FreeGames.md`](documentacion/MER_FreeGames.md): fuente editable del modelo y explicación de las tres formas normales.
+
+Las instrucciones de ejecución y la relación entre estos scripts y las migraciones se encuentran en [`base_datos/README.md`](base_datos/README.md).
+
 ## Funcionalidades implementadas
 
 - Catálogo persistente con cinco categorías y quince videojuegos iniciales, ampliable desde el mantenedor.
@@ -103,6 +114,8 @@ Durante el desarrollo local, los mensajes de recuperación se imprimen en la ter
 
 ```text
 FreeGames/
+├── base_datos/                # DDL Oracle y carga de datos iniciales.
+├── documentacion/             # MER normalizado en PDF y formato editable.
 ├── freegames/                 # Configuración y rutas principales de Django.
 ├── tienda/
 │   ├── static/tienda/
@@ -174,6 +187,17 @@ La plantilla base concentra la navegación, los estilos y los módulos JavaScrip
 | Operaciones DML | El catálogo consulta Oracle; las compras crean pedidos, crean detalles y actualizan existencias. |
 | Administración de usuarios | El administrador crea, consulta, modifica y elimina cuentas persistentes. |
 | Autenticación y autorización | Sesiones Django, cierre por `POST` y rutas restringidas para cliente y administrador. |
+
+## Evidencias de la semana 6
+
+| Criterio | Evidencia en el proyecto |
+| --- | --- |
+| Seguridad de acceso | Rutas limitadas por método HTTP, sesión y rol; formularios protegidos con CSRF. |
+| Gestión de cuentas | CRUD completo de usuarios y protección del administrador y del historial de pedidos. |
+| Recuperación de contraseña | Flujo Django con token temporal, respuesta que no revela cuentas y validaciones de seguridad. |
+| Modelo Oracle | Seis tablas propias relacionadas con `AUTH_USER`, migraciones sincronizadas y conexión real comprobada. |
+| Entregables de datos | Script DDL, script idempotente de datos iniciales y MER normalizado. |
+| Verificación | Pruebas automatizadas de catálogo, cuentas, permisos, carrito, pedidos y mantenedores. |
 
 ## Pruebas
 
