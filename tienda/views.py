@@ -2,6 +2,7 @@ from uuid import uuid4
 
 from django.contrib import messages
 from django.contrib.auth import get_user_model
+from django.contrib.auth.decorators import login_required
 from django.contrib.auth import login as iniciar_sesion
 from django.contrib.auth import logout as cerrar_sesion_django
 from django.db import transaction
@@ -12,7 +13,7 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 from django.utils.http import url_has_allowed_host_and_scheme
 from django.utils.text import slugify
-from django.views.decorators.http import require_POST
+from django.views.decorators.http import require_http_methods, require_POST, require_safe
 
 from .decorators import destino_por_rol, obtener_codigo_rol, rol_requerido
 from .forms import (
@@ -179,6 +180,7 @@ def _contexto_administracion(
     }
 
 
+@require_safe
 def inicio(request):
     """Muestra las categorías persistentes del catálogo."""
     if _es_administrador(request.user):
@@ -190,6 +192,7 @@ def inicio(request):
     })
 
 
+@require_safe
 def categoria(request, slug):
     """Muestra los juegos publicados de una categoría."""
     if _es_administrador(request.user):
@@ -204,6 +207,7 @@ def categoria(request, slug):
     })
 
 
+@require_http_methods(('GET', 'POST'))
 def registro(request):
     if request.user.is_authenticated:
         return redirect(destino_por_rol(request.user))
@@ -226,6 +230,7 @@ def registro(request):
     })
 
 
+@require_http_methods(('GET', 'POST'))
 def login(request):
     if request.user.is_authenticated:
         return redirect(destino_por_rol(request.user))
@@ -259,12 +264,14 @@ def login(request):
 
 
 @require_POST
+@login_required(login_url='tienda:login')
 def logout(request):
     cerrar_sesion_django(request)
     return redirect('tienda:inicio')
 
 
 @rol_requerido(Rol.Codigos.CLIENTE)
+@require_http_methods(('GET', 'POST'))
 def perfil(request):
     rol_predeterminado = Rol.objects.get(codigo=Rol.Codigos.CLIENTE)
     perfil_usuario, _ = PerfilUsuario.objects.get_or_create(
@@ -294,6 +301,7 @@ def perfil(request):
 
 
 @rol_requerido(Rol.Codigos.CLIENTE)
+@require_safe
 def carrito(request):
     items, total = _items_carrito(request)
     return render(request, 'tienda/carrito.html', {
@@ -341,14 +349,14 @@ def actualizar_carrito(request, juego_id):
     juego = get_object_or_404(Juego, pk=juego_id, activo=True)
     try:
         cantidad = int(request.POST.get('cantidad', '1'))
-    except ValueError:
-        cantidad = 0
+    except (TypeError, ValueError):
+        messages.error(request, 'Ingresa una cantidad válida.')
+        return redirect('tienda:carrito')
 
     carrito_actual = _carrito_sesion(request)
     clave = str(juego.pk)
     if cantidad < 1:
-        carrito_actual.pop(clave, None)
-        messages.success(request, f'{juego.nombre} se quitó del carrito.')
+        messages.error(request, 'La cantidad debe ser igual o superior a 1.')
     elif cantidad > juego.stock:
         messages.error(
             request,
@@ -449,6 +457,7 @@ def finalizar_compra(request):
 
 
 @rol_requerido(Rol.Codigos.CLIENTE)
+@require_safe
 def compra_exitosa(request):
     pedido_id = request.GET.get('pedido')
     pedido = None
@@ -466,6 +475,7 @@ def compra_exitosa(request):
 
 
 @rol_requerido(Rol.Codigos.CLIENTE)
+@require_safe
 def mis_compras(request):
     pedidos = Pedido.objects.filter(usuario=request.user).prefetch_related(
         'detalles',
@@ -478,6 +488,7 @@ def mis_compras(request):
 
 
 @rol_requerido(Rol.Codigos.ADMINISTRADOR)
+@require_safe
 def administracion(request):
     juego_seleccionado = None
     usuario_seleccionado = None

@@ -5,7 +5,7 @@ from django.contrib.auth import get_user_model
 from django.contrib.staticfiles import finders
 from django.core import mail
 from django.db.models.deletion import ProtectedError
-from django.test import SimpleTestCase, TestCase, override_settings
+from django.test import Client, SimpleTestCase, TestCase, override_settings
 from django.urls import resolve, reverse
 
 from . import views
@@ -272,6 +272,13 @@ class AutenticacionYRolesTests(TestCase):
         self.assertRedirects(respuesta, reverse('tienda:inicio'))
         self.assertNotIn('_auth_user_id', self.client.session)
 
+        respuesta_anonima = self.client.post(reverse('tienda:logout'))
+        self.assertRedirects(
+            respuesta_anonima,
+            f"{reverse('tienda:login')}?next={reverse('tienda:logout')}",
+            fetch_redirect_response=False,
+        )
+
     def test_paginas_internas_redirigen_al_login_sin_sesion(self):
         for nombre_ruta in (
             'perfil',
@@ -345,6 +352,49 @@ class AutenticacionYRolesTests(TestCase):
         respuesta = self.client.get(reverse('tienda:administracion'))
         self.assertContains(respuesta, '>Administración</a>')
         self.assertNotContains(respuesta, '>Acción</a>')
+
+    def test_vistas_rechazan_metodos_http_no_admitidos(self):
+        self.assertEqual(
+            self.client.post(reverse('tienda:inicio')).status_code,
+            405,
+        )
+        self.assertEqual(
+            self.client.put(reverse('tienda:login')).status_code,
+            405,
+        )
+        self.assertEqual(
+            self.client.delete(reverse('tienda:registro')).status_code,
+            405,
+        )
+
+        self.client.force_login(self.cliente)
+        for nombre_ruta in ('carrito', 'mis_compras', 'compra_exitosa'):
+            with self.subTest(nombre_ruta=nombre_ruta):
+                self.assertEqual(
+                    self.client.post(reverse(f'tienda:{nombre_ruta}')).status_code,
+                    405,
+                )
+
+        self.client.force_login(self.administrador)
+        self.assertEqual(
+            self.client.post(reverse('tienda:administracion')).status_code,
+            405,
+        )
+
+    def test_operaciones_de_escritura_rechazan_get_y_post_sin_csrf(self):
+        juego = Juego.objects.get(slug='call-of-duty')
+        self.client.force_login(self.cliente)
+        self.assertEqual(
+            self.client.get(
+                reverse('tienda:agregar_carrito', args=(juego.pk,)),
+            ).status_code,
+            405,
+        )
+
+        cliente_csrf = Client(enforce_csrf_checks=True)
+        cliente_csrf.force_login(self.administrador)
+        respuesta = cliente_csrf.post(reverse('tienda:crear_usuario'), {})
+        self.assertEqual(respuesta.status_code, 403)
 
 
 @override_settings(
@@ -665,6 +715,24 @@ class CarritoYPedidosTests(TestCase):
     def test_carrito_se_guarda_en_sesion_y_permite_actualizar_y_quitar(self):
         self.client.post(
             reverse('tienda:agregar_carrito', args=(self.juego.pk,)),
+        )
+        self.assertEqual(
+            self.client.session['freegames_carrito'][str(self.juego.pk)],
+            1,
+        )
+
+        self.client.post(
+            reverse('tienda:actualizar_carrito', args=(self.juego.pk,)),
+            {'cantidad': 'no-es-un-numero'},
+        )
+        self.assertEqual(
+            self.client.session['freegames_carrito'][str(self.juego.pk)],
+            1,
+        )
+
+        self.client.post(
+            reverse('tienda:actualizar_carrito', args=(self.juego.pk,)),
+            {'cantidad': 0},
         )
         self.assertEqual(
             self.client.session['freegames_carrito'][str(self.juego.pk)],
