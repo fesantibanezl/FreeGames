@@ -1,0 +1,8 @@
+Hola {{ user.get_full_name|default:user.username }}:
+
+Recibimos una solicitud para cambiar la contraseña de tu cuenta FreeGames.
+
+Abre este enlace temporal:
+{{ protocol }}://{{ domain }}{% url 'tienda:recuperar_clave_confirmar' uidb64=uid token=token %}
+
+Si no solicitaste el cambio, puedes ignorar este mensaje.

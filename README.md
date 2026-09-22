@@ -1,6 +1,6 @@
 # FreeGames
 
-Proyecto para la asignatura **Programación Web — Experiencia de Aprendizaje 2**. En la semana 5, FreeGames incorpora persistencia con Oracle mediante el ORM de Django. El catálogo, el CRUD de juegos, los usuarios y los pedidos ya operan desde el Backend, junto con la autenticación y la autorización por roles.
+Proyecto para la asignatura **Programación Web — Experiencia de Aprendizaje 2**. FreeGames integra el FrontEnd con Django y Oracle, junto con autenticación, autorización por roles, mantenedores, carrito y pedidos persistentes. En la semana 6 se completa la gestión de cuentas y la recuperación segura de contraseñas.
 
 ## Cómo ejecutar el proyecto
 
@@ -55,6 +55,7 @@ La configuración admite reemplazar los valores locales mediante las variables `
 - Catálogo persistente con cinco categorías y quince videojuegos iniciales, ampliable desde el mantenedor.
 - Navegación adaptable con menú colapsable en pantallas pequeñas.
 - Registro, inicio de sesión por usuario o correo y edición de perfil persistentes en Oracle.
+- Recuperación de contraseña mediante un enlace temporal de un solo uso generado por Django.
 - Sesiones seguras de Django, cierre de sesión por `POST` y validaciones en el servidor.
 - Validación inmediata de datos y mensajes accesibles en los formularios.
 - Roles de **cliente** y **administrador** con navegación, redirecciones y rutas protegidas diferentes.
@@ -62,7 +63,8 @@ La configuración admite reemplazar los valores locales mediante las variables `
 - Compra transaccional que registra el pedido y su detalle en Oracle y descuenta el stock.
 - Historial persistente de pedidos para cada cliente.
 - CRUD completo de juegos para crear, consultar, modificar y eliminar registros desde la interfaz.
-- Panel administrativo para controlar la publicación de juegos y modificar roles y estados de cuentas persistentes.
+- CRUD de usuarios desde el panel administrativo para crear, consultar, modificar y eliminar cuentas.
+- Conservación de las cuentas asociadas a compras: al intentar eliminarlas se desactivan para proteger el historial.
 - Vistas, plantillas y archivos estáticos organizados mediante Django.
 - Modelos persistentes para categorías, juegos, pedidos, detalles, roles y perfiles, visibles desde Django Admin.
 
@@ -75,7 +77,7 @@ La configuración admite reemplazar los valores locales mediante las variables `
 | `/registro/` | Registro de una cuenta de cliente. |
 | `/login/` | Inicio de sesión. |
 | `/logout/` | Cierre seguro de la sesión activa mediante `POST`. |
-| `/recuperar-clave/` | Recuperación simulada de contraseña. |
+| `/recuperar-clave/` | Solicitud de un enlace temporal para definir una contraseña nueva. |
 | `/perfil/` | Consulta y edición del perfil activo. |
 | `/carrito/` | Carrito de sesión y confirmación de una compra simulada. |
 | `/mis-compras/` | Historial persistente exclusivo del rol cliente. |
@@ -95,6 +97,8 @@ Ambas cuentas permiten ingresar desde `/login/` con el nombre de usuario o el co
 
 El cliente puede visitar el catálogo, el perfil, el carrito y su historial. El administrador es dirigido al mantenedor y no puede entrar a las páginas internas del cliente. Las rutas protegidas envían a `/login/` a quien aún no ha iniciado sesión.
 
+Durante el desarrollo local, los mensajes de recuperación se imprimen en la terminal donde se ejecuta `runserver`. El enlace vence después de una hora y queda invalidado al cambiar la contraseña. La variable `FREEGAMES_EMAIL_BACKEND` permite reemplazar este comportamiento por un servicio de correo configurado.
+
 ## Estructura del proyecto
 
 ```text
@@ -104,7 +108,7 @@ FreeGames/
 │   ├── static/tienda/
 │   │   ├── css/               # Estilos y diseño adaptable.
 │   │   ├── img/               # Ilustraciones PNG del catálogo.
-│   │   └── js/                # Validaciones y recuperación demostrativa.
+│   │   └── js/                # Validaciones complementarias del navegador.
 │   ├── templates/tienda/      # Plantilla base y páginas de la aplicación.
 │   ├── context_processors.py  # Rol disponible en todas las plantillas.
 │   ├── decorators.py          # Restricciones de acceso por rol.
@@ -168,7 +172,7 @@ La plantilla base concentra la navegación, los estilos y los módulos JavaScrip
 | Modelos persistentes | Categorías, juegos, pedidos, detalles, roles y perfiles definidos mediante el ORM. |
 | CRUD completo | El mantenedor permite crear, leer, actualizar, ocultar y eliminar juegos desde la interfaz. |
 | Operaciones DML | El catálogo consulta Oracle; las compras crean pedidos, crean detalles y actualizan existencias. |
-| Administración de usuarios | El administrador modifica roles y estado de cuentas persistentes. |
+| Administración de usuarios | El administrador crea, consulta, modifica y elimina cuentas persistentes. |
 | Autenticación y autorización | Sesiones Django, cierre por `POST` y rutas restringidas para cliente y administrador. |
 
 ## Pruebas

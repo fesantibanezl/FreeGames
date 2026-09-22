@@ -19,6 +19,7 @@ from .forms import (
     InicioSesionForm,
     JuegoForm,
     PerfilUsuarioForm,
+    UsuarioCrearForm,
     RegistroUsuarioForm,
     UsuarioAdministracionForm,
 )
@@ -128,6 +129,7 @@ def _contexto_administracion(
     formulario_juego=None,
     usuario_seleccionado=None,
     formulario_usuario=None,
+    formulario_usuario_nuevo=None,
 ):
     juegos = Juego.objects.select_related('categoria').all()
     usuarios = Usuario.objects.filter(perfil__isnull=False).select_related(
@@ -143,6 +145,10 @@ def _contexto_administracion(
         formulario_usuario = UsuarioAdministracionForm(
             usuario_objetivo=usuario_seleccionado,
             usuario_actual=request.user,
+        )
+    if formulario_usuario_nuevo is None:
+        formulario_usuario_nuevo = UsuarioCrearForm(
+            initial={'activo': 'true'},
         )
 
     ventas = Pedido.objects.aggregate(total=Sum('total'))['total'] or 0
@@ -160,6 +166,7 @@ def _contexto_administracion(
         'formulario_juego': formulario_juego,
         'usuario_seleccionado': usuario_seleccionado,
         'formulario_usuario': formulario_usuario,
+        'formulario_usuario_nuevo': formulario_usuario_nuevo,
         'juegos_disponibles': juegos.filter(activo=True, stock__gt=0).count(),
         'juegos_no_disponibles': juegos.exclude(activo=True, stock__gt=0).count(),
         'clientes_activos': clientes_activos,
@@ -255,13 +262,6 @@ def login(request):
 def logout(request):
     cerrar_sesion_django(request)
     return redirect('tienda:inicio')
-
-
-def recuperar_clave(request):
-    return render(request, 'tienda/recuperar_clave.html', {
-        'encabezado_compacto': True,
-        'seccion_activa': 'recuperar_clave',
-    })
 
 
 @rol_requerido(Rol.Codigos.CLIENTE)
@@ -604,3 +604,60 @@ def actualizar_usuario(request, usuario_id):
             formulario_usuario=formulario,
         ),
     )
+
+
+@require_POST
+@rol_requerido(Rol.Codigos.ADMINISTRADOR)
+def crear_usuario(request):
+    formulario = UsuarioCrearForm(request.POST)
+    if formulario.is_valid():
+        usuario = formulario.save()
+        messages.success(
+            request,
+            f'La cuenta de {usuario.username} fue creada correctamente.',
+        )
+        return redirect(
+            f"{reverse('tienda:administracion')}?usuario={usuario.pk}#usuario",
+        )
+
+    return render(
+        request,
+        'tienda/administracion.html',
+        _contexto_administracion(
+            request,
+            formulario_usuario_nuevo=formulario,
+        ),
+    )
+
+
+@require_POST
+@rol_requerido(Rol.Codigos.ADMINISTRADOR)
+def eliminar_usuario(request, usuario_id):
+    usuario_objetivo = get_object_or_404(
+        Usuario.objects.select_related('perfil__rol'),
+        pk=usuario_id,
+    )
+    if usuario_objetivo == request.user:
+        messages.error(request, 'No puedes eliminar tu propia cuenta.')
+        return redirect(
+            f"{reverse('tienda:administracion')}?usuario={usuario_id}#usuario",
+        )
+
+    nombre_usuario = usuario_objetivo.username
+    try:
+        usuario_objetivo.delete()
+        messages.success(
+            request,
+            f'La cuenta de {nombre_usuario} fue eliminada definitivamente.',
+        )
+    except ProtectedError:
+        usuario_objetivo.is_active = False
+        usuario_objetivo.save(update_fields=('is_active',))
+        messages.error(
+            request,
+            (
+                f'La cuenta de {nombre_usuario} posee compras registradas y '
+                'no puede eliminarse; quedó desactivada.'
+            ),
+        )
+    return redirect(f"{reverse('tienda:administracion')}#usuarios")

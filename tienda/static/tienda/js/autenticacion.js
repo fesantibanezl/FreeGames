@@ -10,12 +10,6 @@
     elemento.focus();
   }
 
-  function limpiarEstado(elemento) {
-    elemento.textContent = '';
-    elemento.className = 'form-status';
-    elemento.hidden = true;
-  }
-
   function iniciarRecuperacion() {
     const formulario = document.querySelector('#recuperar-form');
 
@@ -31,21 +25,11 @@
     }
 
     formulario.addEventListener('submit', (evento) => {
-      evento.preventDefault();
-      limpiarEstado(estado);
-
       if (!validarCorreo()) {
+        evento.preventDefault();
         mostrarEstado(estado, 'Revisa el correo electrónico ingresado.', 'error');
         correo.focus();
-        return;
       }
-
-      // El mensaje es general para no revelar qué correos existen.
-      mostrarEstado(
-        estado,
-        'Si el correo está registrado, recibirás instrucciones de recuperación. Este envío es una simulación.',
-        'success'
-      );
     });
 
     correo.addEventListener('blur', validarCorreo);

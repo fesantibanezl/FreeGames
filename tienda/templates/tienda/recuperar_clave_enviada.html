@@ -1,0 +1,20 @@
+{% extends 'tienda/base.html' %}
+
+{% block titulo %}Solicitud recibida | FreeGames{% endblock %}
+{% block descripcion %}Confirmación de la solicitud de recuperación de acceso.{% endblock %}
+
+{% block contenido %}
+<main class="account-page account-page-narrow container" id="contenido-principal">
+  <section class="registration-intro">
+    <p class="eyebrow">Recuperación de acceso</p>
+    <h1>Revisa las instrucciones</h1>
+    <p>Si existe una cuenta activa con ese correo, Django generó un enlace temporal para cambiar la contraseña.</p>
+  </section>
+  <section class="registration-card">
+    <p>En el entorno local, el mensaje se muestra en la terminal donde se ejecuta el servidor. El enlace vence después de una hora y deja de funcionar cuando se utiliza.</p>
+    <div class="form-actions">
+      <a class="button button-secondary" href="{% url 'tienda:login' %}">Volver al inicio de sesión</a>
+    </div>
+  </section>
+</main>
+{% endblock %}
