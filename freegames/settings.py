@@ -63,6 +63,7 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'tienda.context_processors.sesion_freegames',
             ],
         },
     },
@@ -138,3 +139,7 @@ STATIC_URL = 'static/'
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+LOGIN_URL = 'tienda:login'
+LOGIN_REDIRECT_URL = 'tienda:inicio'
+LOGOUT_REDIRECT_URL = 'tienda:inicio'

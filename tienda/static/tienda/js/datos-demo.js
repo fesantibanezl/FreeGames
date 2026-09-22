@@ -1,20 +1,18 @@
 (() => {
   'use strict';
 
-  // Estas claves mantienen los datos simulados separados del resto del sitio.
+  // Estos datos se conservarán en el navegador hasta migrar sus mantenedores.
   const CLAVES = Object.freeze({
-    usuarios: 'freegames_usuarios',
-    sesion: 'freegames_sesion'
+    usuarios: 'freegames_usuarios'
   });
 
-  // Las cuentas permiten probar los privilegios sin depender todavía de un servidor.
+  // El mantenedor de usuarios seguirá usando estos datos hasta su migración.
   const USUARIOS_DEMO = Object.freeze([
     {
       id: 'cliente-demo',
       nombreCompleto: 'Felipe Santibáñez',
       nombreUsuario: 'cliente',
       correo: 'cliente@freegames.cl',
-      clave: 'Cliente#2026',
       fechaNacimiento: '2000-06-15',
       direccion: 'Av. Providencia 1234, Santiago',
       rol: 'cliente',
@@ -25,7 +23,6 @@
       nombreCompleto: 'Diego Ramírez',
       nombreUsuario: 'admin',
       correo: 'admin@freegames.cl',
-      clave: 'Admin#2026',
       fechaNacimiento: '1995-03-20',
       direccion: 'Av. Libertador 450, Santiago',
       rol: 'administrador',
@@ -88,10 +85,6 @@
     return true;
   }
 
-  function normalizar(valor) {
-    return String(valor ?? '').trim().toLocaleLowerCase('es');
-  }
-
   function inicializarUsuarios() {
     const usuariosGuardados = leer(CLAVES.usuarios, []);
     const usuarios = Array.isArray(usuariosGuardados) ? usuariosGuardados : [];
@@ -110,6 +103,10 @@
       }
     });
 
+    // Las credenciales y la sesión pertenecen ahora exclusivamente a Django.
+    usuarios.forEach((usuario) => delete usuario.clave);
+    eliminar('freegames_sesion');
+
     guardar(CLAVES.usuarios, usuarios);
     return usuarios;
   }
@@ -120,49 +117,6 @@
 
   function buscarUsuarioPorId(id) {
     return listarUsuarios().find((usuario) => usuario.id === id) ?? null;
-  }
-
-  function buscarUsuarioPorAcceso(acceso) {
-    const valorBuscado = normalizar(acceso);
-
-    return listarUsuarios().find((usuario) => (
-      normalizar(usuario.correo) === valorBuscado
-      || normalizar(usuario.nombreUsuario) === valorBuscado
-    )) ?? null;
-  }
-
-  function existeNombreUsuario(nombreUsuario, idExcluido = '') {
-    const valorBuscado = normalizar(nombreUsuario);
-    return listarUsuarios().some((usuario) => (
-      usuario.id !== idExcluido && normalizar(usuario.nombreUsuario) === valorBuscado
-    ));
-  }
-
-  function existeCorreo(correo, idExcluido = '') {
-    const valorBuscado = normalizar(correo);
-    return listarUsuarios().some((usuario) => (
-      usuario.id !== idExcluido && normalizar(usuario.correo) === valorBuscado
-    ));
-  }
-
-  function registrarUsuario(datos) {
-    const usuarios = listarUsuarios();
-    const usuario = {
-      id: `usuario-${Date.now()}`,
-      nombreCompleto: datos.nombreCompleto.trim(),
-      nombreUsuario: datos.nombreUsuario.trim(),
-      correo: datos.correo.trim().toLocaleLowerCase('es'),
-      // La clave se guarda solo para esta simulación FrontEnd; el backend deberá protegerla.
-      clave: datos.clave,
-      fechaNacimiento: datos.fechaNacimiento,
-      direccion: datos.direccion.trim(),
-      rol: 'cliente',
-      activo: true
-    };
-
-    usuarios.push(usuario);
-    guardar(CLAVES.usuarios, usuarios);
-    return copiar(usuario);
   }
 
   function actualizarUsuario(id, cambios) {
@@ -178,36 +132,17 @@
     return copiar(usuarios[posicion]);
   }
 
-  function crearSesion(usuario) {
-    const sesion = {
-      usuarioId: usuario.id,
-      rol: usuario.rol,
-      iniciadaEn: new Date().toISOString()
-    };
-
-    guardar(CLAVES.sesion, sesion);
-    return copiar(sesion);
-  }
-
   function obtenerSesion() {
-    const sesion = leer(CLAVES.sesion, null);
+    const sesionServidor = window.FreeGamesConfig?.session;
 
-    if (!sesion?.usuarioId) {
+    if (!sesionServidor?.authenticated || !sesionServidor.usuario) {
       return null;
     }
 
-    const usuario = buscarUsuarioPorId(sesion.usuarioId);
-
-    if (!usuario || !usuario.activo) {
-      cerrarSesion();
-      return null;
-    }
-
-    return { ...sesion, usuario };
-  }
-
-  function cerrarSesion() {
-    eliminar(CLAVES.sesion);
+    return {
+      usuarioId: String(sesionServidor.usuario.id),
+      usuario: copiar(sesionServidor.usuario)
+    };
   }
 
   inicializarUsuarios();
@@ -215,14 +150,8 @@
   window.FreeGamesData = Object.freeze({
     listarUsuarios,
     buscarUsuarioPorId,
-    buscarUsuarioPorAcceso,
-    existeNombreUsuario,
-    existeCorreo,
-    registrarUsuario,
     actualizarUsuario,
-    crearSesion,
-    obtenerSesion,
-    cerrarSesion
+    obtenerSesion
   });
 
   // Los módulos de catálogo y compras reutilizan este acceso en vez de tocar localStorage.

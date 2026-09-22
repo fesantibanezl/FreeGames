@@ -1,6 +1,6 @@
 # FreeGames
 
-Proyecto para la asignatura **Programación Web — Experiencia de Aprendizaje 2**. En la semana 5, FreeGames incorpora persistencia con Oracle mediante el ORM de Django. El registro y la edición del perfil ya operan desde el Backend; el inicio de sesión y la autorización por roles se completarán en la siguiente parte.
+Proyecto para la asignatura **Programación Web — Experiencia de Aprendizaje 2**. En la semana 5, FreeGames incorpora persistencia con Oracle mediante el ORM de Django. El registro, el perfil, el inicio y cierre de sesión y la autorización por roles ya operan desde el Backend.
 
 ## Cómo ejecutar el proyecto
 
@@ -54,10 +54,10 @@ La configuración admite reemplazar los valores locales mediante las variables `
 
 - Catálogo inicial con cinco categorías y quince videojuegos, ampliable desde el mantenedor.
 - Navegación adaptable con menú colapsable en pantallas pequeñas.
-- Registro y edición de perfil persistentes en Oracle, con validaciones en el servidor.
-- Inicio de sesión y recuperación todavía demostrativos hasta completar la autenticación Django.
+- Registro, inicio de sesión por usuario o correo y edición de perfil persistentes en Oracle.
+- Sesiones seguras de Django, cierre de sesión por `POST` y validaciones en el servidor.
 - Validación inmediata de datos y mensajes accesibles en los formularios.
-- Roles de **cliente** y **administrador** con vistas y permisos diferentes.
+- Roles de **cliente** y **administrador** con navegación, redirecciones y rutas protegidas diferentes.
 - Carrito con cantidades, total, disponibilidad y compra simulada sin cobro real.
 - Historial de pedidos para el cliente.
 - Panel administrativo para registrar y modificar juegos, controlar su publicación y administrar roles y estados de cuentas.
@@ -72,6 +72,7 @@ La configuración admite reemplazar los valores locales mediante las variables `
 | `/accion/`, `/aventura/`, `/deportes/`, `/carreras/`, `/estrategia/` | Catálogo por categoría. |
 | `/registro/` | Registro de una cuenta de cliente. |
 | `/login/` | Inicio de sesión. |
+| `/logout/` | Cierre seguro de la sesión activa mediante `POST`. |
 | `/recuperar-clave/` | Recuperación simulada de contraseña. |
 | `/perfil/` | Consulta y edición del perfil activo. |
 | `/carrito/` | Carrito y confirmación de una compra simulada. |
@@ -88,7 +89,9 @@ Las migraciones crean estas cuentas en Oracle para revisar los roles y funcional
 | Cliente | `cliente` | `Cliente#2026` |
 | Administrador | `admin` | `Admin#2026` |
 
-La cuenta `admin` ya permite ingresar a `/admin/` mediante la autenticación de Django. El registro crea cuentas nuevas en Oracle e inicia su sesión para acceder al perfil. Hasta completar la siguiente parte, el formulario `/login/` continúa usando la demostración FrontEnd de la semana 4.
+Ambas cuentas permiten ingresar desde `/login/` con el nombre de usuario o el correo electrónico. La cuenta `admin` también permite ingresar a `/admin/`. El registro crea cuentas nuevas de cliente en Oracle e inicia su sesión para acceder al perfil.
+
+El cliente puede visitar el catálogo, el perfil, el carrito y su historial. El administrador es dirigido al mantenedor y no puede entrar a las páginas internas del cliente. Las rutas protegidas envían a `/login/` a quien aún no ha iniciado sesión.
 
 ## Estructura del proyecto
 
@@ -102,6 +105,8 @@ FreeGames/
 │   │   └── js/                # Funcionalidad FrontEnd y datos simulados.
 │   ├── templates/tienda/      # Plantilla base y páginas de la aplicación.
 │   ├── catalogo.py            # Categorías y contenido de presentación.
+│   ├── context_processors.py  # Rol disponible en todas las plantillas.
+│   ├── decorators.py          # Restricciones de acceso por rol.
 │   ├── forms.py               # Registro y actualización segura del perfil.
 │   ├── models.py              # Roles y perfiles persistentes de usuario.
 │   ├── admin.py               # Configuración de los modelos en Django Admin.
@@ -134,10 +139,10 @@ La plantilla base concentra la navegación, los estilos y los módulos JavaScrip
 
 - Oracle está configurado como base de datos predeterminada y contiene las tablas internas de Django después de ejecutar las migraciones.
 - El registro y la modificación del perfil utilizan Oracle; las contraseñas se almacenan mediante el sistema seguro de Django.
-- El formulario manual de inicio de sesión, el carrito y las compras todavía utilizan `localStorage`; su integración se realizará por partes durante la semana 5.
+- La autenticación, la sesión, el registro y el perfil utilizan Django y Oracle. El carrito, las compras y los mantenedores todavía usan `localStorage`; su migración se realizará en la siguiente parte.
 - Los juegos creados desde el mantenedor usan la imagen representativa de la categoría seleccionada.
 - Si `localStorage` no está disponible, se usa memoria mientras la página permanezca abierta.
-- Las contraseñas y la compra son demostrativas. No existe un cobro real ni una integración con WebPay.
+- Las contraseñas se validan con el sistema de autenticación de Django. La compra sigue siendo demostrativa; no existe un cobro real ni una integración con WebPay.
 - La interfaz considera navegación por teclado, foco visible, enlace para saltar al contenido y adaptación a móvil, tableta y escritorio.
 - El usuario estándar de Django almacena las credenciales; `PerfilUsuario` incorpora rol, fecha de nacimiento y dirección.
 - Los roles iniciales son **Cliente** y **Administrador**. Un rol asociado a perfiles no puede eliminarse accidentalmente.

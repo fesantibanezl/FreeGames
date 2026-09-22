@@ -240,6 +240,11 @@ h1 { margin-bottom: 8px; font: 800 clamp(2rem, 5vw, 3.2rem)/1.15 Orbitron, sans-
   text-align: left;
 }
 
+.main-nav .nav-logout-form {
+  display: flex;
+  margin: 0;
+}
+
 .main-nav .navbar-toggler {
   margin-left: auto;
   border-color: var(--border);

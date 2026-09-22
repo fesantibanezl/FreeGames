@@ -32,15 +32,11 @@ class CatalogoViewsTests(SimpleTestCase):
 
         self.assertEqual(respuesta.status_code, 404)
 
-    def test_paginas_funcionales_renderizan_sus_contenedores(self):
+    def test_paginas_publicas_renderizan_sus_contenedores(self):
         rutas = {
-            'carrito': ('id="cart-page"', 'tienda/carrito.html'),
             'login': ('id="login-form"', 'tienda/login.html'),
             'registro': ('id="registro-form"', 'tienda/registro.html'),
             'recuperar_clave': ('id="recuperar-form"', 'tienda/recuperar_clave.html'),
-            'mis_compras': ('id="history-content"', 'tienda/mis_compras.html'),
-            'compra_exitosa': ('id="purchase-result"', 'tienda/compra_exitosa.html'),
-            'administracion': ('id="administration-content"', 'tienda/administracion.html'),
         }
 
         for nombre_ruta, (contenedor, template) in rutas.items():
@@ -50,13 +46,6 @@ class CatalogoViewsTests(SimpleTestCase):
                 self.assertEqual(respuesta.status_code, 200)
                 self.assertContains(respuesta, contenedor)
                 self.assertTemplateUsed(respuesta, template)
-
-    def test_administracion_carga_su_modulo_javascript(self):
-        respuesta = self.client.get(reverse('tienda:administracion'))
-
-        self.assertContains(respuesta, '/static/tienda/js/administracion.js')
-        self.assertContains(respuesta, 'data-action="new-product"')
-        self.assertContains(respuesta, 'id="admin-product-description"')
 
     def test_categoria_expone_la_grilla_para_el_catalogo_guardado(self):
         respuesta = self.client.get(reverse('tienda:categoria', kwargs={'slug': 'accion'}))
@@ -215,3 +204,167 @@ class RegistroYPerfilTests(TestCase):
         self.assertEqual(usuario.perfil.direccion, 'Calle Nueva 456, Santiago')
         self.assertEqual(usuario.perfil.rol.codigo, Rol.Codigos.CLIENTE)
         self.assertEqual(usuario.password, clave_anterior)
+
+
+class AutenticacionYRolesTests(TestCase):
+    def setUp(self):
+        Usuario = get_user_model()
+        self.cliente = Usuario.objects.get(username='cliente')
+        self.administrador = Usuario.objects.get(username='admin')
+
+    def test_login_acepta_usuario_para_cliente_y_correo_para_administrador(self):
+        respuesta = self.client.post(
+            reverse('tienda:login'),
+            {'acceso': 'CLIENTE', 'clave': 'Cliente#2026'},
+        )
+        self.assertRedirects(respuesta, reverse('tienda:inicio'))
+        self.assertEqual(
+            int(self.client.session['_auth_user_id']),
+            self.cliente.pk,
+        )
+
+        self.client.logout()
+        respuesta = self.client.post(
+            reverse('tienda:login'),
+            {'acceso': 'ADMIN@FREEGAMES.CL', 'clave': 'Admin#2026'},
+        )
+        self.assertRedirects(
+            respuesta,
+            reverse('tienda:administracion'),
+        )
+        self.assertEqual(
+            int(self.client.session['_auth_user_id']),
+            self.administrador.pk,
+        )
+
+    def test_login_informa_credenciales_invalidas_y_cuenta_inactiva(self):
+        respuesta = self.client.post(
+            reverse('tienda:login'),
+            {'acceso': 'cliente', 'clave': 'Incorrecta#2026'},
+        )
+        self.assertEqual(respuesta.status_code, 200)
+        self.assertContains(
+            respuesta,
+            'No fue posible iniciar sesión. Revisa tus credenciales.',
+        )
+
+        self.cliente.is_active = False
+        self.cliente.save(update_fields=('is_active',))
+        respuesta = self.client.post(
+            reverse('tienda:login'),
+            {'acceso': 'cliente', 'clave': 'Cliente#2026'},
+        )
+        self.assertEqual(respuesta.status_code, 200)
+        self.assertContains(
+            respuesta,
+            'La cuenta está desactivada. Contacta al administrador.',
+        )
+
+    def test_login_respeta_destino_interno_del_cliente(self):
+        destino = reverse('tienda:carrito')
+        respuesta = self.client.post(
+            reverse('tienda:login'),
+            {
+                'acceso': 'cliente',
+                'clave': 'Cliente#2026',
+                'siguiente': destino,
+            },
+        )
+
+        self.assertRedirects(respuesta, destino)
+
+    def test_logout_solo_acepta_post_y_elimina_la_sesion(self):
+        self.client.force_login(self.cliente)
+
+        respuesta = self.client.get(reverse('tienda:logout'))
+        self.assertEqual(respuesta.status_code, 405)
+        self.assertIn('_auth_user_id', self.client.session)
+
+        respuesta = self.client.post(reverse('tienda:logout'))
+        self.assertRedirects(respuesta, reverse('tienda:inicio'))
+        self.assertNotIn('_auth_user_id', self.client.session)
+
+    def test_paginas_internas_redirigen_al_login_sin_sesion(self):
+        for nombre_ruta in (
+            'perfil',
+            'carrito',
+            'mis_compras',
+            'compra_exitosa',
+            'administracion',
+        ):
+            with self.subTest(nombre_ruta=nombre_ruta):
+                ruta = reverse(f'tienda:{nombre_ruta}')
+                respuesta = self.client.get(ruta)
+                self.assertRedirects(
+                    respuesta,
+                    f"{reverse('tienda:login')}?next={ruta}",
+                    fetch_redirect_response=False,
+                )
+
+    def test_cliente_accede_a_sus_paginas_y_no_al_panel_administrativo(self):
+        self.client.force_login(self.cliente)
+        paginas_cliente = {
+            'perfil': 'id="perfil-form"',
+            'carrito': 'id="cart-page"',
+            'mis_compras': 'id="history-content"',
+            'compra_exitosa': 'id="purchase-result"',
+        }
+
+        for nombre_ruta, contenedor in paginas_cliente.items():
+            with self.subTest(nombre_ruta=nombre_ruta):
+                respuesta = self.client.get(reverse(f'tienda:{nombre_ruta}'))
+                self.assertEqual(respuesta.status_code, 200)
+                self.assertContains(respuesta, contenedor)
+
+        respuesta = self.client.get(reverse('tienda:administracion'))
+        self.assertRedirects(respuesta, reverse('tienda:inicio'))
+
+    def test_administrador_accede_al_panel_y_es_redirigido_desde_area_cliente(self):
+        self.client.force_login(self.administrador)
+        respuesta = self.client.get(reverse('tienda:administracion'))
+
+        self.assertEqual(respuesta.status_code, 200)
+        self.assertContains(respuesta, '/static/tienda/js/administracion.js')
+        self.assertContains(respuesta, 'data-action="new-product"')
+        self.assertContains(respuesta, 'id="admin-product-description"')
+
+        for nombre_ruta in (
+            'inicio',
+            'perfil',
+            'carrito',
+            'mis_compras',
+            'compra_exitosa',
+        ):
+            with self.subTest(nombre_ruta=nombre_ruta):
+                respuesta = self.client.get(reverse(f'tienda:{nombre_ruta}'))
+                self.assertRedirects(
+                    respuesta,
+                    reverse('tienda:administracion'),
+                )
+
+        respuesta = self.client.get(
+            reverse('tienda:categoria', kwargs={'slug': 'accion'}),
+        )
+        self.assertRedirects(respuesta, reverse('tienda:administracion'))
+
+    def test_navegacion_se_adapta_a_la_sesion_y_al_rol(self):
+        respuesta = self.client.get(reverse('tienda:inicio'))
+        self.assertContains(respuesta, 'Iniciar sesión')
+        self.assertContains(respuesta, 'Registrarse')
+        self.assertNotContains(respuesta, 'Cerrar sesión')
+
+        self.client.force_login(self.cliente)
+        respuesta = self.client.get(reverse('tienda:inicio'))
+        self.assertContains(respuesta, 'Mi perfil: cliente')
+        self.assertContains(respuesta, 'Mis compras')
+        self.assertContains(respuesta, 'Cerrar sesión')
+        self.assertNotContains(respuesta, '>Administración</a>')
+        self.assertContains(respuesta, 'rol: "cliente"')
+
+        self.client.force_login(self.administrador)
+        respuesta = self.client.get(reverse('tienda:administracion'))
+        self.assertContains(respuesta, '>Administración</a>')
+        self.assertContains(respuesta, 'Cerrar sesión')
+        self.assertNotContains(respuesta, '>Acción</a>')
+        self.assertNotContains(respuesta, 'Mi perfil:')
+        self.assertContains(respuesta, 'rol: "administrador"')

@@ -2,7 +2,7 @@ import re
 from datetime import date
 
 from django import forms
-from django.contrib.auth import get_user_model
+from django.contrib.auth import authenticate, get_user_model
 from django.contrib.auth.password_validation import validate_password
 from django.core.exceptions import ValidationError
 from django.core.validators import RegexValidator
@@ -42,6 +42,46 @@ def validar_fecha_nacimiento(fecha_nacimiento):
 
     if edad < 13:
         raise ValidationError('Debes tener al menos 13 años.')
+
+
+class InicioSesionForm(forms.Form):
+    acceso = forms.CharField(max_length=100)
+    clave = forms.CharField(max_length=128)
+
+    def __init__(self, *args, request=None, **kwargs):
+        self.request = request
+        self.usuario = None
+        super().__init__(*args, **kwargs)
+
+    def clean(self):
+        datos = super().clean()
+        acceso = datos.get('acceso', '').strip()
+        clave = datos.get('clave')
+        if not acceso or not clave:
+            return datos
+
+        usuario = Usuario.objects.filter(username__iexact=acceso).first()
+        if usuario is None:
+            usuario = Usuario.objects.filter(email__iexact=acceso).first()
+
+        if usuario is not None and not usuario.is_active:
+            raise ValidationError(
+                'La cuenta está desactivada. Contacta al administrador.',
+            )
+
+        if usuario is not None:
+            self.usuario = authenticate(
+                self.request,
+                username=usuario.username,
+                password=clave,
+            )
+
+        if self.usuario is None:
+            raise ValidationError(
+                'No fue posible iniciar sesión. Revisa tus credenciales.',
+            )
+
+        return datos
 
 
 class DatosUsuarioForm(forms.Form):
