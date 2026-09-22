@@ -5,6 +5,39 @@
 
 {% block contenido %}
 <main class="purchase-page" id="contenido-principal">
-  <section id="purchase-result" aria-live="polite"></section>
+  <section id="purchase-result" aria-live="polite">
+    {% if pedido %}
+      <section class="purchase-success" aria-labelledby="purchase-title">
+        <p class="eyebrow">Compra simulada</p>
+        <h1 id="purchase-title">¡Compra confirmada!</h1>
+        <p>El pedido fue guardado en Oracle. No se utilizó WebPay ni se realizó un cobro real.</p>
+
+        <div class="purchase-details">
+          <div><span>Pedido</span><strong>{{ pedido.codigo }}</strong></div>
+          <div><span>Fecha</span><strong>{{ pedido.creado_en|date:'d/m/Y H:i' }}</strong></div>
+          <div><span>Estado</span><strong class="order-status">{{ pedido.get_estado_display }}</strong></div>
+        </div>
+
+        <h2>Resumen del pedido</h2>
+        <ul class="purchase-items">
+          {% for detalle in pedido.detalles.all %}
+            <li><span>{{ detalle.nombre_juego }} × {{ detalle.cantidad }}</span><strong>{{ detalle.subtotal_texto }}</strong></li>
+          {% endfor %}
+        </ul>
+        <p class="purchase-total"><span>Total pagado</span><strong>{{ pedido.total_texto }}</strong></p>
+
+        <div class="form-actions">
+          <a class="button button-primary" href="{% url 'tienda:mis_compras' %}">Ver mis compras</a>
+          <a class="button button-secondary" href="{% url 'tienda:inicio' %}">Seguir explorando</a>
+        </div>
+      </section>
+    {% else %}
+      <section class="access-notice">
+        <h1>No encontramos una compra reciente</h1>
+        <p>Agrega juegos al carrito para realizar una compra simulada.</p>
+        <a class="primary-link" href="{% url 'tienda:carrito' %}">Ir al carrito</a>
+      </section>
+    {% endif %}
+  </section>
 </main>
 {% endblock %}

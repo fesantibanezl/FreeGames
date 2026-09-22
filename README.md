@@ -1,6 +1,6 @@
 # FreeGames
 
-Proyecto para la asignatura **Programación Web — Experiencia de Aprendizaje 2**. En la semana 5, FreeGames incorpora persistencia con Oracle mediante el ORM de Django. El registro, el perfil, el inicio y cierre de sesión y la autorización por roles ya operan desde el Backend.
+Proyecto para la asignatura **Programación Web — Experiencia de Aprendizaje 2**. En la semana 5, FreeGames incorpora persistencia con Oracle mediante el ORM de Django. El catálogo, el CRUD de juegos, los usuarios y los pedidos ya operan desde el Backend, junto con la autenticación y la autorización por roles.
 
 ## Cómo ejecutar el proyecto
 
@@ -52,17 +52,19 @@ La configuración admite reemplazar los valores locales mediante las variables `
 
 ## Funcionalidades implementadas
 
-- Catálogo inicial con cinco categorías y quince videojuegos, ampliable desde el mantenedor.
+- Catálogo persistente con cinco categorías y quince videojuegos iniciales, ampliable desde el mantenedor.
 - Navegación adaptable con menú colapsable en pantallas pequeñas.
 - Registro, inicio de sesión por usuario o correo y edición de perfil persistentes en Oracle.
 - Sesiones seguras de Django, cierre de sesión por `POST` y validaciones en el servidor.
 - Validación inmediata de datos y mensajes accesibles en los formularios.
 - Roles de **cliente** y **administrador** con navegación, redirecciones y rutas protegidas diferentes.
-- Carrito con cantidades, total, disponibilidad y compra simulada sin cobro real.
-- Historial de pedidos para el cliente.
-- Panel administrativo para registrar y modificar juegos, controlar su publicación y administrar roles y estados de cuentas.
+- Carrito guardado en la sesión Django, con cantidades, total y validación de disponibilidad.
+- Compra transaccional que registra el pedido y su detalle en Oracle y descuenta el stock.
+- Historial persistente de pedidos para cada cliente.
+- CRUD completo de juegos para crear, consultar, modificar y eliminar registros desde la interfaz.
+- Panel administrativo para controlar la publicación de juegos y modificar roles y estados de cuentas persistentes.
 - Vistas, plantillas y archivos estáticos organizados mediante Django.
-- Modelos persistentes para roles y perfiles de usuario, visibles desde Django Admin.
+- Modelos persistentes para categorías, juegos, pedidos, detalles, roles y perfiles, visibles desde Django Admin.
 
 ## Rutas principales
 
@@ -75,10 +77,10 @@ La configuración admite reemplazar los valores locales mediante las variables `
 | `/logout/` | Cierre seguro de la sesión activa mediante `POST`. |
 | `/recuperar-clave/` | Recuperación simulada de contraseña. |
 | `/perfil/` | Consulta y edición del perfil activo. |
-| `/carrito/` | Carrito y confirmación de una compra simulada. |
-| `/mis-compras/` | Historial exclusivo del rol cliente. |
-| `/administracion/` | Panel exclusivo del rol administrador. |
-| `/admin/` | Administrador de Django para usuarios, perfiles y roles. |
+| `/carrito/` | Carrito de sesión y confirmación de una compra simulada. |
+| `/mis-compras/` | Historial persistente exclusivo del rol cliente. |
+| `/administracion/` | CRUD y mantenedores exclusivos del administrador. |
+| `/admin/` | Administrador Django para todos los modelos persistentes. |
 
 ## Cuentas de prueba
 
@@ -102,13 +104,12 @@ FreeGames/
 │   ├── static/tienda/
 │   │   ├── css/               # Estilos y diseño adaptable.
 │   │   ├── img/               # Ilustraciones PNG del catálogo.
-│   │   └── js/                # Funcionalidad FrontEnd y datos simulados.
+│   │   └── js/                # Validaciones y recuperación demostrativa.
 │   ├── templates/tienda/      # Plantilla base y páginas de la aplicación.
-│   ├── catalogo.py            # Categorías y contenido de presentación.
 │   ├── context_processors.py  # Rol disponible en todas las plantillas.
 │   ├── decorators.py          # Restricciones de acceso por rol.
-│   ├── forms.py               # Registro y actualización segura del perfil.
-│   ├── models.py              # Roles y perfiles persistentes de usuario.
+│   ├── forms.py               # Formularios de cuentas, perfil y mantenedores.
+│   ├── models.py              # Catálogo, pedidos, roles y perfiles persistentes.
 │   ├── admin.py               # Configuración de los modelos en Django Admin.
 │   ├── migrations/            # Estructura y datos iniciales de Oracle.
 │   ├── tests.py               # Pruebas de vistas, rutas y plantillas.
@@ -127,7 +128,8 @@ Navegador
   → freegames/urls.py
   → tienda/urls.py
   → views.categoria
-  → contexto definido en catalogo.py
+  → Categoria y Juego mediante el ORM
+  → Oracle
   → templates/tienda/categoria.html
   → templates/tienda/base.html y static/tienda/
   → respuesta HTML
@@ -138,14 +140,15 @@ La plantilla base concentra la navegación, los estilos y los módulos JavaScrip
 ## Consideraciones
 
 - Oracle está configurado como base de datos predeterminada y contiene las tablas internas de Django después de ejecutar las migraciones.
-- El registro y la modificación del perfil utilizan Oracle; las contraseñas se almacenan mediante el sistema seguro de Django.
-- La autenticación, la sesión, el registro y el perfil utilizan Django y Oracle. El carrito, las compras y los mantenedores todavía usan `localStorage`; su migración se realizará en la siguiente parte.
+- El registro, la autenticación, los perfiles, el catálogo, los pedidos y los mantenedores utilizan Django y Oracle.
+- Las contraseñas se almacenan mediante el sistema seguro de Django y nunca se guardan en el navegador.
+- El carrito utiliza la sesión Django y deja de depender de `localStorage`.
 - Los juegos creados desde el mantenedor usan la imagen representativa de la categoría seleccionada.
-- Si `localStorage` no está disponible, se usa memoria mientras la página permanezca abierta.
 - Las contraseñas se validan con el sistema de autenticación de Django. La compra sigue siendo demostrativa; no existe un cobro real ni una integración con WebPay.
 - La interfaz considera navegación por teclado, foco visible, enlace para saltar al contenido y adaptación a móvil, tableta y escritorio.
 - El usuario estándar de Django almacena las credenciales; `PerfilUsuario` incorpora rol, fecha de nacimiento y dirección.
 - Los roles iniciales son **Cliente** y **Administrador**. Un rol asociado a perfiles no puede eliminarse accidentalmente.
+- Los juegos asociados a pedidos no se eliminan para conservar la integridad del historial; el mantenedor los oculta del catálogo.
 
 ## Evidencias de la semana 4
 
@@ -156,6 +159,17 @@ La plantilla base concentra la navegación, los estilos y los módulos JavaScrip
 | Migración de directorios | HTML en `templates/tienda` y CSS, JavaScript e imágenes en `static/tienda`. |
 | Visualización local | Ejecución con `python manage.py runserver` y rutas HTTP comprobadas. |
 | Continuidad en Git | Desarrollo incremental en la rama `semana-4`, mediante commits separados por parte. |
+
+## Evidencias de la semana 5
+
+| Criterio | Evidencia en el proyecto |
+| --- | --- |
+| Conexión con Oracle | Configuración en `settings.py`, controlador `oracledb` y migraciones aplicadas en `XEPDB1`. |
+| Modelos persistentes | Categorías, juegos, pedidos, detalles, roles y perfiles definidos mediante el ORM. |
+| CRUD completo | El mantenedor permite crear, leer, actualizar, ocultar y eliminar juegos desde la interfaz. |
+| Operaciones DML | El catálogo consulta Oracle; las compras crean pedidos, crean detalles y actualizan existencias. |
+| Administración de usuarios | El administrador modifica roles y estado de cuentas persistentes. |
+| Autenticación y autorización | Sesiones Django, cierre por `POST` y rutas restringidas para cliente y administrador. |
 
 ## Pruebas
 

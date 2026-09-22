@@ -8,7 +8,7 @@ from django.core.exceptions import ValidationError
 from django.core.validators import RegexValidator
 from django.db import transaction
 
-from .models import PerfilUsuario, Rol
+from .models import Juego, PerfilUsuario, Rol
 
 
 Usuario = get_user_model()
@@ -230,3 +230,130 @@ class PerfilUsuarioForm(DatosUsuarioForm):
         self.perfil.direccion = self.cleaned_data['direccion']
         self.perfil.save(update_fields=('fecha_nacimiento', 'direccion', 'actualizado_en'))
         return self.usuario
+
+
+class JuegoForm(forms.ModelForm):
+    class Meta:
+        model = Juego
+        fields = (
+            'nombre',
+            'categoria',
+            'descripcion',
+            'precio',
+            'stock',
+            'activo',
+        )
+        widgets = {
+            'nombre': forms.TextInput(attrs={
+                'class': 'form-control',
+                'id': 'admin-product-name',
+                'placeholder': 'Ejemplo: Hollow Knight',
+            }),
+            'categoria': forms.Select(attrs={
+                'class': 'form-select',
+                'id': 'admin-product-category',
+            }),
+            'descripcion': forms.Textarea(attrs={
+                'class': 'form-control',
+                'id': 'admin-product-description',
+                'rows': 4,
+                'placeholder': 'Describe brevemente el juego',
+            }),
+            'precio': forms.NumberInput(attrs={
+                'class': 'form-control',
+                'id': 'admin-product-price',
+                'min': 0,
+            }),
+            'stock': forms.NumberInput(attrs={
+                'class': 'form-control',
+                'id': 'admin-product-stock',
+                'min': 0,
+            }),
+            'activo': forms.CheckboxInput(attrs={
+                'class': 'form-check-input',
+                'id': 'admin-product-active',
+            }),
+        }
+
+    def clean_nombre(self):
+        nombre = self.cleaned_data['nombre'].strip()
+        juegos = Juego.objects.filter(nombre__iexact=nombre)
+        if self.instance.pk:
+            juegos = juegos.exclude(pk=self.instance.pk)
+        if juegos.exists():
+            raise ValidationError('Ya existe un juego registrado con ese nombre.')
+        return nombre
+
+    def clean_descripcion(self):
+        descripcion = self.cleaned_data['descripcion'].strip()
+        if len(descripcion) < 10:
+            raise ValidationError('La descripción debe tener al menos 10 caracteres.')
+        return descripcion
+
+
+class UsuarioAdministracionForm(forms.Form):
+    rol = forms.ModelChoiceField(
+        queryset=Rol.objects.none(),
+        to_field_name='codigo',
+        empty_label=None,
+    )
+    activo = forms.ChoiceField(
+        choices=(('true', 'Cuenta activa'), ('false', 'Cuenta inactiva')),
+    )
+
+    def __init__(self, *args, usuario_objetivo, usuario_actual, **kwargs):
+        self.usuario_objetivo = usuario_objetivo
+        self.usuario_actual = usuario_actual
+        super().__init__(*args, **kwargs)
+        self.fields['rol'].queryset = Rol.objects.all()
+        self.fields['rol'].widget.attrs.update({
+            'class': 'form-select',
+            'id': 'admin-user-role',
+        })
+        self.fields['activo'].widget.attrs.update({
+            'class': 'form-select',
+            'id': 'admin-user-active',
+        })
+
+        if not self.is_bound:
+            self.initial.update({
+                'rol': usuario_objetivo.perfil.rol.codigo,
+                'activo': str(usuario_objetivo.is_active).lower(),
+            })
+
+    def clean(self):
+        datos = super().clean()
+        rol = datos.get('rol')
+        activo = datos.get('activo') == 'true'
+
+        cambia_rol_propio = (
+            rol is not None
+            and rol.codigo != Rol.Codigos.ADMINISTRADOR
+        )
+        if (
+            self.usuario_objetivo == self.usuario_actual
+            and (cambia_rol_propio or not activo)
+        ):
+            raise ValidationError(
+                'No puedes cambiar tu propio rol ni desactivar tu cuenta.',
+            )
+        return datos
+
+    @transaction.atomic
+    def save(self):
+        rol = self.cleaned_data['rol']
+        activo = self.cleaned_data['activo'] == 'true'
+        perfil = self.usuario_objetivo.perfil
+        perfil.rol = rol
+        perfil.save(update_fields=('rol', 'actualizado_en'))
+
+        self.usuario_objetivo.is_active = activo
+        self.usuario_objetivo.is_staff = (
+            rol.codigo == Rol.Codigos.ADMINISTRADOR
+        )
+        if rol.codigo != Rol.Codigos.ADMINISTRADOR:
+            self.usuario_objetivo.is_superuser = False
+        self.usuario_objetivo.save(
+            update_fields=('is_active', 'is_staff', 'is_superuser'),
+        )
+        return self.usuario_objetivo

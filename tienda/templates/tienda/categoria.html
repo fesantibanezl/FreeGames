@@ -17,8 +17,8 @@
     <section aria-labelledby="games-title">
       <h2 id="games-title" class="section-title">Juegos disponibles</h2>
       <div class="games-grid" data-products-grid>
-        {% for juego in categoria.juegos %}
-          <article class="game-card" data-product-id="{{ juego.id }}">
+        {% for juego in juegos %}
+          <article class="game-card" data-product-id="{{ juego.pk }}">
             <img src="{% static juego.imagen %}" alt="{{ juego.imagen_alt }}">
             <div class="game-info">
               <div class="game-labels">
@@ -29,15 +29,23 @@
               <p>{{ juego.descripcion }}</p>
               <div class="game-footer">
                 <span>Precio</span>
-                <strong data-product-price>{{ juego.precio }}</strong>
+                <strong>{{ juego.precio_texto }}</strong>
               </div>
               <div class="product-actions">
-                <span class="stock-status" data-product-stock></span>
-                <button class="button button-primary add-to-cart" type="button" data-action="add-to-cart">{% if juego.gratis %}Obtener gratis{% else %}Agregar al carrito{% endif %}</button>
+                <span class="stock-status{% if not juego.stock %} unavailable{% endif %}">{% if juego.stock %}{{ juego.stock }} disponibles{% else %}Sin stock{% endif %}</span>
+                {% if request.user.is_authenticated %}
+                  <form action="{% url 'tienda:agregar_carrito' juego_id=juego.pk %}" method="post">
+                    {% csrf_token %}
+                    <button class="button button-primary add-to-cart" type="submit"{% if not juego.stock %} disabled{% endif %}>{% if juego.gratis %}Obtener gratis{% else %}Agregar al carrito{% endif %}</button>
+                  </form>
+                {% else %}
+                  <a class="button button-primary add-to-cart" href="{% url 'tienda:login' %}?next={% url 'tienda:categoria' slug=categoria.slug %}">Inicia sesión para comprar</a>
+                {% endif %}
               </div>
-              <p class="card-status" data-product-status role="status" aria-live="polite"></p>
             </div>
           </article>
+        {% empty %}
+          <p class="empty-state">No hay juegos publicados en esta categoría.</p>
         {% endfor %}
       </div>
     </section>

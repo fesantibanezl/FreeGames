@@ -8,10 +8,33 @@
   <section class="page-intro">
     <p class="eyebrow">Cuenta de cliente</p>
     <h1>Mis compras</h1>
-    <p>Aquí se muestran los pedidos creados en esta demostración. No existe un medio de pago conectado.</p>
+    <p>Estos pedidos están guardados en Oracle. No existe un medio de pago conectado.</p>
   </section>
 
-  <section id="history-guard" class="access-notice" hidden></section>
-  <section id="history-content" class="orders-list" aria-live="polite"></section>
+  <section id="history-content" class="orders-list" aria-live="polite">
+    {% for pedido in pedidos %}
+      <article class="order-card">
+        <header>
+          <div>
+            <p class="eyebrow">Pedido {{ pedido.codigo }}</p>
+            <h2>{{ pedido.creado_en|date:'d/m/Y H:i' }}</h2>
+          </div>
+          <span class="order-status">{{ pedido.get_estado_display }}</span>
+        </header>
+        <ul class="purchase-items">
+          {% for detalle in pedido.detalles.all %}
+            <li><span>{{ detalle.nombre_juego }} × {{ detalle.cantidad }}</span><strong>{{ detalle.subtotal_texto }}</strong></li>
+          {% endfor %}
+        </ul>
+        <p class="purchase-total"><span>Total</span><strong>{{ pedido.total_texto }}</strong></p>
+      </article>
+    {% empty %}
+      <section class="empty-state">
+        <h2>Aún no tienes compras</h2>
+        <p>Cuando completes una compra simulada, sus detalles aparecerán aquí.</p>
+        <a class="primary-link" href="{% url 'tienda:inicio' %}">Explorar juegos</a>
+      </section>
+    {% endfor %}
+  </section>
 </main>
 {% endblock %}

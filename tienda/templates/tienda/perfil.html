@@ -63,9 +63,6 @@
         <button class="button button-secondary btn btn-outline-light" type="reset">Restablecer datos</button>
       </div>
 
-      {% for mensaje in messages %}
-        <p class="form-status {{ mensaje.tags }}" role="status" aria-live="polite" tabindex="-1">{{ mensaje }}</p>
-      {% endfor %}
       <p class="form-status error" id="form-status" role="status" aria-live="polite" tabindex="-1"{% if not formulario.non_field_errors %} hidden{% endif %}>{{ formulario.non_field_errors.0 }}</p>
     </form>
   </section>

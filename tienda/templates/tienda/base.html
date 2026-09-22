@@ -8,33 +8,6 @@
   <title>{% block titulo %}FreeGames{% endblock %}</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
   <link rel="stylesheet" href="{% static 'tienda/css/style.css' %}">
-  <script>
-    window.FreeGamesConfig = Object.freeze({
-      staticBase: "{% static 'tienda/' %}",
-      routes: Object.freeze({
-        inicio: "{% url 'tienda:inicio' %}",
-        carrito: "{% url 'tienda:carrito' %}",
-        login: "{% url 'tienda:login' %}",
-        registro: "{% url 'tienda:registro' %}",
-        recuperarClave: "{% url 'tienda:recuperar_clave' %}",
-        perfil: "{% url 'tienda:perfil' %}",
-        misCompras: "{% url 'tienda:mis_compras' %}",
-        compraExitosa: "{% url 'tienda:compra_exitosa' %}",
-        administracion: "{% url 'tienda:administracion' %}"
-      }),
-      session: Object.freeze({
-        authenticated: {% if request.user.is_authenticated %}true{% else %}false{% endif %},
-        usuario: {% if request.user.is_authenticated %}Object.freeze({
-          id: "{{ request.user.pk|escapejs }}",
-          rol: "{{ rol_actual|escapejs }}"
-        }){% else %}null{% endif %}
-      })
-    });
-  </script>
-  <script src="{% static 'tienda/js/datos-demo.js' %}" defer></script>
-  <script src="{% static 'tienda/js/productos.js' %}" defer></script>
-  <script src="{% static 'tienda/js/compras.js' %}" defer></script>
-  <script src="{% static 'tienda/js/carrito.js' %}" defer></script>
   <script src="{% static 'tienda/js/validaciones.js' %}" defer></script>
   <script src="{% static 'tienda/js/autenticacion.js' %}" defer></script>
   {% block scripts_extra %}{% endblock %}
@@ -68,7 +41,7 @@
 
           {% if request.user.is_authenticated %}
             {% if rol_actual == 'cliente' %}
-              <a class="nav-link{% if seccion_activa == 'carrito' %} active{% endif %}" href="{% url 'tienda:carrito' %}">Carrito <span class="cart-count" data-cart-count hidden>0</span></a>
+              <a class="nav-link{% if seccion_activa == 'carrito' %} active{% endif %}" href="{% url 'tienda:carrito' %}">Carrito <span class="cart-count"{% if not cantidad_carrito %} hidden{% endif %}>{{ cantidad_carrito }}</span></a>
               <a class="nav-link{% if seccion_activa == 'perfil' %} active{% endif %}" href="{% url 'tienda:perfil' %}">Mi perfil: {{ request.user.username }}</a>
               <a class="nav-link{% if seccion_activa == 'mis_compras' %} active{% endif %}" href="{% url 'tienda:mis_compras' %}">Mis compras</a>
             {% elif rol_actual == 'administrador' %}
@@ -86,6 +59,14 @@
       </div>
     </div>
   </nav>
+
+  {% if messages %}
+    <section class="site-messages container" aria-label="Mensajes del sistema">
+      {% for mensaje in messages %}
+        <p class="form-status {{ mensaje.tags }}" role="status" aria-live="polite">{{ mensaje }}</p>
+      {% endfor %}
+    </section>
+  {% endif %}
 
   {% block contenido %}{% endblock %}
 

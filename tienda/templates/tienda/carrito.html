@@ -1,4 +1,5 @@
 {% extends 'tienda/base.html' %}
+{% load static %}
 
 {% block titulo %}Carrito | FreeGames{% endblock %}
 {% block descripcion %}Revisa los videojuegos agregados a tu carrito de FreeGames.{% endblock %}
@@ -14,23 +15,57 @@
   <section id="cart-page" aria-label="Juegos seleccionados">
     <div class="cart-layout">
       <div>
-        <div id="cart-empty" class="empty-state" hidden>
-          <h2>Tu carrito está vacío</h2>
-          <p>Cuando agregues un juego desde el catálogo, aparecerá aquí.</p>
-          <a class="button button-primary" href="{% url 'tienda:categoria' slug='accion' %}">Explorar juegos</a>
-        </div>
-        <div id="cart-items" class="cart-list"></div>
+        {% if items_carrito %}
+          <div id="cart-items" class="cart-list">
+            {% for item in items_carrito %}
+              <article class="cart-item">
+                <img src="{% static item.juego.imagen %}" alt="{{ item.juego.imagen_alt }}">
+                <div class="cart-item-info">
+                  <p class="eyebrow">{{ item.juego.categoria.nombre }}</p>
+                  <h2>{{ item.juego.nombre }}</h2>
+                  <p>{{ item.juego.precio_texto }} por unidad · {{ item.juego.stock }} disponibles</p>
+                </div>
+                <form class="cart-quantity" action="{% url 'tienda:actualizar_carrito' juego_id=item.juego.pk %}" method="post" aria-label="Cantidad de {{ item.juego.nombre }}">
+                  {% csrf_token %}
+                  <input type="number" name="cantidad" min="1" max="{{ item.juego.stock }}" value="{{ item.cantidad }}" aria-label="Cantidad de {{ item.juego.nombre }}">
+                  <button type="submit" aria-label="Actualizar cantidad de {{ item.juego.nombre }}">✓</button>
+                </form>
+                <strong class="cart-subtotal">{{ item.subtotal_texto }}</strong>
+                <form class="remove-form" action="{% url 'tienda:quitar_carrito' juego_id=item.juego.pk %}" method="post">
+                  {% csrf_token %}
+                  <button class="remove-item" type="submit">Eliminar</button>
+                </form>
+                {% if not item.stock_suficiente %}
+                  <p class="field-error cart-stock-error">La cantidad supera el stock disponible.</p>
+                {% endif %}
+              </article>
+            {% endfor %}
+          </div>
+        {% else %}
+          <div id="cart-empty" class="empty-state">
+            <h2>Tu carrito está vacío</h2>
+            <p>Cuando agregues un juego desde el catálogo, aparecerá aquí.</p>
+            <a class="button button-primary" href="{% url 'tienda:categoria' slug='accion' %}">Explorar juegos</a>
+          </div>
+        {% endif %}
       </div>
 
-      <aside id="cart-summary" class="cart-summary" hidden aria-label="Resumen del pedido">
-        <h2>Resumen del pedido</h2>
-        <p class="summary-total"><span>Total</span><strong data-cart-total>$0</strong></p>
-        <button class="button button-primary" type="button" data-action="checkout">Finalizar compra simulada</button>
-        <button class="button button-secondary" type="button" data-action="empty-cart">Vaciar carrito</button>
-        <p class="cart-note">Para confirmar el pedido debes iniciar sesión con una cuenta de cliente.</p>
-      </aside>
+      {% if items_carrito %}
+        <aside id="cart-summary" class="cart-summary" aria-label="Resumen del pedido">
+          <h2>Resumen del pedido</h2>
+          <p class="summary-total"><span>Total</span><strong>{{ total_carrito_texto }}</strong></p>
+          <form action="{% url 'tienda:finalizar_compra' %}" method="post">
+            {% csrf_token %}
+            <button class="button button-primary" type="submit"{% if not carrito_valido %} disabled{% endif %}>Finalizar compra simulada</button>
+          </form>
+          <form action="{% url 'tienda:vaciar_carrito' %}" method="post">
+            {% csrf_token %}
+            <button class="button button-secondary" type="submit">Vaciar carrito</button>
+          </form>
+          <p class="cart-note">El pedido se guardará en Oracle y no realizará ningún cobro real.</p>
+        </aside>
+      {% endif %}
     </div>
-    <p id="cart-status" class="form-status" role="status" aria-live="polite" hidden></p>
   </section>
 </main>
 {% endblock %}

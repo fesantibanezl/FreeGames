@@ -18,7 +18,7 @@
 
     <nav class="category-list d-grid gap-3" aria-label="Categorías de videojuegos">
       {% for categoria in categorias %}
-        <a class="category-row {{ categoria.clase }}" href="{% url 'tienda:categoria' slug=categoria.slug %}">
+        <a class="category-row {{ categoria.clase_css }}" href="{% url 'tienda:categoria' slug=categoria.slug %}">
           <img src="{% static categoria.imagen %}" alt="{{ categoria.imagen_alt }}">
           <span class="category-copy"><small>{{ categoria.resumen }}</small><strong>{{ categoria.nombre }}</strong></span>
           <span class="category-arrow" aria-hidden="true">→</span>
