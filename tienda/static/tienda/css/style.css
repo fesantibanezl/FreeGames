@@ -641,6 +641,7 @@ h1 { margin-bottom: 8px; font: 800 clamp(2rem, 5vw, 3.2rem)/1.15 Orbitron, sans-
 
 .admin-card { padding: 24px; }
 .admin-card h3 { margin-bottom: 20px; font: 800 1.2rem/1.25 Orbitron, sans-serif; }
+.admin-create-user { margin-top: 22px; }
 .admin-published-check { display: flex; align-items: center; gap: 10px; margin-top: 18px; }
 .admin-published-check .form-check-input { margin: 0; }
 
@@ -783,6 +784,9 @@ h1 { margin-bottom: 8px; font: 800 clamp(2rem, 5vw, 3.2rem)/1.15 Orbitron, sans-
 .button-primary { color: #07101d; background: linear-gradient(135deg, var(--cyan), #8affca); }
 
 .button-secondary { color: var(--text); background: transparent; border-color: var(--border); }
+
+.button-danger { color: #fff; background: #a63d32; border-color: #ff9279; }
+.button-danger:hover, .button-danger:focus-visible { background: #c64b3d; }
 
 .button:disabled {
   opacity: .55;

@@ -8,7 +8,7 @@
   <section class="page-intro">
     <p class="eyebrow">Rol administrador</p>
     <h1>Administración</h1>
-    <p>Registra, consulta, modifica y elimina juegos, además de administrar los roles y estados de las cuentas. Todos los cambios se guardan en Oracle.</p>
+    <p>Registra, consulta, modifica y elimina juegos y cuentas de usuario. Todos los cambios se guardan en Oracle.</p>
   </section>
 
   <section id="administration-content">
@@ -118,9 +118,12 @@
       <div class="admin-section-title">
         <div>
           <p class="eyebrow">Usuarios persistentes</p>
-          <h2 id="users-title">Roles y estado de cuentas</h2>
+          <h2 id="users-title">Mantenedor de cuentas</h2>
         </div>
-        <p>Las contraseñas permanecen protegidas por Django y nunca se muestran.</p>
+        <div class="admin-section-actions">
+          <p>Las contraseñas permanecen cifradas por Django y nunca se muestran.</p>
+          <a class="button button-primary" href="#usuario-nuevo">Registrar usuario</a>
+        </div>
       </div>
 
       <div class="admin-layout">
@@ -137,7 +140,17 @@
                   <td data-label="Usuario">{{ usuario.username }}</td>
                   <td data-label="Rol">{{ usuario.perfil.rol.nombre }}</td>
                   <td data-label="Estado"><span class="status-badge {% if usuario.is_active %}available{% else %}unavailable{% endif %}">{% if usuario.is_active %}Activa{% else %}Inactiva{% endif %}</span></td>
-                  <td data-label="Acción"><a class="table-action" href="{% url 'tienda:administracion' %}?usuario={{ usuario.pk }}#usuario">Editar</a></td>
+                  <td data-label="Acción">
+                    <div class="table-actions">
+                      <a class="table-action" href="{% url 'tienda:administracion' %}?usuario={{ usuario.pk }}#usuario">Editar</a>
+                      {% if usuario != request.user %}
+                        <form action="{% url 'tienda:eliminar_usuario' usuario_id=usuario.pk %}" method="post" onsubmit="return confirm('¿Deseas eliminar esta cuenta?');">
+                          {% csrf_token %}
+                          <button class="table-action danger" type="submit">Eliminar</button>
+                        </form>
+                      {% endif %}
+                    </div>
+                  </td>
                 </tr>
               {% endfor %}
             </tbody>
@@ -151,11 +164,32 @@
               {% csrf_token %}
               <div class="form-group">
                 <label class="form-label" for="admin-user-name">Nombre completo</label>
-                <input class="form-control readonly-field" type="text" id="admin-user-name" value="{{ usuario_seleccionado.get_full_name|default:usuario_seleccionado.username }}" readonly>
+                {{ formulario_usuario.nombre_completo }}
+                <small class="field-error">{{ formulario_usuario.nombre_completo.errors.0 }}</small>
               </div>
-              <div class="form-group">
-                <label class="form-label" for="admin-user-email">Correo electrónico</label>
-                <input class="form-control readonly-field" type="email" id="admin-user-email" value="{{ usuario_seleccionado.email }}" readonly>
+              <div class="row g-3">
+                <div class="form-group col-12 col-sm-6">
+                  <label class="form-label" for="admin-user-username">Usuario</label>
+                  {{ formulario_usuario.nombre_usuario }}
+                  <small class="field-error">{{ formulario_usuario.nombre_usuario.errors.0 }}</small>
+                </div>
+                <div class="form-group col-12 col-sm-6">
+                  <label class="form-label" for="admin-user-email">Correo electrónico</label>
+                  {{ formulario_usuario.correo }}
+                  <small class="field-error">{{ formulario_usuario.correo.errors.0 }}</small>
+                </div>
+              </div>
+              <div class="row g-3">
+                <div class="form-group col-12 col-sm-6">
+                  <label class="form-label" for="admin-user-birthdate">Fecha de nacimiento</label>
+                  {{ formulario_usuario.fecha_nacimiento }}
+                  <small class="field-error">{{ formulario_usuario.fecha_nacimiento.errors.0 }}</small>
+                </div>
+                <div class="form-group col-12 col-sm-6">
+                  <label class="form-label" for="admin-user-address">Dirección</label>
+                  {{ formulario_usuario.direccion }}
+                  <small class="field-error">{{ formulario_usuario.direccion.errors.0 }}</small>
+                </div>
               </div>
               <div class="row g-3">
                 <div class="form-group col-12 col-sm-6">
@@ -170,13 +204,82 @@
                 </div>
               </div>
               <p class="form-status error"{% if not formulario_usuario.non_field_errors %} hidden{% endif %}>{{ formulario_usuario.non_field_errors.0 }}</p>
-              <div class="form-actions"><button class="button button-primary" type="submit">Guardar cuenta</button></div>
+              <div class="form-actions">
+                <button class="button button-primary" type="submit">Guardar cuenta</button>
+                {% if usuario_seleccionado != request.user %}
+                  <button class="button button-danger" type="submit" form="delete-selected-user">Eliminar cuenta</button>
+                {% endif %}
+              </div>
             </form>
+            {% if usuario_seleccionado != request.user %}
+              <form id="delete-selected-user" action="{% url 'tienda:eliminar_usuario' usuario_id=usuario_seleccionado.pk %}" method="post" onsubmit="return confirm('¿Deseas eliminar esta cuenta?');">
+                {% csrf_token %}
+              </form>
+            {% endif %}
           {% else %}
             <p>Selecciona una cuenta para modificarla.</p>
           {% endif %}
         </section>
       </div>
+
+      <section class="admin-card admin-create-user" id="usuario-nuevo" aria-labelledby="new-user-form-title">
+        <h3 id="new-user-form-title">Registrar usuario</h3>
+        <form id="admin-new-user-form" action="{% url 'tienda:crear_usuario' %}" method="post" novalidate>
+          {% csrf_token %}
+          <div class="row g-3">
+            <div class="form-group col-12 col-md-6">
+              <label class="form-label" for="admin-new-name">Nombre completo</label>
+              {{ formulario_usuario_nuevo.nombre_completo }}
+              <small class="field-error">{{ formulario_usuario_nuevo.nombre_completo.errors.0 }}</small>
+            </div>
+            <div class="form-group col-12 col-md-6">
+              <label class="form-label" for="admin-new-username">Usuario</label>
+              {{ formulario_usuario_nuevo.nombre_usuario }}
+              <small class="field-error">{{ formulario_usuario_nuevo.nombre_usuario.errors.0 }}</small>
+            </div>
+            <div class="form-group col-12 col-md-6">
+              <label class="form-label" for="admin-new-email">Correo electrónico</label>
+              {{ formulario_usuario_nuevo.correo }}
+              <small class="field-error">{{ formulario_usuario_nuevo.correo.errors.0 }}</small>
+            </div>
+            <div class="form-group col-12 col-md-3">
+              <label class="form-label" for="admin-new-password">Contraseña</label>
+              {{ formulario_usuario_nuevo.clave }}
+              <small class="field-error">{{ formulario_usuario_nuevo.clave.errors.0 }}</small>
+            </div>
+            <div class="form-group col-12 col-md-3">
+              <label class="form-label" for="admin-new-password-repeat">Repetir contraseña</label>
+              {{ formulario_usuario_nuevo.repetir_clave }}
+              <small class="field-error">{{ formulario_usuario_nuevo.repetir_clave.errors.0 }}</small>
+            </div>
+            <div class="form-group col-12 col-md-4">
+              <label class="form-label" for="admin-new-birthdate">Fecha de nacimiento</label>
+              {{ formulario_usuario_nuevo.fecha_nacimiento }}
+              <small class="field-error">{{ formulario_usuario_nuevo.fecha_nacimiento.errors.0 }}</small>
+            </div>
+            <div class="form-group col-12 col-md-8">
+              <label class="form-label" for="admin-new-address">Dirección</label>
+              {{ formulario_usuario_nuevo.direccion }}
+              <small class="field-error">{{ formulario_usuario_nuevo.direccion.errors.0 }}</small>
+            </div>
+            <div class="form-group col-12 col-sm-6">
+              <label class="form-label" for="admin-new-role">Rol</label>
+              {{ formulario_usuario_nuevo.rol }}
+              <small class="field-error">{{ formulario_usuario_nuevo.rol.errors.0 }}</small>
+            </div>
+            <div class="form-group col-12 col-sm-6">
+              <label class="form-label" for="admin-new-active">Estado</label>
+              {{ formulario_usuario_nuevo.activo }}
+              <small class="field-error">{{ formulario_usuario_nuevo.activo.errors.0 }}</small>
+            </div>
+          </div>
+          <p class="field-hint">La contraseña debe incluir mayúscula, minúscula, número y carácter especial.</p>
+          <p class="form-status error"{% if not formulario_usuario_nuevo.non_field_errors %} hidden{% endif %}>{{ formulario_usuario_nuevo.non_field_errors.0 }}</p>
+          <div class="form-actions">
+            <button class="button button-primary" type="submit">Crear cuenta</button>
+          </div>
+        </form>
+      </section>
     </section>
   </section>
 </main>

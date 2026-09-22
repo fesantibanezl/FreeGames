@@ -143,3 +143,12 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 LOGIN_URL = 'tienda:login'
 LOGIN_REDIRECT_URL = 'tienda:inicio'
 LOGOUT_REDIRECT_URL = 'tienda:inicio'
+
+# En desarrollo, Django imprime el enlace temporal de recuperación en la
+# terminal. Un servidor de correo real puede configurarse mediante la variable.
+EMAIL_BACKEND = os.environ.get(
+    'FREEGAMES_EMAIL_BACKEND',
+    'django.core.mail.backends.console.EmailBackend',
+)
+DEFAULT_FROM_EMAIL = 'FreeGames <no-responder@freegames.local>'
+PASSWORD_RESET_TIMEOUT = 3600

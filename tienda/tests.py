@@ -1,8 +1,11 @@
+from urllib.parse import urlsplit
+
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.contrib.staticfiles import finders
+from django.core import mail
 from django.db.models.deletion import ProtectedError
-from django.test import SimpleTestCase, TestCase
+from django.test import Client, SimpleTestCase, TestCase, override_settings
 from django.urls import resolve, reverse
 
 from . import views
@@ -269,6 +272,13 @@ class AutenticacionYRolesTests(TestCase):
         self.assertRedirects(respuesta, reverse('tienda:inicio'))
         self.assertNotIn('_auth_user_id', self.client.session)
 
+        respuesta_anonima = self.client.post(reverse('tienda:logout'))
+        self.assertRedirects(
+            respuesta_anonima,
+            f"{reverse('tienda:login')}?next={reverse('tienda:logout')}",
+            fetch_redirect_response=False,
+        )
+
     def test_paginas_internas_redirigen_al_login_sin_sesion(self):
         for nombre_ruta in (
             'perfil',
@@ -343,6 +353,115 @@ class AutenticacionYRolesTests(TestCase):
         self.assertContains(respuesta, '>Administración</a>')
         self.assertNotContains(respuesta, '>Acción</a>')
 
+    def test_vistas_rechazan_metodos_http_no_admitidos(self):
+        self.assertEqual(
+            self.client.post(reverse('tienda:inicio')).status_code,
+            405,
+        )
+        self.assertEqual(
+            self.client.put(reverse('tienda:login')).status_code,
+            405,
+        )
+        self.assertEqual(
+            self.client.delete(reverse('tienda:registro')).status_code,
+            405,
+        )
+
+        self.client.force_login(self.cliente)
+        for nombre_ruta in ('carrito', 'mis_compras', 'compra_exitosa'):
+            with self.subTest(nombre_ruta=nombre_ruta):
+                self.assertEqual(
+                    self.client.post(reverse(f'tienda:{nombre_ruta}')).status_code,
+                    405,
+                )
+
+        self.client.force_login(self.administrador)
+        self.assertEqual(
+            self.client.post(reverse('tienda:administracion')).status_code,
+            405,
+        )
+
+    def test_operaciones_de_escritura_rechazan_get_y_post_sin_csrf(self):
+        juego = Juego.objects.get(slug='call-of-duty')
+        self.client.force_login(self.cliente)
+        self.assertEqual(
+            self.client.get(
+                reverse('tienda:agregar_carrito', args=(juego.pk,)),
+            ).status_code,
+            405,
+        )
+
+        cliente_csrf = Client(enforce_csrf_checks=True)
+        cliente_csrf.force_login(self.administrador)
+        respuesta = cliente_csrf.post(reverse('tienda:crear_usuario'), {})
+        self.assertEqual(respuesta.status_code, 403)
+
+
+@override_settings(
+    EMAIL_BACKEND='django.core.mail.backends.locmem.EmailBackend',
+)
+class RecuperacionClaveTests(TestCase):
+    def setUp(self):
+        self.usuario = get_user_model().objects.get(username='cliente')
+
+    def test_recuperacion_envia_enlace_temporal_y_actualiza_la_clave(self):
+        respuesta = self.client.post(
+            reverse('tienda:recuperar_clave'),
+            {'email': self.usuario.email},
+        )
+
+        self.assertRedirects(
+            respuesta,
+            reverse('tienda:recuperar_clave_enviada'),
+        )
+        self.assertEqual(len(mail.outbox), 1)
+        enlace = next(
+            linea for linea in mail.outbox[0].body.splitlines()
+            if linea.startswith('http')
+        )
+        ruta_token = urlsplit(enlace).path
+        respuesta_token = self.client.get(ruta_token)
+        self.assertEqual(respuesta_token.status_code, 302)
+
+        respuesta_debil = self.client.post(
+            respuesta_token.url,
+            {
+                'new_password1': 'claveinsegura',
+                'new_password2': 'claveinsegura',
+            },
+        )
+        self.assertEqual(respuesta_debil.status_code, 200)
+        self.assertContains(
+            respuesta_debil,
+            'Incluye al menos una letra mayúscula.',
+        )
+
+        respuesta_cambio = self.client.post(
+            respuesta_token.url,
+            {
+                'new_password1': 'Nueva#Clave2026',
+                'new_password2': 'Nueva#Clave2026',
+            },
+        )
+        self.assertRedirects(
+            respuesta_cambio,
+            reverse('tienda:recuperar_clave_completa'),
+        )
+        self.usuario.refresh_from_db()
+        self.assertTrue(self.usuario.check_password('Nueva#Clave2026'))
+
+    def test_recuperacion_no_revela_si_un_correo_no_existe(self):
+        respuesta = self.client.post(
+            reverse('tienda:recuperar_clave'),
+            {'email': 'desconocido@ejemplo.cl'},
+        )
+
+        self.assertRedirects(
+            respuesta,
+            reverse('tienda:recuperar_clave_enviada'),
+        )
+        self.assertEqual(len(mail.outbox), 0)
+
 
 class CrudJuegosYUsuariosTests(TestCase):
     def setUp(self):
@@ -360,6 +479,34 @@ class CrudJuegosYUsuariosTests(TestCase):
             'precio': 12990,
             'stock': 11,
             'activo': 'on',
+        }
+        datos.update(cambios)
+        return datos
+
+    def datos_usuario(self, **cambios):
+        datos = {
+            'nombre_completo': 'Nuevo Usuario',
+            'nombre_usuario': 'nuevousuario',
+            'correo': 'nuevo@freegames.cl',
+            'clave': 'Nueva#Clave2026',
+            'repetir_clave': 'Nueva#Clave2026',
+            'fecha_nacimiento': '2000-05-15',
+            'direccion': 'Calle Principal 123, Santiago',
+            'rol': Rol.Codigos.CLIENTE,
+            'activo': 'true',
+        }
+        datos.update(cambios)
+        return datos
+
+    def datos_edicion(self, usuario, **cambios):
+        datos = {
+            'nombre_completo': usuario.get_full_name(),
+            'nombre_usuario': usuario.username,
+            'correo': usuario.email,
+            'fecha_nacimiento': usuario.perfil.fecha_nacimiento.isoformat(),
+            'direccion': usuario.perfil.direccion,
+            'rol': usuario.perfil.rol.codigo,
+            'activo': str(usuario.is_active).lower(),
         }
         datos.update(cambios)
         return datos
@@ -425,10 +572,51 @@ class CrudJuegosYUsuariosTests(TestCase):
         self.assertRedirects(respuesta, reverse('tienda:inicio'))
         self.assertFalse(Juego.objects.filter(nombre='Hollow Knight').exists())
 
+        respuesta_creacion = self.client.post(
+            reverse('tienda:crear_usuario'),
+            self.datos_usuario(),
+        )
+        respuesta_eliminacion = self.client.post(
+            reverse('tienda:eliminar_usuario', args=(self.administrador.pk,)),
+        )
+        self.assertRedirects(respuesta_creacion, reverse('tienda:inicio'))
+        self.assertRedirects(respuesta_eliminacion, reverse('tienda:inicio'))
+        self.assertFalse(
+            get_user_model().objects.filter(username='nuevousuario').exists(),
+        )
+        self.assertTrue(
+            get_user_model().objects.filter(pk=self.administrador.pk).exists(),
+        )
+
+    def test_administrador_crea_usuario_desde_el_mantenedor(self):
+        respuesta = self.client.post(
+            reverse('tienda:crear_usuario'),
+            self.datos_usuario(rol=Rol.Codigos.ADMINISTRADOR),
+        )
+
+        self.assertEqual(respuesta.status_code, 302)
+        usuario = get_user_model().objects.select_related('perfil__rol').get(
+            username='nuevousuario',
+        )
+        self.assertTrue(usuario.check_password('Nueva#Clave2026'))
+        self.assertTrue(usuario.is_staff)
+        self.assertFalse(usuario.is_superuser)
+        self.assertEqual(
+            usuario.perfil.rol.codigo,
+            Rol.Codigos.ADMINISTRADOR,
+        )
+
     def test_administrador_modifica_rol_y_estado_de_otra_cuenta(self):
         respuesta = self.client.post(
             reverse('tienda:actualizar_usuario', args=(self.cliente.pk,)),
-            {'rol': Rol.Codigos.ADMINISTRADOR, 'activo': 'false'},
+            self.datos_edicion(
+                self.cliente,
+                nombre_completo='Cliente Actualizado',
+                nombre_usuario='clienteactual',
+                correo='cliente.actualizado@freegames.cl',
+                rol=Rol.Codigos.ADMINISTRADOR,
+                activo='false',
+            ),
         )
 
         self.assertEqual(respuesta.status_code, 302)
@@ -436,6 +624,11 @@ class CrudJuegosYUsuariosTests(TestCase):
         self.cliente.perfil.refresh_from_db()
         self.assertFalse(self.cliente.is_active)
         self.assertTrue(self.cliente.is_staff)
+        self.assertEqual(self.cliente.username, 'clienteactual')
+        self.assertEqual(
+            self.cliente.email,
+            'cliente.actualizado@freegames.cl',
+        )
         self.assertEqual(
             self.cliente.perfil.rol.codigo,
             Rol.Codigos.ADMINISTRADOR,
@@ -444,7 +637,11 @@ class CrudJuegosYUsuariosTests(TestCase):
     def test_administrador_no_puede_desactivar_su_propia_cuenta(self):
         respuesta = self.client.post(
             reverse('tienda:actualizar_usuario', args=(self.administrador.pk,)),
-            {'rol': Rol.Codigos.CLIENTE, 'activo': 'false'},
+            self.datos_edicion(
+                self.administrador,
+                rol=Rol.Codigos.CLIENTE,
+                activo='false',
+            ),
         )
 
         self.assertEqual(respuesta.status_code, 200)
@@ -455,6 +652,56 @@ class CrudJuegosYUsuariosTests(TestCase):
         self.administrador.refresh_from_db()
         self.assertTrue(self.administrador.is_active)
         self.assertTrue(self.administrador.is_staff)
+
+    def test_administrador_elimina_usuario_sin_compras(self):
+        self.client.post(
+            reverse('tienda:crear_usuario'),
+            self.datos_usuario(),
+        )
+        usuario = get_user_model().objects.get(username='nuevousuario')
+
+        respuesta = self.client.post(
+            reverse('tienda:eliminar_usuario', args=(usuario.pk,)),
+        )
+
+        self.assertRedirects(
+            respuesta,
+            f"{reverse('tienda:administracion')}#usuarios",
+        )
+        self.assertFalse(
+            get_user_model().objects.filter(pk=usuario.pk).exists(),
+        )
+
+    def test_usuario_con_compras_se_desactiva_para_conservar_su_historial(self):
+        Pedido.objects.create(
+            usuario=self.cliente,
+            codigo='FG-USUARIO-PROTEGIDO',
+            total=1000,
+        )
+
+        self.client.post(
+            reverse('tienda:eliminar_usuario', args=(self.cliente.pk,)),
+        )
+
+        self.cliente.refresh_from_db()
+        self.assertFalse(self.cliente.is_active)
+        self.assertTrue(Pedido.objects.filter(usuario=self.cliente).exists())
+
+    def test_administrador_no_puede_eliminar_su_propia_cuenta(self):
+        respuesta = self.client.post(
+            reverse('tienda:eliminar_usuario', args=(self.administrador.pk,)),
+        )
+
+        self.assertRedirects(
+            respuesta,
+            (
+                f"{reverse('tienda:administracion')}"
+                f"?usuario={self.administrador.pk}#usuario"
+            ),
+        )
+        self.assertTrue(
+            get_user_model().objects.filter(pk=self.administrador.pk).exists(),
+        )
 
 
 class CarritoYPedidosTests(TestCase):
@@ -468,6 +715,24 @@ class CarritoYPedidosTests(TestCase):
     def test_carrito_se_guarda_en_sesion_y_permite_actualizar_y_quitar(self):
         self.client.post(
             reverse('tienda:agregar_carrito', args=(self.juego.pk,)),
+        )
+        self.assertEqual(
+            self.client.session['freegames_carrito'][str(self.juego.pk)],
+            1,
+        )
+
+        self.client.post(
+            reverse('tienda:actualizar_carrito', args=(self.juego.pk,)),
+            {'cantidad': 'no-es-un-numero'},
+        )
+        self.assertEqual(
+            self.client.session['freegames_carrito'][str(self.juego.pk)],
+            1,
+        )
+
+        self.client.post(
+            reverse('tienda:actualizar_carrito', args=(self.juego.pk,)),
+            {'cantidad': 0},
         )
         self.assertEqual(
             self.client.session['freegames_carrito'][str(self.juego.pk)],

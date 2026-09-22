@@ -3,6 +3,7 @@ from datetime import date
 
 from django import forms
 from django.contrib.auth import authenticate, get_user_model
+from django.contrib.auth.forms import PasswordResetForm, SetPasswordForm
 from django.contrib.auth.password_validation import validate_password
 from django.core.exceptions import ValidationError
 from django.core.validators import RegexValidator
@@ -42,6 +43,28 @@ def validar_fecha_nacimiento(fecha_nacimiento):
 
     if edad < 13:
         raise ValidationError('Debes tener al menos 13 años.')
+
+
+def validar_formato_clave(clave):
+    errores = []
+    reglas = (
+        (r'[A-ZÁÉÍÓÚÜÑ]', 'Incluye al menos una letra mayúscula.'),
+        (r'[a-záéíóúüñ]', 'Incluye al menos una letra minúscula.'),
+        (r'\d', 'Incluye al menos un número.'),
+        (
+            r'[^A-Za-z0-9ÁÉÍÓÚÜÑáéíóúüñ\s]',
+            'Incluye al menos un carácter especial.',
+        ),
+    )
+    if len(clave) > 18:
+        errores.append('La contraseña no puede superar los 18 caracteres.')
+    if re.search(r'\s', clave):
+        errores.append('La contraseña no puede contener espacios.')
+    for patron, mensaje in reglas:
+        if not re.search(patron, clave):
+            errores.append(mensaje)
+    if errores:
+        raise ValidationError(errores)
 
 
 class InicioSesionForm(forms.Form):
@@ -145,26 +168,12 @@ class RegistroUsuarioForm(DatosUsuarioForm):
             self.add_error('repetir_clave', 'Las contraseñas no coinciden.')
 
         if clave:
-            reglas = (
-                (r'[A-ZÁÉÍÓÚÜÑ]', 'Incluye al menos una letra mayúscula.'),
-                (r'[a-záéíóúüñ]', 'Incluye al menos una letra minúscula.'),
-                (r'\d', 'Incluye al menos un número.'),
-                (
-                    r'[^A-Za-z0-9ÁÉÍÓÚÜÑáéíóúüñ\s]',
-                    'Incluye al menos un carácter especial.',
-                ),
-            )
-            if re.search(r'\s', clave):
-                self.add_error('clave', 'La contraseña no puede contener espacios.')
-            for patron, mensaje in reglas:
-                if not re.search(patron, clave):
-                    self.add_error('clave', mensaje)
-
             usuario_temporal = Usuario(
                 username=datos.get('nombre_usuario', ''),
                 email=datos.get('correo', ''),
             )
             try:
+                validar_formato_clave(clave)
                 validate_password(clave, usuario_temporal)
             except ValidationError as error:
                 self.add_error('clave', error)
@@ -291,7 +300,51 @@ class JuegoForm(forms.ModelForm):
         return descripcion
 
 
-class UsuarioAdministracionForm(forms.Form):
+class UsuarioCrearForm(RegistroUsuarioForm):
+    rol = forms.ModelChoiceField(
+        queryset=Rol.objects.none(),
+        to_field_name='codigo',
+        empty_label=None,
+    )
+    activo = forms.ChoiceField(
+        choices=(('true', 'Cuenta activa'), ('false', 'Cuenta inactiva')),
+    )
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['rol'].queryset = Rol.objects.all()
+        atributos = {
+            'nombre_completo': {'class': 'form-control', 'id': 'admin-new-name'},
+            'nombre_usuario': {'class': 'form-control', 'id': 'admin-new-username'},
+            'correo': {'class': 'form-control', 'id': 'admin-new-email'},
+            'clave': {'class': 'form-control', 'id': 'admin-new-password'},
+            'repetir_clave': {'class': 'form-control', 'id': 'admin-new-password-repeat'},
+            'fecha_nacimiento': {
+                'class': 'form-control',
+                'id': 'admin-new-birthdate',
+                'type': 'date',
+            },
+            'direccion': {'class': 'form-control', 'id': 'admin-new-address'},
+            'rol': {'class': 'form-select', 'id': 'admin-new-role'},
+            'activo': {'class': 'form-select', 'id': 'admin-new-active'},
+        }
+        for nombre, attrs in atributos.items():
+            self.fields[nombre].widget.attrs.update(attrs)
+
+    @transaction.atomic
+    def save(self):
+        usuario = super().save()
+        rol = self.cleaned_data['rol']
+        usuario.perfil.rol = rol
+        usuario.perfil.save(update_fields=('rol', 'actualizado_en'))
+        usuario.is_active = self.cleaned_data['activo'] == 'true'
+        usuario.is_staff = rol.codigo == Rol.Codigos.ADMINISTRADOR
+        usuario.is_superuser = False
+        usuario.save(update_fields=('is_active', 'is_staff', 'is_superuser'))
+        return usuario
+
+
+class UsuarioAdministracionForm(DatosUsuarioForm):
     rol = forms.ModelChoiceField(
         queryset=Rol.objects.none(),
         to_field_name='codigo',
@@ -304,6 +357,23 @@ class UsuarioAdministracionForm(forms.Form):
     def __init__(self, *args, usuario_objetivo, usuario_actual, **kwargs):
         self.usuario_objetivo = usuario_objetivo
         self.usuario_actual = usuario_actual
+        self.usuario = usuario_objetivo
+        datos = args[0] if args else kwargs.get('data')
+        if datos is None:
+            kwargs.setdefault(
+                'initial',
+                {
+                    'nombre_completo': usuario_objetivo.get_full_name(),
+                    'nombre_usuario': usuario_objetivo.username,
+                    'correo': usuario_objetivo.email,
+                    'fecha_nacimiento': (
+                        usuario_objetivo.perfil.fecha_nacimiento.isoformat()
+                        if usuario_objetivo.perfil.fecha_nacimiento
+                        else ''
+                    ),
+                    'direccion': usuario_objetivo.perfil.direccion,
+                },
+            )
         super().__init__(*args, **kwargs)
         self.fields['rol'].queryset = Rol.objects.all()
         self.fields['rol'].widget.attrs.update({
@@ -314,6 +384,19 @@ class UsuarioAdministracionForm(forms.Form):
             'class': 'form-select',
             'id': 'admin-user-active',
         })
+        atributos = {
+            'nombre_completo': {'class': 'form-control', 'id': 'admin-user-name'},
+            'nombre_usuario': {'class': 'form-control', 'id': 'admin-user-username'},
+            'correo': {'class': 'form-control', 'id': 'admin-user-email'},
+            'fecha_nacimiento': {
+                'class': 'form-control',
+                'id': 'admin-user-birthdate',
+                'type': 'date',
+            },
+            'direccion': {'class': 'form-control', 'id': 'admin-user-address'},
+        }
+        for nombre, attrs in atributos.items():
+            self.fields[nombre].widget.attrs.update(attrs)
 
         if not self.is_bound:
             self.initial.update({
@@ -344,8 +427,23 @@ class UsuarioAdministracionForm(forms.Form):
         rol = self.cleaned_data['rol']
         activo = self.cleaned_data['activo'] == 'true'
         perfil = self.usuario_objetivo.perfil
+        nombre, apellido = separar_nombre(self.cleaned_data['nombre_completo'])
+
+        self.usuario_objetivo.first_name = nombre
+        self.usuario_objetivo.last_name = apellido
+        self.usuario_objetivo.username = self.cleaned_data['nombre_usuario']
+        self.usuario_objetivo.email = self.cleaned_data['correo']
         perfil.rol = rol
-        perfil.save(update_fields=('rol', 'actualizado_en'))
+        perfil.fecha_nacimiento = self.cleaned_data['fecha_nacimiento']
+        perfil.direccion = self.cleaned_data['direccion']
+        perfil.save(
+            update_fields=(
+                'rol',
+                'fecha_nacimiento',
+                'direccion',
+                'actualizado_en',
+            ),
+        )
 
         self.usuario_objetivo.is_active = activo
         self.usuario_objetivo.is_staff = (
@@ -354,6 +452,45 @@ class UsuarioAdministracionForm(forms.Form):
         if rol.codigo != Rol.Codigos.ADMINISTRADOR:
             self.usuario_objetivo.is_superuser = False
         self.usuario_objetivo.save(
-            update_fields=('is_active', 'is_staff', 'is_superuser'),
+            update_fields=(
+                'first_name',
+                'last_name',
+                'username',
+                'email',
+                'is_active',
+                'is_staff',
+                'is_superuser',
+            ),
         )
         return self.usuario_objetivo
+
+
+class RecuperacionClaveForm(PasswordResetForm):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['email'].widget.attrs.update({
+            'class': 'form-control',
+            'id': 'correo-recuperacion',
+            'autocomplete': 'email',
+            'placeholder': 'nombre@correo.cl',
+        })
+
+
+class DefinirClaveForm(SetPasswordForm):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['new_password1'].widget.attrs.update({
+            'class': 'form-control',
+            'autocomplete': 'new-password',
+            'maxlength': 18,
+        })
+        self.fields['new_password2'].widget.attrs.update({
+            'class': 'form-control',
+            'autocomplete': 'new-password',
+            'maxlength': 18,
+        })
+
+    def clean_new_password1(self):
+        clave = self.cleaned_data['new_password1']
+        validar_formato_clave(clave)
+        return clave

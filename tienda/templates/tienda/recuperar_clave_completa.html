@@ -1,0 +1,19 @@
+{% extends 'tienda/base.html' %}
+
+{% block titulo %}Contraseña actualizada | FreeGames{% endblock %}
+{% block descripcion %}La contraseña de FreeGames fue actualizada correctamente.{% endblock %}
+
+{% block contenido %}
+<main class="account-page account-page-narrow container" id="contenido-principal">
+  <section class="registration-intro">
+    <p class="eyebrow">Acceso recuperado</p>
+    <h1>Contraseña actualizada</h1>
+    <p>Tu nueva contraseña quedó guardada de forma segura. El enlace utilizado ya no es válido.</p>
+  </section>
+  <section class="registration-card">
+    <div class="form-actions">
+      <a class="button button-primary" href="{% url 'tienda:login' %}">Iniciar sesión</a>
+    </div>
+  </section>
+</main>
+{% endblock %}
