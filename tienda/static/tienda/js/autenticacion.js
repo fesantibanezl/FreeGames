@@ -183,6 +183,10 @@
   function iniciarPerfil() {
     const formulario = document.querySelector('#perfil-form');
 
+    if (formulario?.dataset.backend === 'django') {
+      return;
+    }
+
     if (!formulario || !validacion) {
       return;
     }

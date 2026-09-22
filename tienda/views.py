@@ -1,7 +1,12 @@
+from django.contrib import messages
+from django.contrib.auth import login as iniciar_sesion
+from django.contrib.auth.decorators import login_required
 from django.http import Http404
-from django.shortcuts import render
+from django.shortcuts import redirect, render
 
 from .catalogo import CATEGORIAS
+from .forms import PerfilUsuarioForm, RegistroUsuarioForm
+from .models import PerfilUsuario, Rol
 
 
 def inicio(request):
@@ -29,9 +34,21 @@ def categoria(request, slug):
 
 
 def registro(request):
+    datos_formulario = request.POST if request.method == 'POST' else None
+    formulario = RegistroUsuarioForm(datos_formulario)
+    if request.method == 'POST' and formulario.is_valid():
+        usuario = formulario.save()
+        iniciar_sesion(request, usuario)
+        messages.success(
+            request,
+            'Cuenta creada correctamente. Ya puedes administrar tu perfil.',
+        )
+        return redirect('tienda:perfil')
+
     return render(request, 'tienda/registro.html', {
         'encabezado_compacto': True,
         'seccion_activa': 'registro',
+        'formulario': formulario,
     })
 
 
@@ -49,10 +66,37 @@ def recuperar_clave(request):
     })
 
 
+@login_required(login_url='tienda:login')
 def perfil(request):
+    codigo_rol = (
+        Rol.Codigos.ADMINISTRADOR
+        if request.user.is_staff
+        else Rol.Codigos.CLIENTE
+    )
+    rol_predeterminado = Rol.objects.get(codigo=codigo_rol)
+    perfil_usuario, _ = PerfilUsuario.objects.get_or_create(
+        usuario=request.user,
+        defaults={'rol': rol_predeterminado},
+    )
+    datos_formulario = request.POST if request.method == 'POST' else None
+    formulario = PerfilUsuarioForm(
+        datos_formulario,
+        usuario=request.user,
+        perfil=perfil_usuario,
+    )
+    if request.method == 'POST' and formulario.is_valid():
+        formulario.save()
+        messages.success(
+            request,
+            'Los datos del perfil se actualizaron correctamente.',
+        )
+        return redirect('tienda:perfil')
+
     return render(request, 'tienda/perfil.html', {
         'encabezado_compacto': True,
         'seccion_activa': 'perfil',
+        'formulario': formulario,
+        'rol_nombre': perfil_usuario.rol.nombre,
     })
 
 

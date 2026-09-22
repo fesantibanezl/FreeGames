@@ -1,6 +1,6 @@
 # FreeGames
 
-Proyecto para la asignatura **Programación Web — Experiencia de Aprendizaje 2**. En la semana 5, FreeGames incorpora persistencia con Oracle mediante el ORM de Django. El registro, la autenticación y el perfil se conectarán al Backend en las siguientes partes de esta semana.
+Proyecto para la asignatura **Programación Web — Experiencia de Aprendizaje 2**. En la semana 5, FreeGames incorpora persistencia con Oracle mediante el ORM de Django. El registro y la edición del perfil ya operan desde el Backend; el inicio de sesión y la autorización por roles se completarán en la siguiente parte.
 
 ## Cómo ejecutar el proyecto
 
@@ -54,7 +54,8 @@ La configuración admite reemplazar los valores locales mediante las variables `
 
 - Catálogo inicial con cinco categorías y quince videojuegos, ampliable desde el mantenedor.
 - Navegación adaptable con menú colapsable en pantallas pequeñas.
-- Registro, inicio de sesión, recuperación simulada y edición de perfil.
+- Registro y edición de perfil persistentes en Oracle, con validaciones en el servidor.
+- Inicio de sesión y recuperación todavía demostrativos hasta completar la autenticación Django.
 - Validación inmediata de datos y mensajes accesibles en los formularios.
 - Roles de **cliente** y **administrador** con vistas y permisos diferentes.
 - Carrito con cantidades, total, disponibilidad y compra simulada sin cobro real.
@@ -87,7 +88,7 @@ Las migraciones crean estas cuentas en Oracle para revisar los roles y funcional
 | Cliente | `cliente` | `Cliente#2026` |
 | Administrador | `admin` | `Admin#2026` |
 
-La cuenta `admin` ya permite ingresar a `/admin/` mediante la autenticación de Django. Hasta completar las siguientes partes, el formulario `/login/` continúa usando la demostración FrontEnd de la semana 4, aunque las mismas cuentas ya existen en Oracle.
+La cuenta `admin` ya permite ingresar a `/admin/` mediante la autenticación de Django. El registro crea cuentas nuevas en Oracle e inicia su sesión para acceder al perfil. Hasta completar la siguiente parte, el formulario `/login/` continúa usando la demostración FrontEnd de la semana 4.
 
 ## Estructura del proyecto
 
@@ -101,6 +102,7 @@ FreeGames/
 │   │   └── js/                # Funcionalidad FrontEnd y datos simulados.
 │   ├── templates/tienda/      # Plantilla base y páginas de la aplicación.
 │   ├── catalogo.py            # Categorías y contenido de presentación.
+│   ├── forms.py               # Registro y actualización segura del perfil.
 │   ├── models.py              # Roles y perfiles persistentes de usuario.
 │   ├── admin.py               # Configuración de los modelos en Django Admin.
 │   ├── migrations/            # Estructura y datos iniciales de Oracle.
@@ -131,7 +133,8 @@ La plantilla base concentra la navegación, los estilos y los módulos JavaScrip
 ## Consideraciones
 
 - Oracle está configurado como base de datos predeterminada y contiene las tablas internas de Django después de ejecutar las migraciones.
-- Los usuarios demostrativos, la sesión, el carrito y las compras todavía se almacenan en `localStorage`; su migración se realizará por partes durante la semana 5.
+- El registro y la modificación del perfil utilizan Oracle; las contraseñas se almacenan mediante el sistema seguro de Django.
+- El formulario manual de inicio de sesión, el carrito y las compras todavía utilizan `localStorage`; su integración se realizará por partes durante la semana 5.
 - Los juegos creados desde el mantenedor usan la imagen representativa de la categoría seleccionada.
 - Si `localStorage` no está disponible, se usa memoria mientras la página permanezca abierta.
 - Las contraseñas y la compra son demostrativas. No existe un cobro real ni una integración con WebPay.
