@@ -9,13 +9,16 @@
       <p class="eyebrow">Catálogo de videojuegos</p>
       <h1 id="categories-title">Elige una categoría</h1>
       <p>Explora nuestra selección y descubre un juego para cada estilo.</p>
-      <a class="primary-link" data-session="guest" href="{% url 'tienda:registro' %}">Crear una cuenta</a>
-      <a class="primary-link" data-session="user" href="{% url 'tienda:perfil' %}" hidden>Ver mi perfil</a>
+      {% if request.user.is_authenticated %}
+        <a class="primary-link" href="{% url 'tienda:perfil' %}">Ver mi perfil</a>
+      {% else %}
+        <a class="primary-link" href="{% url 'tienda:registro' %}">Crear una cuenta</a>
+      {% endif %}
     </section>
 
     <nav class="category-list d-grid gap-3" aria-label="Categorías de videojuegos">
       {% for categoria in categorias %}
-        <a class="category-row {{ categoria.clase }}" href="{% url 'tienda:categoria' slug=categoria.slug %}">
+        <a class="category-row {{ categoria.clase_css }}" href="{% url 'tienda:categoria' slug=categoria.slug %}">
           <img src="{% static categoria.imagen %}" alt="{{ categoria.imagen_alt }}">
           <span class="category-copy"><small>{{ categoria.resumen }}</small><strong>{{ categoria.nombre }}</strong></span>
           <span class="category-arrow" aria-hidden="true">→</span>

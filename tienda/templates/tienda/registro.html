@@ -12,7 +12,7 @@
   </section>
 
   <section class="registration-card" aria-label="Datos de registro">
-    <form class="registration-form" id="registro-form" action="#" method="post" aria-describedby="registration-help" novalidate>
+    <form class="registration-form" id="registro-form" action="{% url 'tienda:registro' %}" method="post" aria-describedby="registration-help" novalidate>
       {% csrf_token %}
       <fieldset>
         <legend>Datos personales</legend>
@@ -20,47 +20,47 @@
         <div class="row g-4">
           <div class="form-group col-12">
             <label class="form-label" for="nombre-completo">Nombre completo <span aria-hidden="true">*</span></label>
-            <input class="form-control" type="text" id="nombre-completo" name="nombre_completo" autocomplete="name" placeholder="Ejemplo: Alex González" minlength="3" maxlength="60" aria-describedby="error-nombre-completo" aria-errormessage="error-nombre-completo" required>
-            <small class="field-error" id="error-nombre-completo" aria-live="polite"></small>
+            <input class="form-control{% if formulario.nombre_completo.errors %} is-invalid{% endif %}" type="text" id="nombre-completo" name="nombre_completo" value="{{ formulario.nombre_completo.value|default_if_none:'' }}" autocomplete="name" placeholder="Ejemplo: Alex González" minlength="3" maxlength="60" aria-describedby="error-nombre-completo" aria-errormessage="error-nombre-completo" required>
+            <small class="field-error" id="error-nombre-completo" aria-live="polite">{{ formulario.nombre_completo.errors.0 }}</small>
           </div>
 
           <div class="form-group col-12 col-md-6">
             <label class="form-label" for="nombre-usuario">Nombre de usuario <span aria-hidden="true">*</span></label>
-            <input class="form-control" type="text" id="nombre-usuario" name="nombre_usuario" autocomplete="username" placeholder="Ejemplo: alexgamer" minlength="4" maxlength="16" aria-describedby="ayuda-nombre-usuario error-nombre-usuario" aria-errormessage="error-nombre-usuario" required>
+            <input class="form-control{% if formulario.nombre_usuario.errors %} is-invalid{% endif %}" type="text" id="nombre-usuario" name="nombre_usuario" value="{{ formulario.nombre_usuario.value|default_if_none:'' }}" autocomplete="username" placeholder="Ejemplo: alexgamer" minlength="4" maxlength="16" aria-describedby="ayuda-nombre-usuario error-nombre-usuario" aria-errormessage="error-nombre-usuario" required>
             <small class="field-hint" id="ayuda-nombre-usuario">Usa entre 4 y 16 caracteres, sin espacios.</small>
-            <small class="field-error" id="error-nombre-usuario" aria-live="polite"></small>
+            <small class="field-error" id="error-nombre-usuario" aria-live="polite">{{ formulario.nombre_usuario.errors.0 }}</small>
           </div>
 
           <div class="form-group col-12 col-md-6">
             <label class="form-label" for="correo">Correo electrónico <span aria-hidden="true">*</span></label>
-            <input class="form-control" type="email" id="correo" name="correo" autocomplete="email" placeholder="nombre@correo.cl" maxlength="100" aria-describedby="error-correo" aria-errormessage="error-correo" required>
-            <small class="field-error" id="error-correo" aria-live="polite"></small>
+            <input class="form-control{% if formulario.correo.errors %} is-invalid{% endif %}" type="email" id="correo" name="correo" value="{{ formulario.correo.value|default_if_none:'' }}" autocomplete="email" placeholder="nombre@correo.cl" maxlength="100" aria-describedby="error-correo" aria-errormessage="error-correo" required>
+            <small class="field-error" id="error-correo" aria-live="polite">{{ formulario.correo.errors.0 }}</small>
           </div>
 
           <div class="form-group col-12 col-md-6">
             <label class="form-label" for="clave">Contraseña <span aria-hidden="true">*</span></label>
-            <input class="form-control" type="password" id="clave" name="clave" autocomplete="new-password" placeholder="Entre 8 y 18 caracteres" minlength="8" maxlength="18" aria-describedby="ayuda-clave error-clave" aria-errormessage="error-clave" required>
+            <input class="form-control{% if formulario.clave.errors %} is-invalid{% endif %}" type="password" id="clave" name="clave" autocomplete="new-password" placeholder="Entre 8 y 18 caracteres" minlength="8" maxlength="18" aria-describedby="ayuda-clave error-clave" aria-errormessage="error-clave" required>
             <small class="field-hint" id="ayuda-clave">Incluye mayúscula, minúscula, número y carácter especial.</small>
-            <small class="field-error" id="error-clave" aria-live="polite"></small>
+            <small class="field-error" id="error-clave" aria-live="polite">{{ formulario.clave.errors.0 }}</small>
           </div>
 
           <div class="form-group col-12 col-md-6">
             <label class="form-label" for="repetir-clave">Repetir contraseña <span aria-hidden="true">*</span></label>
-            <input class="form-control" type="password" id="repetir-clave" name="repetir_clave" autocomplete="new-password" placeholder="Escribe nuevamente tu contraseña" minlength="8" maxlength="18" aria-describedby="error-repetir-clave" aria-errormessage="error-repetir-clave" required>
-            <small class="field-error" id="error-repetir-clave" aria-live="polite"></small>
+            <input class="form-control{% if formulario.repetir_clave.errors %} is-invalid{% endif %}" type="password" id="repetir-clave" name="repetir_clave" autocomplete="new-password" placeholder="Escribe nuevamente tu contraseña" minlength="8" maxlength="18" aria-describedby="error-repetir-clave" aria-errormessage="error-repetir-clave" required>
+            <small class="field-error" id="error-repetir-clave" aria-live="polite">{{ formulario.repetir_clave.errors.0 }}</small>
           </div>
 
           <div class="form-group col-12 col-md-6 col-lg-4">
             <label class="form-label" for="fecha-nacimiento">Fecha de nacimiento <span aria-hidden="true">*</span></label>
-            <input class="form-control" type="date" id="fecha-nacimiento" name="fecha_nacimiento" autocomplete="bday" aria-describedby="error-fecha-nacimiento" aria-errormessage="error-fecha-nacimiento" required>
-            <small class="field-error" id="error-fecha-nacimiento" aria-live="polite"></small>
+            <input class="form-control{% if formulario.fecha_nacimiento.errors %} is-invalid{% endif %}" type="date" id="fecha-nacimiento" name="fecha_nacimiento" value="{{ formulario.fecha_nacimiento.value|default_if_none:'' }}" autocomplete="bday" aria-describedby="error-fecha-nacimiento" aria-errormessage="error-fecha-nacimiento" required>
+            <small class="field-error" id="error-fecha-nacimiento" aria-live="polite">{{ formulario.fecha_nacimiento.errors.0 }}</small>
           </div>
 
           <div class="form-group col-12 col-md-6 col-lg-8">
             <label class="form-label" for="direccion">Dirección de despacho <span class="optional">(opcional)</span></label>
-            <textarea class="form-control" id="direccion" name="direccion" rows="3" maxlength="160" autocomplete="street-address" placeholder="Calle, número, comuna y ciudad" aria-describedby="ayuda-direccion error-direccion" aria-errormessage="error-direccion"></textarea>
+            <textarea class="form-control{% if formulario.direccion.errors %} is-invalid{% endif %}" id="direccion" name="direccion" rows="3" maxlength="160" autocomplete="street-address" placeholder="Calle, número, comuna y ciudad" aria-describedby="ayuda-direccion error-direccion" aria-errormessage="error-direccion">{{ formulario.direccion.value|default_if_none:'' }}</textarea>
             <small class="field-hint" id="ayuda-direccion">Si la completas, utiliza al menos 10 caracteres.</small>
-            <small class="field-error" id="error-direccion" aria-live="polite"></small>
+            <small class="field-error" id="error-direccion" aria-live="polite">{{ formulario.direccion.errors.0 }}</small>
           </div>
         </div>
       </fieldset>
@@ -70,7 +70,7 @@
         <button class="button button-secondary btn btn-outline-light" type="reset">Limpiar formulario</button>
       </div>
 
-      <p class="form-status" id="form-status" role="status" aria-live="polite" tabindex="-1" hidden></p>
+      <p class="form-status error" id="form-status" role="status" aria-live="polite" tabindex="-1"{% if not formulario.non_field_errors %} hidden{% endif %}>{{ formulario.non_field_errors.0 }}</p>
       <p class="form-switch">¿Ya tienes una cuenta? <a href="{% url 'tienda:login' %}">Inicia sesión</a>.</p>
     </form>
   </section>

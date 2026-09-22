@@ -177,23 +177,11 @@
   }
 
   function validarNombreUsuario() {
-    const formatoValido = validarCampo(campos.nombreUsuario, reglas.nombreUsuario);
-
-    if (formatoValido && window.FreeGamesData?.existeNombreUsuario(campos.nombreUsuario.value)) {
-      return mostrarError(campos.nombreUsuario, 'Ese nombre de usuario ya está registrado.');
-    }
-
-    return formatoValido;
+    return validarCampo(campos.nombreUsuario, reglas.nombreUsuario);
   }
 
   function validarCorreo() {
-    const formatoValido = validarCampo(campos.correo, reglas.correo);
-
-    if (formatoValido && window.FreeGamesData?.existeCorreo(campos.correo.value)) {
-      return mostrarError(campos.correo, 'Ese correo electrónico ya está registrado.');
-    }
-
-    return formatoValido;
+    return validarCampo(campos.correo, reglas.correo);
   }
 
   function validarClave() {
@@ -228,39 +216,17 @@
   ]);
 
   formulario.addEventListener('submit', (evento) => {
-    evento.preventDefault();
     estadoFormulario.hidden = true;
 
     const resultados = [...validaciones.values()].map((validar) => validar());
 
     if (!resultados.every(Boolean)) {
+      evento.preventDefault();
       estadoFormulario.textContent = 'Revisa los campos marcados antes de continuar.';
       estadoFormulario.className = 'form-status error';
       estadoFormulario.hidden = false;
       formulario.querySelector('.is-invalid')?.focus();
-      return;
     }
-
-    if (!window.FreeGamesData) {
-      estadoFormulario.textContent = 'No fue posible guardar el registro en este navegador.';
-      estadoFormulario.className = 'form-status error';
-      estadoFormulario.hidden = false;
-      return;
-    }
-
-    window.FreeGamesData.registrarUsuario({
-      nombreCompleto: campos.nombreCompleto.value,
-      nombreUsuario: campos.nombreUsuario.value,
-      correo: campos.correo.value,
-      clave: campos.clave.value,
-      fechaNacimiento: campos.fechaNacimiento.value,
-      direccion: campos.direccion.value
-    });
-
-    estadoFormulario.textContent = 'Cuenta creada correctamente. Ya puedes iniciar sesión.';
-    estadoFormulario.className = 'form-status success';
-    estadoFormulario.hidden = false;
-    estadoFormulario.focus();
   });
 
   validaciones.forEach((validar, campo) => {

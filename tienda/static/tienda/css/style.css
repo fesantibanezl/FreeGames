@@ -240,6 +240,11 @@ h1 { margin-bottom: 8px; font: 800 clamp(2rem, 5vw, 3.2rem)/1.15 Orbitron, sans-
   text-align: left;
 }
 
+.main-nav .nav-logout-form {
+  display: flex;
+  margin: 0;
+}
+
 .main-nav .navbar-toggler {
   margin-left: auto;
   border-color: var(--border);
@@ -413,6 +418,9 @@ h1 { margin-bottom: 8px; font: 800 clamp(2rem, 5vw, 3.2rem)/1.15 Orbitron, sans-
 .page-intro { max-width: 760px; margin-bottom: 34px; }
 .page-intro > p:last-child { color: var(--muted); }
 
+.site-messages { padding-top: 18px; }
+.site-messages .form-status { margin: 0 0 8px; }
+
 .cart-layout {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(270px, 340px);
@@ -483,6 +491,8 @@ h1 { margin-bottom: 8px; font: 800 clamp(2rem, 5vw, 3.2rem)/1.15 Orbitron, sans-
 }
 
 .remove-item:hover, .remove-item:focus-visible { color: #fff; text-decoration: underline; }
+.remove-form { margin: 0; }
+.cart-stock-error { grid-column: 2 / -1; margin: 0; }
 
 .cart-summary { padding: 26px; }
 .cart-summary h2 { font: 800 1.22rem/1.25 Orbitron, sans-serif; }
@@ -518,7 +528,7 @@ h1 { margin-bottom: 8px; font: 800 clamp(2rem, 5vw, 3.2rem)/1.15 Orbitron, sans-
 .purchase-actions { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 26px; }
 .purchase-actions .button { text-decoration: none; }
 
-.order-card { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 18px; }
+.order-card { display: grid; grid-template-columns: 1fr; gap: 18px; }
 .order-card header { display: flex; align-items: start; justify-content: space-between; gap: 18px; }
 .order-card header h2 { margin-bottom: 0; }
 .order-card p { color: var(--muted); }
@@ -620,6 +630,8 @@ h1 { margin-bottom: 8px; font: 800 clamp(2rem, 5vw, 3.2rem)/1.15 Orbitron, sans-
 .table-action:focus-visible { color: #07101d; background: var(--cyan); }
 
 .table-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+.table-actions form { margin: 0; }
+.table-actions a { text-decoration: none; }
 .table-action.danger { color: #ffc1b3; border-color: rgba(255, 118, 87, .4); }
 .table-action.danger:hover,
 .table-action.danger:focus-visible { color: #07101d; background: #ff9279; }
@@ -629,6 +641,8 @@ h1 { margin-bottom: 8px; font: 800 clamp(2rem, 5vw, 3.2rem)/1.15 Orbitron, sans-
 
 .admin-card { padding: 24px; }
 .admin-card h3 { margin-bottom: 20px; font: 800 1.2rem/1.25 Orbitron, sans-serif; }
+.admin-published-check { display: flex; align-items: center; gap: 10px; margin-top: 18px; }
+.admin-published-check .form-check-input { margin: 0; }
 
 /* Formularios de cuenta y estados de validación. */
 .registration-page,
@@ -770,6 +784,12 @@ h1 { margin-bottom: 8px; font: 800 clamp(2rem, 5vw, 3.2rem)/1.15 Orbitron, sans-
 
 .button-secondary { color: var(--text); background: transparent; border-color: var(--border); }
 
+.button:disabled {
+  opacity: .55;
+  cursor: not-allowed;
+  transform: none;
+}
+
 a.button-secondary {
   display: inline-flex;
   align-items: center;
@@ -852,7 +872,7 @@ textarea:focus-visible {
   .cart-item > img { width: 88px; height: 70px; }
   .cart-quantity { grid-column: 2; justify-self: start; }
   .cart-subtotal { grid-column: 3; grid-row: 2; }
-  .remove-item { grid-column: 1 / -1; justify-self: start; }
+  .remove-form { grid-column: 1 / -1; justify-self: start; }
   .order-card { grid-template-columns: 1fr; }
   .order-card-total { text-align: left; }
   .admin-section-title { flex-direction: column; }

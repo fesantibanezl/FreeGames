@@ -8,27 +8,28 @@
   <section class="registration-intro" aria-labelledby="login-title">
     <p class="eyebrow">Bienvenido nuevamente</p>
     <h1 id="login-title">Inicia sesión</h1>
-    <p>Accede con tu correo o nombre de usuario. Esta etapa utiliza datos demostrativos guardados en el navegador.</p>
+    <p>Accede con tu correo o nombre de usuario. Tu sesión se valida de forma segura con Django y los datos almacenados en Oracle.</p>
   </section>
 
   <div class="account-layout account-layout-single">
     <section class="registration-card" aria-label="Formulario de inicio de sesión">
-      <form class="registration-form" id="login-form" action="#" method="post" novalidate>
+      <form class="registration-form" id="login-form" action="{% url 'tienda:login' %}" method="post" data-backend="django" novalidate>
         {% csrf_token %}
+        <input type="hidden" name="siguiente" value="{{ siguiente }}">
         <fieldset>
           <legend>Datos de acceso</legend>
 
           <div class="row g-4">
             <div class="form-group col-12">
               <label class="form-label" for="acceso">Correo o nombre de usuario <span aria-hidden="true">*</span></label>
-              <input class="form-control" type="text" id="acceso" name="acceso" autocomplete="username" placeholder="Ejemplo: usuario o correo@ejemplo.cl" aria-describedby="error-acceso" aria-errormessage="error-acceso" required>
-              <small class="field-error" id="error-acceso" aria-live="polite"></small>
+              <input class="form-control{% if formulario.acceso.errors %} is-invalid{% endif %}" type="text" id="acceso" name="acceso" value="{{ formulario.acceso.value|default_if_none:'' }}" autocomplete="username" maxlength="100" placeholder="Ejemplo: usuario o correo@ejemplo.cl" aria-describedby="error-acceso" aria-errormessage="error-acceso" required>
+              <small class="field-error" id="error-acceso" aria-live="polite">{{ formulario.acceso.errors.0 }}</small>
             </div>
 
             <div class="form-group col-12">
               <label class="form-label" for="clave-login">Contraseña <span aria-hidden="true">*</span></label>
-              <input class="form-control" type="password" id="clave-login" name="clave" autocomplete="current-password" placeholder="Ingresa tu contraseña" aria-describedby="error-clave-login" aria-errormessage="error-clave-login" required>
-              <small class="field-error" id="error-clave-login" aria-live="polite"></small>
+              <input class="form-control{% if formulario.clave.errors %} is-invalid{% endif %}" type="password" id="clave-login" name="clave" autocomplete="current-password" maxlength="128" placeholder="Ingresa tu contraseña" aria-describedby="error-clave-login" aria-errormessage="error-clave-login" required>
+              <small class="field-error" id="error-clave-login" aria-live="polite">{{ formulario.clave.errors.0 }}</small>
             </div>
           </div>
         </fieldset>
@@ -37,7 +38,7 @@
           <button class="button button-primary btn btn-primary" type="submit">Iniciar sesión</button>
         </div>
 
-        <p class="form-status" id="form-status" role="status" aria-live="polite" tabindex="-1" hidden></p>
+        <p class="form-status error" id="form-status" role="status" aria-live="polite" tabindex="-1"{% if not formulario.non_field_errors %} hidden{% endif %}>{{ formulario.non_field_errors.0 }}</p>
         <p class="form-switch"><a href="{% url 'tienda:recuperar_clave' %}">¿Olvidaste tu contraseña?</a></p>
         <p class="form-switch">¿No tienes una cuenta? <a href="{% url 'tienda:registro' %}">Regístrate</a>.</p>
       </form>

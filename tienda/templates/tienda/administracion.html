@@ -1,152 +1,180 @@
 {% extends 'tienda/base.html' %}
-{% load static %}
 
 {% block titulo %}Administración | FreeGames{% endblock %}
 {% block descripcion %}Administra el catálogo y las cuentas de usuario de FreeGames.{% endblock %}
-
-{% block scripts_extra %}
-  <script src="{% static 'tienda/js/administracion.js' %}" defer></script>
-{% endblock %}
 
 {% block contenido %}
 <main class="admin-page container" id="contenido-principal">
   <section class="page-intro">
     <p class="eyebrow">Rol administrador</p>
     <h1>Administración</h1>
-    <p>Registra, modifica y controla la publicación de los juegos, además de administrar los roles y estados de las cuentas. Los cambios se guardan solo en este navegador.</p>
+    <p>Registra, consulta, modifica y elimina juegos, además de administrar los roles y estados de las cuentas. Todos los cambios se guardan en Oracle.</p>
   </section>
 
-  <section id="administration-guard" class="access-notice" role="status" hidden></section>
+  <section id="administration-content">
+    <div id="admin-summary" class="admin-summary" aria-label="Resumen administrativo">
+      <article class="admin-metric"><span>Juegos disponibles</span><strong>{{ juegos_disponibles }}</strong><small>{{ juegos_no_disponibles }} sin disponibilidad</small></article>
+      <article class="admin-metric"><span>Clientes activos</span><strong>{{ clientes_activos }}</strong><small>{{ total_usuarios }} cuentas registradas</small></article>
+      <article class="admin-metric"><span>Pedidos simulados</span><strong>{{ total_pedidos }}</strong><small>Compras guardadas</small></article>
+      <article class="admin-metric"><span>Total simulado</span><strong>{{ total_ventas_texto }}</strong><small>Sin medio de pago real</small></article>
+    </div>
 
-  <section id="administration-content" hidden>
-    <div id="admin-summary" class="admin-summary" aria-label="Resumen administrativo"></div>
-
-    <section class="admin-section" aria-labelledby="inventory-title">
+    <section class="admin-section" id="inventario" aria-labelledby="inventory-title">
       <div class="admin-section-title">
         <div>
-          <p class="eyebrow">Mantenedor de catálogo</p>
+          <p class="eyebrow">CRUD persistente</p>
           <h2 id="inventory-title">Inventario y disponibilidad</h2>
         </div>
         <div class="admin-section-actions">
-          <p>Registra juegos nuevos o selecciona uno para modificarlo y controlar su publicación.</p>
-          <button class="button button-primary" type="button" data-action="new-product">Registrar juego</button>
+          <p>Los cambios realizados aquí se reflejan en el catálogo y permanecen después de reiniciar el servidor.</p>
+          <a class="button button-primary" href="{% url 'tienda:administracion' %}#producto">Registrar juego</a>
         </div>
       </div>
 
       <div class="admin-layout">
         <div class="table-wrapper" tabindex="0">
           <table class="admin-table">
-            <caption>Juegos registrados en el catálogo</caption>
+            <caption>Juegos registrados en Oracle</caption>
             <thead>
-              <tr><th scope="col">Juego</th><th scope="col">Precio</th><th scope="col">Disponibilidad</th><th scope="col">Estado</th><th scope="col"><span class="visually-hidden">Acción</span></th></tr>
+              <tr><th scope="col">Juego</th><th scope="col">Precio</th><th scope="col">Disponibilidad</th><th scope="col">Estado</th><th scope="col">Acciones</th></tr>
             </thead>
-            <tbody id="admin-products-body"></tbody>
+            <tbody id="admin-products-body">
+              {% for juego in juegos %}
+                <tr>
+                  <td data-label="Juego"><strong>{{ juego.nombre }}</strong><small>{{ juego.categoria.nombre }}</small></td>
+                  <td data-label="Precio">{{ juego.precio_texto }}</td>
+                  <td data-label="Disponibilidad">{{ juego.stock }}</td>
+                  <td data-label="Estado"><span class="status-badge {% if juego.activo and juego.stock %}available{% else %}unavailable{% endif %}">{% if not juego.activo %}Oculto{% elif not juego.stock %}Sin stock{% else %}Publicado{% endif %}</span></td>
+                  <td data-label="Acciones">
+                    <div class="table-actions">
+                      <a class="table-action" href="{% url 'tienda:administracion' %}?juego={{ juego.pk }}#producto">Editar</a>
+                      <form action="{% url 'tienda:cambiar_estado_juego' juego_id=juego.pk %}" method="post">
+                        {% csrf_token %}
+                        <button class="table-action {% if juego.activo %}danger{% else %}restore{% endif %}" type="submit">{% if juego.activo %}Quitar{% else %}Publicar{% endif %}</button>
+                      </form>
+                      <form action="{% url 'tienda:eliminar_juego' juego_id=juego.pk %}" method="post" onsubmit="return confirm('¿Deseas eliminar este juego definitivamente?');">
+                        {% csrf_token %}
+                        <button class="table-action danger" type="submit">Eliminar</button>
+                      </form>
+                    </div>
+                  </td>
+                </tr>
+              {% empty %}
+                <tr><td colspan="5">No hay juegos registrados.</td></tr>
+              {% endfor %}
+            </tbody>
           </table>
         </div>
 
-        <section class="admin-card" aria-labelledby="product-form-title">
-          <h3 id="product-form-title">Registrar juego</h3>
-          <form id="admin-product-form" novalidate>
+        <section class="admin-card" id="producto" aria-labelledby="product-form-title">
+          <h3 id="product-form-title">{% if juego_seleccionado %}Editar juego{% else %}Registrar juego{% endif %}</h3>
+          <form id="admin-product-form" action="{% url 'tienda:guardar_juego' %}" method="post" novalidate>
             {% csrf_token %}
-            <input type="hidden" id="admin-product-id">
+            <input type="hidden" name="juego_id" value="{% if juego_seleccionado %}{{ juego_seleccionado.pk }}{% endif %}">
+
             <div class="form-group">
               <label class="form-label" for="admin-product-name">Nombre del juego</label>
-              <input class="form-control" type="text" id="admin-product-name" minlength="2" maxlength="60" placeholder="Ejemplo: Hollow Knight" required>
+              {{ formulario_juego.nombre }}
+              <small class="field-error">{{ formulario_juego.nombre.errors.0 }}</small>
             </div>
             <div class="form-group">
               <label class="form-label" for="admin-product-category">Categoría</label>
-              <select class="form-select" id="admin-product-category" required>
-                <option value="accion">Acción</option>
-                <option value="aventura">Aventura</option>
-                <option value="deportes">Deportes</option>
-                <option value="carreras">Carreras</option>
-                <option value="estrategia">Estrategia</option>
-              </select>
+              {{ formulario_juego.categoria }}
               <small class="field-hint">Los juegos nuevos utilizan la imagen representativa de la categoría.</small>
+              <small class="field-error">{{ formulario_juego.categoria.errors.0 }}</small>
             </div>
             <div class="form-group">
               <label class="form-label" for="admin-product-description">Descripción</label>
-              <textarea class="form-control" id="admin-product-description" rows="4" minlength="10" maxlength="220" placeholder="Describe brevemente el juego" required></textarea>
+              {{ formulario_juego.descripcion }}
+              <small class="field-error">{{ formulario_juego.descripcion.errors.0 }}</small>
             </div>
             <div class="row g-3">
               <div class="form-group col-12 col-sm-6">
                 <label class="form-label" for="admin-product-price">Precio en pesos</label>
-                <input class="form-control" type="number" id="admin-product-price" min="0" step="1" inputmode="numeric" required>
+                {{ formulario_juego.precio }}
+                <small class="field-error">{{ formulario_juego.precio.errors.0 }}</small>
               </div>
               <div class="form-group col-12 col-sm-6">
                 <label class="form-label" for="admin-product-stock">Licencias disponibles</label>
-                <input class="form-control" type="number" id="admin-product-stock" min="0" step="1" inputmode="numeric" required>
+                {{ formulario_juego.stock }}
+                <small class="field-error">{{ formulario_juego.stock.errors.0 }}</small>
               </div>
             </div>
-            <div class="form-group">
-              <label class="form-label" for="admin-product-active">Estado de publicación</label>
-              <select class="form-select" id="admin-product-active">
-                <option value="true">Publicado</option>
-                <option value="false">Oculto del catálogo</option>
-              </select>
+            <div class="form-check admin-published-check">
+              {{ formulario_juego.activo }}
+              <label class="form-check-label" for="admin-product-active">Publicado en el catálogo</label>
             </div>
+            <p class="form-status error"{% if not formulario_juego.non_field_errors %} hidden{% endif %}>{{ formulario_juego.non_field_errors.0 }}</p>
             <div class="form-actions">
-              <button class="button button-primary" id="admin-product-submit" type="submit">Registrar juego</button>
-              <button class="button button-secondary" type="button" data-action="cancel-product-edit" hidden>Cancelar edición</button>
+              <button class="button button-primary" id="admin-product-submit" type="submit">{% if juego_seleccionado %}Guardar cambios{% else %}Registrar juego{% endif %}</button>
+              {% if juego_seleccionado %}<a class="button button-secondary" href="{% url 'tienda:administracion' %}#producto">Cancelar edición</a>{% endif %}
             </div>
-            <p id="product-status" class="form-status" role="status" aria-live="polite" tabindex="-1" hidden></p>
           </form>
         </section>
       </div>
     </section>
 
-    <section class="admin-section" aria-labelledby="users-title">
+    <section class="admin-section" id="usuarios" aria-labelledby="users-title">
       <div class="admin-section-title">
         <div>
-          <p class="eyebrow">Mantenedor de usuarios</p>
+          <p class="eyebrow">Usuarios persistentes</p>
           <h2 id="users-title">Roles y estado de cuentas</h2>
         </div>
-        <p>Las contraseñas no se muestran ni se administran desde esta pantalla.</p>
+        <p>Las contraseñas permanecen protegidas por Django y nunca se muestran.</p>
       </div>
 
       <div class="admin-layout">
         <div class="table-wrapper" tabindex="0">
           <table class="admin-table">
-            <caption>Usuarios registrados en FreeGames</caption>
+            <caption>Usuarios registrados en Oracle</caption>
             <thead>
-              <tr><th scope="col">Nombre y correo</th><th scope="col">Usuario</th><th scope="col">Rol</th><th scope="col">Estado</th><th scope="col"><span class="visually-hidden">Acción</span></th></tr>
+              <tr><th scope="col">Nombre y correo</th><th scope="col">Usuario</th><th scope="col">Rol</th><th scope="col">Estado</th><th scope="col">Acción</th></tr>
             </thead>
-            <tbody id="admin-users-body"></tbody>
+            <tbody id="admin-users-body">
+              {% for usuario in usuarios %}
+                <tr>
+                  <td data-label="Nombre y correo"><strong>{{ usuario.get_full_name|default:usuario.username }}</strong><small>{{ usuario.email }}</small></td>
+                  <td data-label="Usuario">{{ usuario.username }}</td>
+                  <td data-label="Rol">{{ usuario.perfil.rol.nombre }}</td>
+                  <td data-label="Estado"><span class="status-badge {% if usuario.is_active %}available{% else %}unavailable{% endif %}">{% if usuario.is_active %}Activa{% else %}Inactiva{% endif %}</span></td>
+                  <td data-label="Acción"><a class="table-action" href="{% url 'tienda:administracion' %}?usuario={{ usuario.pk }}#usuario">Editar</a></td>
+                </tr>
+              {% endfor %}
+            </tbody>
           </table>
         </div>
 
-        <section class="admin-card" aria-labelledby="user-form-title">
+        <section class="admin-card" id="usuario" aria-labelledby="user-form-title">
           <h3 id="user-form-title">Editar cuenta</h3>
-          <form id="admin-user-form" novalidate>
-            {% csrf_token %}
-            <input type="hidden" id="admin-user-id">
-            <div class="form-group">
-              <label class="form-label" for="admin-user-name">Nombre completo</label>
-              <input class="form-control readonly-field" type="text" id="admin-user-name" readonly>
-            </div>
-            <div class="form-group">
-              <label class="form-label" for="admin-user-email">Correo electrónico</label>
-              <input class="form-control readonly-field" type="email" id="admin-user-email" readonly>
-            </div>
-            <div class="row g-3">
-              <div class="form-group col-12 col-sm-6">
-                <label class="form-label" for="admin-user-role">Rol</label>
-                <select class="form-select" id="admin-user-role">
-                  <option value="cliente">Cliente</option>
-                  <option value="administrador">Administrador</option>
-                </select>
+          {% if usuario_seleccionado and formulario_usuario %}
+            <form id="admin-user-form" action="{% url 'tienda:actualizar_usuario' usuario_id=usuario_seleccionado.pk %}" method="post" novalidate>
+              {% csrf_token %}
+              <div class="form-group">
+                <label class="form-label" for="admin-user-name">Nombre completo</label>
+                <input class="form-control readonly-field" type="text" id="admin-user-name" value="{{ usuario_seleccionado.get_full_name|default:usuario_seleccionado.username }}" readonly>
               </div>
-              <div class="form-group col-12 col-sm-6">
-                <label class="form-label" for="admin-user-active">Estado</label>
-                <select class="form-select" id="admin-user-active">
-                  <option value="true">Cuenta activa</option>
-                  <option value="false">Cuenta inactiva</option>
-                </select>
+              <div class="form-group">
+                <label class="form-label" for="admin-user-email">Correo electrónico</label>
+                <input class="form-control readonly-field" type="email" id="admin-user-email" value="{{ usuario_seleccionado.email }}" readonly>
               </div>
-            </div>
-            <div class="form-actions"><button class="button button-primary" type="submit">Guardar cuenta</button></div>
-            <p id="user-status" class="form-status" role="status" aria-live="polite" tabindex="-1" hidden></p>
-          </form>
+              <div class="row g-3">
+                <div class="form-group col-12 col-sm-6">
+                  <label class="form-label" for="admin-user-role">Rol</label>
+                  {{ formulario_usuario.rol }}
+                  <small class="field-error">{{ formulario_usuario.rol.errors.0 }}</small>
+                </div>
+                <div class="form-group col-12 col-sm-6">
+                  <label class="form-label" for="admin-user-active">Estado</label>
+                  {{ formulario_usuario.activo }}
+                  <small class="field-error">{{ formulario_usuario.activo.errors.0 }}</small>
+                </div>
+              </div>
+              <p class="form-status error"{% if not formulario_usuario.non_field_errors %} hidden{% endif %}>{{ formulario_usuario.non_field_errors.0 }}</p>
+              <div class="form-actions"><button class="button button-primary" type="submit">Guardar cuenta</button></div>
+            </form>
+          {% else %}
+            <p>Selecciona una cuenta para modificarla.</p>
+          {% endif %}
         </section>
       </div>
     </section>

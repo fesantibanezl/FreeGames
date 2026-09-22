@@ -8,26 +8,6 @@
   <title>{% block titulo %}FreeGames{% endblock %}</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
   <link rel="stylesheet" href="{% static 'tienda/css/style.css' %}">
-  <script>
-    window.FreeGamesConfig = Object.freeze({
-      staticBase: "{% static 'tienda/' %}",
-      routes: Object.freeze({
-        inicio: "{% url 'tienda:inicio' %}",
-        carrito: "{% url 'tienda:carrito' %}",
-        login: "{% url 'tienda:login' %}",
-        registro: "{% url 'tienda:registro' %}",
-        recuperarClave: "{% url 'tienda:recuperar_clave' %}",
-        perfil: "{% url 'tienda:perfil' %}",
-        misCompras: "{% url 'tienda:mis_compras' %}",
-        compraExitosa: "{% url 'tienda:compra_exitosa' %}",
-        administracion: "{% url 'tienda:administracion' %}"
-      })
-    });
-  </script>
-  <script src="{% static 'tienda/js/datos-demo.js' %}" defer></script>
-  <script src="{% static 'tienda/js/productos.js' %}" defer></script>
-  <script src="{% static 'tienda/js/compras.js' %}" defer></script>
-  <script src="{% static 'tienda/js/carrito.js' %}" defer></script>
   <script src="{% static 'tienda/js/validaciones.js' %}" defer></script>
   <script src="{% static 'tienda/js/autenticacion.js' %}" defer></script>
   {% block scripts_extra %}{% endblock %}
@@ -50,23 +30,43 @@
       </button>
       <div class="collapse navbar-collapse" id="navegacion-principal">
         <div class="navbar-nav mx-auto">
-          <a class="nav-link{% if seccion_activa == 'inicio' %} active{% endif %}"{% if seccion_activa == 'inicio' %} aria-current="page"{% endif %} href="{% url 'tienda:inicio' %}">Inicio</a>
-          <a class="nav-link{% if seccion_activa == 'accion' %} active{% endif %}"{% if seccion_activa == 'accion' %} aria-current="page"{% endif %} href="{% url 'tienda:categoria' slug='accion' %}">Acción</a>
-          <a class="nav-link{% if seccion_activa == 'aventura' %} active{% endif %}"{% if seccion_activa == 'aventura' %} aria-current="page"{% endif %} href="{% url 'tienda:categoria' slug='aventura' %}">Aventura</a>
-          <a class="nav-link{% if seccion_activa == 'deportes' %} active{% endif %}"{% if seccion_activa == 'deportes' %} aria-current="page"{% endif %} href="{% url 'tienda:categoria' slug='deportes' %}">Deportes</a>
-          <a class="nav-link{% if seccion_activa == 'carreras' %} active{% endif %}"{% if seccion_activa == 'carreras' %} aria-current="page"{% endif %} href="{% url 'tienda:categoria' slug='carreras' %}">Carreras</a>
-          <a class="nav-link{% if seccion_activa == 'estrategia' %} active{% endif %}"{% if seccion_activa == 'estrategia' %} aria-current="page"{% endif %} href="{% url 'tienda:categoria' slug='estrategia' %}">Estrategia</a>
-          <a class="nav-link{% if seccion_activa == 'carrito' %} active{% endif %}" href="{% url 'tienda:carrito' %}">Carrito <span class="cart-count" data-cart-count hidden>0</span></a>
-          <a class="nav-link{% if seccion_activa == 'login' %} active{% endif %}" data-session="guest" href="{% url 'tienda:login' %}">Iniciar sesión</a>
-          <a class="nav-link register-link{% if seccion_activa == 'registro' %} active{% endif %}" data-session="guest" href="{% url 'tienda:registro' %}">Registrarse</a>
-          <a class="nav-link{% if seccion_activa == 'perfil' %} active{% endif %}" data-session="user" href="{% url 'tienda:perfil' %}" hidden>Mi perfil: <span data-user-name></span></a>
-          <a class="nav-link{% if seccion_activa == 'mis_compras' %} active{% endif %}" data-session="user" data-role="cliente" href="{% url 'tienda:mis_compras' %}" hidden>Mis compras</a>
-          <a class="nav-link{% if seccion_activa == 'administracion' %} active{% endif %}" data-session="user" data-role="administrador" href="{% url 'tienda:administracion' %}" hidden>Administración</a>
-          <button class="nav-link logout-link" data-session="user" data-action="logout" type="button" hidden>Cerrar sesión</button>
+          {% if not request.user.is_authenticated or rol_actual == 'cliente' %}
+            <a class="nav-link{% if seccion_activa == 'inicio' %} active{% endif %}"{% if seccion_activa == 'inicio' %} aria-current="page"{% endif %} href="{% url 'tienda:inicio' %}">Inicio</a>
+            <a class="nav-link{% if seccion_activa == 'accion' %} active{% endif %}"{% if seccion_activa == 'accion' %} aria-current="page"{% endif %} href="{% url 'tienda:categoria' slug='accion' %}">Acción</a>
+            <a class="nav-link{% if seccion_activa == 'aventura' %} active{% endif %}"{% if seccion_activa == 'aventura' %} aria-current="page"{% endif %} href="{% url 'tienda:categoria' slug='aventura' %}">Aventura</a>
+            <a class="nav-link{% if seccion_activa == 'deportes' %} active{% endif %}"{% if seccion_activa == 'deportes' %} aria-current="page"{% endif %} href="{% url 'tienda:categoria' slug='deportes' %}">Deportes</a>
+            <a class="nav-link{% if seccion_activa == 'carreras' %} active{% endif %}"{% if seccion_activa == 'carreras' %} aria-current="page"{% endif %} href="{% url 'tienda:categoria' slug='carreras' %}">Carreras</a>
+            <a class="nav-link{% if seccion_activa == 'estrategia' %} active{% endif %}"{% if seccion_activa == 'estrategia' %} aria-current="page"{% endif %} href="{% url 'tienda:categoria' slug='estrategia' %}">Estrategia</a>
+          {% endif %}
+
+          {% if request.user.is_authenticated %}
+            {% if rol_actual == 'cliente' %}
+              <a class="nav-link{% if seccion_activa == 'carrito' %} active{% endif %}" href="{% url 'tienda:carrito' %}">Carrito <span class="cart-count"{% if not cantidad_carrito %} hidden{% endif %}>{{ cantidad_carrito }}</span></a>
+              <a class="nav-link{% if seccion_activa == 'perfil' %} active{% endif %}" href="{% url 'tienda:perfil' %}">Mi perfil: {{ request.user.username }}</a>
+              <a class="nav-link{% if seccion_activa == 'mis_compras' %} active{% endif %}" href="{% url 'tienda:mis_compras' %}">Mis compras</a>
+            {% elif rol_actual == 'administrador' %}
+              <a class="nav-link{% if seccion_activa == 'administracion' %} active{% endif %}" href="{% url 'tienda:administracion' %}">Administración</a>
+            {% endif %}
+            <form class="nav-logout-form" action="{% url 'tienda:logout' %}" method="post">
+              {% csrf_token %}
+              <button class="nav-link logout-link" type="submit">Cerrar sesión</button>
+            </form>
+          {% else %}
+            <a class="nav-link{% if seccion_activa == 'login' %} active{% endif %}" href="{% url 'tienda:login' %}">Iniciar sesión</a>
+            <a class="nav-link register-link{% if seccion_activa == 'registro' %} active{% endif %}" href="{% url 'tienda:registro' %}">Registrarse</a>
+          {% endif %}
         </div>
       </div>
     </div>
   </nav>
+
+  {% if messages %}
+    <section class="site-messages container" aria-label="Mensajes del sistema">
+      {% for mensaje in messages %}
+        <p class="form-status {{ mensaje.tags }}" role="status" aria-live="polite">{{ mensaje }}</p>
+      {% endfor %}
+    </section>
+  {% endif %}
 
   {% block contenido %}{% endblock %}
 
