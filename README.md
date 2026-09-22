@@ -58,6 +58,7 @@ La entrega incluye archivos independientes para revisar la estructura y los dato
 - [`02_datos_iniciales.sql`](base_datos/02_datos_iniciales.sql): roles, cuentas, perfiles, cinco categorías y quince juegos mediante operaciones `MERGE` reutilizables.
 - [`MER_FreeGames.pdf`](documentacion/MER_FreeGames.pdf): modelo entidad relación normalizado listo para revisión.
 - [`MER_FreeGames.md`](documentacion/MER_FreeGames.md): fuente editable del modelo y explicación de las tres formas normales.
+- [`PRUEBAS_SEMANA6.md`](documentacion/PRUEBAS_SEMANA6.md): matriz de acceso y comprobaciones funcionales realizadas.
 
 Las instrucciones de ejecución y la relación entre estos scripts y las migraciones se encuentran en [`base_datos/README.md`](base_datos/README.md).
 
@@ -114,6 +115,7 @@ Durante el desarrollo local, los mensajes de recuperación se imprimen en la ter
 
 ```text
 FreeGames/
+├── ENLACE_GITHUB.txt          # Repositorio solicitado para la Parte II.
 ├── base_datos/                # DDL Oracle y carga de datos iniciales.
 ├── documentacion/             # MER normalizado en PDF y formato editable.
 ├── freegames/                 # Configuración y rutas principales de Django.
@@ -212,4 +214,4 @@ Remove-Item Env:FREEGAMES_USE_SQLITE
 
 Las pruebas automatizadas usan SQLite de manera temporal para poder crear y eliminar su base aislada. La aplicación y las migraciones de desarrollo utilizan Oracle de forma predeterminada.
 
-También se revisaron manualmente el registro, la recuperación, los dos roles, las restricciones de acceso, el perfil, el carrito, la compra simulada, el historial y el panel administrativo.
+El resultado final es de **38 pruebas aprobadas**. La matriz de roles, las operaciones revisadas y la comprobación con Oracle están documentadas en [`documentacion/PRUEBAS_SEMANA6.md`](documentacion/PRUEBAS_SEMANA6.md).

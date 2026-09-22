@@ -1,0 +1,13 @@
+FreeGames - Programación Web PGY3221
+Experiencia de Aprendizaje 2 - Semana 6
+
+Repositorio GitHub:
+https://github.com/fesantibanezl/FreeGames
+
+Rama de entrega final:
+main
+
+Rama de desarrollo de la semana 6:
+semana-6
+
+Las instrucciones de instalación, las cuentas de prueba y las evidencias se encuentran en README.md.
