@@ -1,9 +1,12 @@
 from django.conf import settings
+from django.contrib.auth import get_user_model
 from django.contrib.staticfiles import finders
-from django.test import SimpleTestCase
+from django.db.models.deletion import ProtectedError
+from django.test import SimpleTestCase, TestCase
 from django.urls import resolve, reverse
 
 from . import views
+from .models import PerfilUsuario, Rol
 
 
 class CatalogoViewsTests(SimpleTestCase):
@@ -80,3 +83,40 @@ class ConfiguracionDjangoTests(SimpleTestCase):
         for recurso in recursos:
             with self.subTest(recurso=recurso):
                 self.assertIsNotNone(finders.find(recurso))
+
+
+class ModelosUsuarioTests(TestCase):
+    def test_migracion_crea_los_dos_roles_solicitados(self):
+        codigos = set(Rol.objects.values_list('codigo', flat=True))
+
+        self.assertEqual(
+            codigos,
+            {Rol.Codigos.CLIENTE, Rol.Codigos.ADMINISTRADOR},
+        )
+
+    def test_cuentas_iniciales_tienen_perfil_rol_y_clave_utilizable(self):
+        Usuario = get_user_model()
+        casos = (
+            ('cliente', 'Cliente#2026', Rol.Codigos.CLIENTE, False),
+            ('admin', 'Admin#2026', Rol.Codigos.ADMINISTRADOR, True),
+        )
+
+        for nombre, clave, rol, es_superusuario in casos:
+            with self.subTest(nombre=nombre):
+                usuario = Usuario.objects.select_related('perfil__rol').get(
+                    username=nombre,
+                )
+
+                self.assertTrue(usuario.check_password(clave))
+                self.assertEqual(usuario.perfil.rol.codigo, rol)
+                self.assertEqual(usuario.is_superuser, es_superusuario)
+
+    def test_un_rol_en_uso_no_puede_eliminarse(self):
+        rol_cliente = Rol.objects.get(codigo=Rol.Codigos.CLIENTE)
+
+        with self.assertRaises(ProtectedError):
+            rol_cliente.delete()
+
+        self.assertTrue(
+            PerfilUsuario.objects.filter(rol=rol_cliente).exists(),
+        )

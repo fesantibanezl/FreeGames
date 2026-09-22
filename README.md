@@ -61,6 +61,7 @@ La configuración admite reemplazar los valores locales mediante las variables `
 - Historial de pedidos para el cliente.
 - Panel administrativo para registrar y modificar juegos, controlar su publicación y administrar roles y estados de cuentas.
 - Vistas, plantillas y archivos estáticos organizados mediante Django.
+- Modelos persistentes para roles y perfiles de usuario, visibles desde Django Admin.
 
 ## Rutas principales
 
@@ -75,17 +76,18 @@ La configuración admite reemplazar los valores locales mediante las variables `
 | `/carrito/` | Carrito y confirmación de una compra simulada. |
 | `/mis-compras/` | Historial exclusivo del rol cliente. |
 | `/administracion/` | Panel exclusivo del rol administrador. |
+| `/admin/` | Administrador de Django para usuarios, perfiles y roles. |
 
 ## Cuentas de prueba
 
-Estas cuentas existen únicamente para revisar los roles y funcionalidades del proyecto. Las credenciales no se muestran dentro del formulario de inicio de sesión.
+Las migraciones crean estas cuentas en Oracle para revisar los roles y funcionalidades del proyecto. Las credenciales no se muestran dentro del formulario de inicio de sesión.
 
 | Rol | Usuario | Contraseña |
 | --- | --- | --- |
 | Cliente | `cliente` | `Cliente#2026` |
 | Administrador | `admin` | `Admin#2026` |
 
-Estas cuentas todavía corresponden a la demostración FrontEnd de la semana 4. En las siguientes partes serán reemplazadas por usuarios almacenados en Oracle y autenticados por Django.
+La cuenta `admin` ya permite ingresar a `/admin/` mediante la autenticación de Django. Hasta completar las siguientes partes, el formulario `/login/` continúa usando la demostración FrontEnd de la semana 4, aunque las mismas cuentas ya existen en Oracle.
 
 ## Estructura del proyecto
 
@@ -99,6 +101,9 @@ FreeGames/
 │   │   └── js/                # Funcionalidad FrontEnd y datos simulados.
 │   ├── templates/tienda/      # Plantilla base y páginas de la aplicación.
 │   ├── catalogo.py            # Categorías y contenido de presentación.
+│   ├── models.py              # Roles y perfiles persistentes de usuario.
+│   ├── admin.py               # Configuración de los modelos en Django Admin.
+│   ├── migrations/            # Estructura y datos iniciales de Oracle.
 │   ├── tests.py               # Pruebas de vistas, rutas y plantillas.
 │   ├── urls.py                # Rutas de la aplicación tienda.
 │   └── views.py               # Vistas que renderizan las plantillas.
@@ -131,7 +136,8 @@ La plantilla base concentra la navegación, los estilos y los módulos JavaScrip
 - Si `localStorage` no está disponible, se usa memoria mientras la página permanezca abierta.
 - Las contraseñas y la compra son demostrativas. No existe un cobro real ni una integración con WebPay.
 - La interfaz considera navegación por teclado, foco visible, enlace para saltar al contenido y adaptación a móvil, tableta y escritorio.
-- `models.py` todavía no define persistencia propia; los modelos de usuarios, perfiles y roles se incorporarán en la siguiente parte.
+- El usuario estándar de Django almacena las credenciales; `PerfilUsuario` incorpora rol, fecha de nacimiento y dirección.
+- Los roles iniciales son **Cliente** y **Administrador**. Un rol asociado a perfiles no puede eliminarse accidentalmente.
 
 ## Evidencias de la semana 4
 
