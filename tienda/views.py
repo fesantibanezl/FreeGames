@@ -1,3 +1,7 @@
+import json
+from urllib.error import URLError
+from urllib.parse import urlencode, urlparse
+from urllib.request import Request as UrlRequest, urlopen
 from uuid import uuid4
 
 from django.contrib import messages
@@ -8,12 +12,18 @@ from django.contrib.auth import logout as cerrar_sesion_django
 from django.db import transaction
 from django.db.models import Sum
 from django.db.models.deletion import ProtectedError
-from django.http import Http404
+from django.core.cache import cache
+from django.http import Http404, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 from django.utils.http import url_has_allowed_host_and_scheme
 from django.utils.text import slugify
-from django.views.decorators.http import require_http_methods, require_POST, require_safe
+from django.views.decorators.http import (
+    require_GET,
+    require_http_methods,
+    require_POST,
+    require_safe,
+)
 
 from .decorators import destino_por_rol, obtener_codigo_rol, rol_requerido
 from .forms import (
@@ -36,6 +46,22 @@ from .models import (
 
 Usuario = get_user_model()
 CLAVE_CARRITO = 'freegames_carrito'
+FREE_TO_GAME_URL = 'https://www.freetogame.com/api/games'
+PLATAFORMAS_EXTERNAS = {'all', 'windows', 'browser'}
+CATEGORIAS_EXTERNAS = {
+    'all',
+    'mmorpg',
+    'shooter',
+    'strategy',
+    'racing',
+    'sports',
+}
+ORDENES_EXTERNOS = {
+    'popularity',
+    'release-date',
+    'alphabetical',
+    'relevance',
+}
 
 
 def _es_administrador(usuario):
@@ -123,6 +149,46 @@ def _entero_consulta(valor):
         raise Http404('El identificador solicitado no es válido.')
 
 
+def _url_externa_segura(valor):
+    """Conserva solamente enlaces HTTPS completos recibidos del servicio."""
+
+    if not isinstance(valor, str):
+        return ''
+    partes = urlparse(valor)
+    if partes.scheme != 'https' or not partes.netloc:
+        return ''
+    return valor
+
+
+def _normalizar_juegos_externos(datos):
+    if not isinstance(datos, list):
+        raise ValueError('La respuesta externa no contiene una lista.')
+
+    juegos = []
+    for registro in datos[:12]:
+        if not isinstance(registro, dict):
+            continue
+        titulo = str(registro.get('title', '')).strip()
+        if not titulo:
+            continue
+        juegos.append({
+            'id': registro.get('id'),
+            'titulo': titulo,
+            'descripcion': str(
+                registro.get('short_description', ''),
+            ).strip(),
+            'genero': str(registro.get('genre', '')).strip(),
+            'plataforma': str(registro.get('platform', '')).strip(),
+            'editor': str(registro.get('publisher', '')).strip(),
+            'fecha_lanzamiento': str(
+                registro.get('release_date', ''),
+            ).strip(),
+            'imagen': _url_externa_segura(registro.get('thumbnail')),
+            'sitio': _url_externa_segura(registro.get('game_url')),
+        })
+    return juegos
+
+
 def _contexto_administracion(
     request,
     *,
@@ -189,6 +255,75 @@ def inicio(request):
     return render(request, 'tienda/index.html', {
         'categorias': Categoria.objects.all(),
         'seccion_activa': 'inicio',
+    })
+
+
+@require_safe
+def descubrir_juegos(request):
+    """Muestra juegos gratuitos obtenidos sin recargar la página."""
+
+    return render(request, 'tienda/descubrir_juegos.html', {
+        'encabezado_compacto': True,
+        'seccion_activa': 'descubrir',
+    })
+
+
+@require_GET
+def juegos_externos(request):
+    """Consulta FreeToGame y entrega una respuesta estable para el FrontEnd."""
+
+    plataforma = request.GET.get('plataforma', 'all').strip().lower()
+    categoria = request.GET.get('categoria', 'all').strip().lower()
+    orden = request.GET.get('orden', 'popularity').strip().lower()
+
+    validaciones = (
+        ('plataforma', plataforma, PLATAFORMAS_EXTERNAS),
+        ('categoria', categoria, CATEGORIAS_EXTERNAS),
+        ('orden', orden, ORDENES_EXTERNOS),
+    )
+    for nombre, valor, permitidos in validaciones:
+        if valor not in permitidos:
+            return JsonResponse(
+                {nombre: 'El valor seleccionado no está permitido.'},
+                status=400,
+            )
+
+    parametros = {'sort-by': orden}
+    if plataforma != 'all':
+        parametros['platform'] = plataforma
+    if categoria != 'all':
+        parametros['category'] = categoria
+
+    clave_cache = f'freegames:externos:{plataforma}:{categoria}:{orden}'
+    juegos = cache.get(clave_cache)
+    if juegos is None:
+        url = f'{FREE_TO_GAME_URL}?{urlencode(parametros)}'
+        solicitud = UrlRequest(
+            url,
+            headers={
+                'Accept': 'application/json',
+                'User-Agent': 'FreeGames-Semana7/1.0',
+            },
+        )
+        try:
+            with urlopen(solicitud, timeout=8) as respuesta:
+                juegos = _normalizar_juegos_externos(json.load(respuesta))
+        except (OSError, URLError, ValueError, json.JSONDecodeError):
+            return JsonResponse(
+                {
+                    'detalle': (
+                        'El catálogo externo no está disponible en este '
+                        'momento. Intenta nuevamente.'
+                    ),
+                },
+                status=502,
+            )
+        cache.set(clave_cache, juegos, timeout=300)
+
+    return JsonResponse({
+        'fuente': 'FreeToGame',
+        'total': len(juegos),
+        'juegos': juegos,
     })
 
 

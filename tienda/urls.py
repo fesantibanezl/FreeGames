@@ -9,6 +9,12 @@ app_name = 'tienda'
 
 urlpatterns = [
     path('', views.inicio, name='inicio'),
+    path('descubrir/', views.descubrir_juegos, name='descubrir_juegos'),
+    path(
+        'servicios/juegos-gratis/',
+        views.juegos_externos,
+        name='juegos_externos',
+    ),
     path('carrito/', views.carrito, name='carrito'),
     path('carrito/agregar/<int:juego_id>/', views.agregar_carrito, name='agregar_carrito'),
     path('carrito/actualizar/<int:juego_id>/', views.actualizar_carrito, name='actualizar_carrito'),

@@ -94,3 +94,20 @@ gratuidad. Los parámetros previstos son `nombre`, `categoria`, `activo` y
   `gratis`, que también pueden combinarse.
 - Los parámetros booleanos inválidos retornan `400 Bad Request` con un mensaje
   asociado al campo.
+
+## Estado de la Parte 4
+
+- La página `/descubrir/` integra el catálogo público de FreeToGame con el
+  diseño de FreeGames.
+- El navegador usa `fetch()` para actualizar el contenido sin recargar la
+  página.
+- Una vista Django consulta el servicio externo, normaliza su respuesta y
+  evita depender de permisos CORS o de una clave de RapidAPI.
+- Los filtros de plataforma, género y orden se validan antes de construir la
+  solicitud externa.
+- La interfaz muestra estados de carga, éxito, ausencia de resultados, error y
+  reintento.
+- Los datos se mantienen cinco minutos en caché para reducir las solicitudes
+  al servicio público.
+- La atribución visible enlaza a FreeToGame, de acuerdo con sus condiciones de
+  uso.

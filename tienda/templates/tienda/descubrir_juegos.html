@@ -1,0 +1,76 @@
+{% extends 'tienda/base.html' %}
+{% load static %}
+
+{% block titulo %}Descubrir juegos gratuitos | FreeGames{% endblock %}
+{% block descripcion %}Explora juegos gratuitos obtenidos desde el servicio público FreeToGame.{% endblock %}
+
+{% block scripts_extra %}
+  <script src="{% static 'tienda/js/servicio_juegos.js' %}" defer></script>
+{% endblock %}
+
+{% block contenido %}
+  <main
+    class="external-page container"
+    id="contenido-principal"
+    data-external-games
+    data-endpoint="{% url 'tienda:juegos_externos' %}"
+    data-fallback-image="{% static 'tienda/img/accion.png' %}"
+  >
+    <header class="page-intro">
+      <p class="eyebrow">Servicio REST público</p>
+      <h1>Descubre más juegos gratuitos</h1>
+      <p>Consulta títulos disponibles para PC y navegador. Los resultados se actualizan sin recargar esta página.</p>
+    </header>
+
+    <section class="external-toolbar" aria-labelledby="external-filters-title">
+      <div>
+        <h2 id="external-filters-title">Filtrar catálogo externo</h2>
+        <p>Combina plataforma, género y orden para encontrar nuevas opciones.</p>
+      </div>
+      <form class="external-filters" data-external-filters>
+        <label>
+          Plataforma
+          <select name="plataforma">
+            <option value="all">Todas</option>
+            <option value="windows">PC</option>
+            <option value="browser">Navegador</option>
+          </select>
+        </label>
+        <label>
+          Género
+          <select name="categoria">
+            <option value="all">Todos</option>
+            <option value="mmorpg">MMORPG</option>
+            <option value="shooter">Disparos</option>
+            <option value="strategy">Estrategia</option>
+            <option value="racing">Carreras</option>
+            <option value="sports">Deportes</option>
+          </select>
+        </label>
+        <label>
+          Orden
+          <select name="orden">
+            <option value="popularity">Popularidad</option>
+            <option value="release-date">Lanzamiento</option>
+            <option value="alphabetical">Alfabético</option>
+            <option value="relevance">Relevancia</option>
+          </select>
+        </label>
+        <button class="button button-primary" type="submit" data-load-games>Actualizar resultados</button>
+      </form>
+    </section>
+
+    <p class="external-status" data-external-status role="status" aria-live="polite">Preparando el catálogo externo…</p>
+    <button class="button button-secondary external-retry" type="button" data-external-retry hidden>Intentar nuevamente</button>
+
+    <section aria-labelledby="external-results-title">
+      <div class="external-results-heading">
+        <h2 id="external-results-title" class="section-title">Resultados de FreeToGame</h2>
+        <span data-external-count></span>
+      </div>
+      <div class="games-grid external-grid" data-external-grid aria-busy="true"></div>
+    </section>
+
+    <p class="external-source">Información proporcionada por <a href="https://www.freetogame.com/" target="_blank" rel="noopener noreferrer">FreeToGame.com</a>.</p>
+  </main>
+{% endblock %}
