@@ -111,3 +111,15 @@ gratuidad. Los parámetros previstos son `nombre`, `categoria`, `activo` y
   al servicio público.
 - La atribución visible enlaza a FreeToGame, de acuerdo con sus condiciones de
   uso.
+
+## Estado de la Parte 5
+
+- La matriz `PRUEBAS_SEMANA7.md` documenta endpoints, autenticación, filtros,
+  uso desde PowerShell y configuración de Postman.
+- Las pruebas cubren token válido e inválido, permisos, persistencia, códigos
+  HTTP, filtros, caché, respuesta externa malformada y degradación controlada.
+- El README identifica las rutas y evidencias correspondientes a la Semana 7.
+- El historial local conserva commits separados para cada parte del
+  desarrollo.
+- La evidencia grupal definitiva deberá provenir de participaciones reales de
+  los integrantes en el repositorio remoto.

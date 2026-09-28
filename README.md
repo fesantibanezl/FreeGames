@@ -1,6 +1,6 @@
 # FreeGames
 
-Proyecto para la asignatura **Programación Web — Experiencia de Aprendizaje 2**. FreeGames integra el FrontEnd con Django y Oracle, junto con autenticación, autorización por roles, mantenedores, carrito y pedidos persistentes. En la semana 6 se completa la gestión de cuentas y la recuperación segura de contraseñas.
+Proyecto para la asignatura **Programación Web — Experiencias de Aprendizaje 2 y 3**. FreeGames integra el FrontEnd con Django y Oracle, junto con autenticación, autorización por roles, mantenedores, carrito y pedidos persistentes. En la semana 7 incorpora una API REST propia con seguridad y filtros, además del consumo asincrónico de un servicio REST público.
 
 ## Cómo ejecutar el proyecto
 
@@ -59,6 +59,8 @@ La entrega incluye archivos independientes para revisar la estructura y los dato
 - [`MER_FreeGames.pdf`](documentacion/MER_FreeGames.pdf): modelo entidad relación normalizado listo para revisión.
 - [`MER_FreeGames.md`](documentacion/MER_FreeGames.md): fuente editable del modelo y explicación de las tres formas normales.
 - [`PRUEBAS_SEMANA6.md`](documentacion/PRUEBAS_SEMANA6.md): matriz de acceso y comprobaciones funcionales realizadas.
+- [`PLAN_SEMANA7.md`](documentacion/PLAN_SEMANA7.md): diseño técnico y avance de las cinco partes de la actividad.
+- [`PRUEBAS_SEMANA7.md`](documentacion/PRUEBAS_SEMANA7.md): endpoints, ejemplos, matriz de pruebas y evidencia Git.
 
 Las instrucciones de ejecución y la relación entre estos scripts y las migraciones se encuentran en [`base_datos/README.md`](base_datos/README.md).
 
@@ -79,6 +81,10 @@ Las instrucciones de ejecución y la relación entre estos scripts y las migraci
 - Conservación de las cuentas asociadas a compras: al intentar eliminarlas se desactivan para proteger el historial.
 - Vistas, plantillas y archivos estáticos organizados mediante Django.
 - Modelos persistentes para categorías, juegos, pedidos, detalles, roles y perfiles, visibles desde Django Admin.
+- API REST propia para consultar y mantener categorías y juegos mediante JSON.
+- Autenticación por token, lectura para usuarios autenticados y escritura exclusiva para administradores.
+- Filtros combinables de juegos por nombre, categoría, estado y gratuidad.
+- Catálogo de FreeToGame integrado mediante `fetch()` sin recargar la página, con filtros, caché y recuperación ante errores.
 
 ## Rutas principales
 
@@ -95,6 +101,11 @@ Las instrucciones de ejecución y la relación entre estos scripts y las migraci
 | `/mis-compras/` | Historial persistente exclusivo del rol cliente. |
 | `/administracion/` | CRUD y mantenedores exclusivos del administrador. |
 | `/admin/` | Administrador Django para todos los modelos persistentes. |
+| `/descubrir/` | Catálogo dinámico obtenido desde el servicio público FreeToGame. |
+| `/servicios/juegos-gratis/` | Adaptador JSON interno para consultar FreeToGame. |
+| `/api/token/` | Obtención de token mediante usuario y contraseña. |
+| `/api/categorias/`, `/api/categorias/<id>/` | Colección y detalle REST de categorías. |
+| `/api/juegos/`, `/api/juegos/<id>/` | Colección, filtros y detalle REST de juegos. |
 
 ## Cuentas de prueba
 
@@ -116,8 +127,9 @@ Durante el desarrollo local, los mensajes de recuperación se imprimen en la ter
 ```text
 FreeGames/
 ├── ENLACE_GITHUB.txt          # Repositorio solicitado para la Parte II.
+├── api/                       # Serializadores, permisos, vistas y rutas REST.
 ├── base_datos/                # DDL Oracle y carga de datos iniciales.
-├── documentacion/             # MER normalizado en PDF y formato editable.
+├── documentacion/             # MER, planes y matrices de pruebas.
 ├── freegames/                 # Configuración y rutas principales de Django.
 ├── tienda/
 │   ├── static/tienda/
@@ -135,7 +147,7 @@ FreeGames/
 │   ├── urls.py                # Rutas de la aplicación tienda.
 │   └── views.py               # Vistas que renderizan las plantillas.
 ├── manage.py
-└── requirements.txt            # Django y controlador oficial de Oracle.
+└── requirements.txt            # Django, DRF y controlador oficial de Oracle.
 ```
 
 ## Flujo de una solicitud en Django
@@ -168,6 +180,9 @@ La plantilla base concentra la navegación, los estilos y los módulos JavaScrip
 - El usuario estándar de Django almacena las credenciales; `PerfilUsuario` incorpora rol, fecha de nacimiento y dirección.
 - Los roles iniciales son **Cliente** y **Administrador**. Un rol asociado a perfiles no puede eliminarse accidentalmente.
 - Los juegos asociados a pedidos no se eliminan para conservar la integridad del historial; el mantenedor los oculta del catálogo.
+- Los tokens se almacenan en las tablas de `rest_framework.authtoken`; después de instalar las dependencias debe ejecutarse `python manage.py migrate`.
+- La autenticación por token debe publicarse mediante HTTPS fuera del entorno local.
+- El servicio público se consulta desde Django para no depender de CORS ni exponer credenciales en el navegador.
 
 ## Evidencias de la semana 4
 
@@ -201,6 +216,18 @@ La plantilla base concentra la navegación, los estilos y los módulos JavaScrip
 | Entregables de datos | Script DDL, script idempotente de datos iniciales y MER normalizado. |
 | Verificación | Pruebas automatizadas de catálogo, cuentas, permisos, carrito, pedidos y mantenedores. |
 
+## Evidencias de la semana 7
+
+| Criterio | Evidencia en el proyecto |
+| --- | --- |
+| API REST propia | Aplicación `api`, serializadores y CRUD completo de categorías y juegos. |
+| Seguridad | Token DRF, respuesta `401` sin credenciales y escritura restringida al administrador con `403` para clientes. |
+| Filtrado | Parámetros `nombre`, `categoria`, `activo` y `gratis` sobre `/api/juegos/`. |
+| Servicio REST público | Página `/descubrir/` integrada con FreeToGame mediante `fetch()` sin recarga. |
+| Manejo del servicio externo | Validación de parámetros, normalización, caché, enlaces HTTPS, error y reintento. |
+| Git | Rama `semana-7` con commits independientes para infraestructura, CRUD, seguridad y consumo externo. |
+| Verificación | Matriz completa en `documentacion/PRUEBAS_SEMANA7.md` y pruebas automatizadas de API y servicio externo. |
+
 ## Pruebas
 
 Para ejecutar la revisión automatizada:
@@ -208,10 +235,12 @@ Para ejecutar la revisión automatizada:
 ```powershell
 python manage.py check
 $env:FREEGAMES_USE_SQLITE = "1"
-python manage.py test tienda
+python manage.py makemigrations --check --dry-run
+python manage.py test tienda api
 Remove-Item Env:FREEGAMES_USE_SQLITE
+python -m pip check
 ```
 
 Las pruebas automatizadas usan SQLite de manera temporal para poder crear y eliminar su base aislada. La aplicación y las migraciones de desarrollo utilizan Oracle de forma predeterminada.
 
-El resultado final es de **38 pruebas aprobadas**. La matriz de roles, las operaciones revisadas y la comprobación con Oracle están documentadas en [`documentacion/PRUEBAS_SEMANA6.md`](documentacion/PRUEBAS_SEMANA6.md).
+El resultado final es de **71 pruebas aprobadas**. La matriz de la Semana 6 permanece en [`documentacion/PRUEBAS_SEMANA6.md`](documentacion/PRUEBAS_SEMANA6.md) y la evidencia de API REST, seguridad, filtros y consumo externo se encuentra en [`documentacion/PRUEBAS_SEMANA7.md`](documentacion/PRUEBAS_SEMANA7.md).

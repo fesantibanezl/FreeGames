@@ -168,6 +168,9 @@ class CrudApiTests(TestCase):
         self.assertEqual(respuesta.status_code, status.HTTP_204_NO_CONTENT)
         self.assertFalse(Juego.objects.filter(pk=juego_id).exists())
 
+        respuesta = self.client.get(detalle)
+        self.assertEqual(respuesta.status_code, status.HTTP_404_NOT_FOUND)
+
     def test_juego_invalido_responde_400(self):
         categoria = self.crear_categoria()
         respuesta = self.client.post(
@@ -247,6 +250,16 @@ class SeguridadYFiltrosApiTests(TestCase):
             status.HTTP_401_UNAUTHORIZED,
         )
 
+    def test_token_invalido_responde_401(self):
+        self.client.credentials(HTTP_AUTHORIZATION='Token token-inexistente')
+
+        respuesta = self.client.get(reverse('api:juegos'))
+
+        self.assertEqual(
+            respuesta.status_code,
+            status.HTTP_401_UNAUTHORIZED,
+        )
+
     def test_cliente_con_token_puede_consultar(self):
         self.autenticar_con_token(self.cliente)
 
@@ -265,6 +278,21 @@ class SeguridadYFiltrosApiTests(TestCase):
 
         self.assertEqual(respuesta.status_code, status.HTTP_403_FORBIDDEN)
         self.assertFalse(Categoria.objects.filter(slug='simulacion').exists())
+
+    def test_cliente_no_puede_modificar_ni_eliminar(self):
+        self.autenticar_con_token(self.cliente)
+        juego = Juego.objects.first()
+        stock_original = juego.stock
+        ruta = reverse('api:juego_detalle', kwargs={'juego_id': juego.pk})
+
+        respuesta = self.client.patch(ruta, {'stock': 999}, format='json')
+        self.assertEqual(respuesta.status_code, status.HTTP_403_FORBIDDEN)
+
+        respuesta = self.client.delete(ruta)
+        self.assertEqual(respuesta.status_code, status.HTTP_403_FORBIDDEN)
+
+        juego.refresh_from_db()
+        self.assertEqual(juego.stock, stock_original)
 
     def test_administrador_con_token_puede_crear(self):
         self.autenticar_con_token(self.administrador)
@@ -334,3 +362,14 @@ class SeguridadYFiltrosApiTests(TestCase):
 
         self.assertEqual(respuesta.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertIn('activo', respuesta.data)
+
+    def test_filtro_sin_coincidencias_devuelve_lista_vacia(self):
+        self.autenticar_con_token(self.cliente)
+
+        respuesta = self.client.get(
+            reverse('api:juegos'),
+            {'nombre': 'titulo-que-no-existe'},
+        )
+
+        self.assertEqual(respuesta.status_code, status.HTTP_200_OK)
+        self.assertEqual(respuesta.data, [])

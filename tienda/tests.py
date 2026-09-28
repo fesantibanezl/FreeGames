@@ -916,6 +916,20 @@ class ServicioRestPublicoTests(TestCase):
         self.assertIn('detalle', respuesta.json())
 
     @patch('tienda.views.urlopen')
+    def test_respuesta_externa_malformada_responde_502(self, urlopen_mock):
+        urlopen_mock.return_value = BytesIO(b'{"error": "sin lista"}')
+
+        respuesta = self.client.get(reverse('tienda:juegos_externos'))
+
+        self.assertEqual(respuesta.status_code, 502)
+        self.assertIn('detalle', respuesta.json())
+
+    def test_servicio_externo_solo_acepta_get(self):
+        respuesta = self.client.post(reverse('tienda:juegos_externos'))
+
+        self.assertEqual(respuesta.status_code, 405)
+
+    @patch('tienda.views.urlopen')
     def test_filtro_externo_invalido_responde_400_sin_consultar(
         self,
         urlopen_mock,
