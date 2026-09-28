@@ -70,3 +70,14 @@ gratuidad. Los parámetros previstos son `nombre`, `categoria`, `activo` y
   entorno que tenga disponible la instancia del proyecto.
 - No se han implementado aún serializers, endpoints de datos ni consumo
   externo.
+
+## Estado de la Parte 2
+
+- Serializadores de `Categoria` y `Juego` implementados.
+- CRUD de colección y detalle disponible bajo `/api/`.
+- Respuestas de creación, validación, ausencia y eliminación usan códigos HTTP
+  acordes con el resultado de la operación.
+- Las relaciones protegidas retornan `409 Conflict` en lugar de provocar un
+  error interno.
+- La seguridad por rol, el endpoint de token y los filtros quedan reservados
+  para la Parte 3.
