@@ -81,3 +81,16 @@ gratuidad. Los parámetros previstos son `nombre`, `categoria`, `activo` y
   error interno.
 - La seguridad por rol, el endpoint de token y los filtros quedan reservados
   para la Parte 3.
+
+## Estado de la Parte 3
+
+- El endpoint `POST /api/token/` entrega un token ante credenciales válidas.
+- Todas las consultas de categorías y juegos requieren el encabezado
+  `Authorization: Token <token>`.
+- Los clientes autenticados poseen acceso de lectura.
+- Las operaciones `POST`, `PUT`, `PATCH` y `DELETE` se reservan a usuarios con
+  rol administrador.
+- `GET /api/juegos/` admite los parámetros `nombre`, `categoria`, `activo` y
+  `gratis`, que también pueden combinarse.
+- Los parámetros booleanos inválidos retornan `400 Bad Request` con un mensaje
+  asociado al campo.

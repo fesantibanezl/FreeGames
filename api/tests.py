@@ -3,6 +3,7 @@ from django.contrib.auth import get_user_model
 from django.test import SimpleTestCase, TestCase
 from django.urls import reverse
 from rest_framework import status
+from rest_framework.authtoken.models import Token
 from rest_framework.test import APIClient
 
 from tienda.models import Categoria, Juego
@@ -183,3 +184,153 @@ class CrudApiTests(TestCase):
             reverse('api:juego_detalle', kwargs={'juego_id': 999999}),
         )
         self.assertEqual(respuesta.status_code, status.HTTP_404_NOT_FOUND)
+
+
+class SeguridadYFiltrosApiTests(TestCase):
+    def setUp(self):
+        self.client = APIClient()
+        Usuario = get_user_model()
+        self.cliente = Usuario.objects.get(username='cliente')
+        self.administrador = Usuario.objects.get(username='admin')
+
+    def autenticar_con_token(self, usuario):
+        token, _ = Token.objects.get_or_create(user=usuario)
+        self.client.credentials(HTTP_AUTHORIZATION=f'Token {token.key}')
+
+    def datos_categoria(self):
+        return {
+            'slug': 'simulacion',
+            'nombre': 'Simulación',
+            'icono': 'SIM',
+            'clase_css': 'category-simulation',
+            'resumen': 'Experiencias de simulación',
+            'descripcion_meta': 'Juegos de simulación de FreeGames.',
+            'imagen': 'tienda/img/estrategia.png',
+            'imagen_alt': 'Escena de un videojuego de simulación',
+            'orden': 7,
+        }
+
+    def test_token_se_obtiene_con_credenciales_validas(self):
+        respuesta = self.client.post(
+            reverse('api:token'),
+            {
+                'username': 'cliente',
+                'password': 'Cliente#2026',
+            },
+            format='json',
+        )
+
+        self.assertEqual(respuesta.status_code, status.HTTP_200_OK)
+        self.assertIn('token', respuesta.data)
+        self.assertTrue(
+            Token.objects.filter(
+                user=self.cliente,
+                key=respuesta.data['token'],
+            ).exists(),
+        )
+
+    def test_token_rechaza_credenciales_invalidas(self):
+        respuesta = self.client.post(
+            reverse('api:token'),
+            {'username': 'cliente', 'password': 'incorrecta'},
+            format='json',
+        )
+
+        self.assertEqual(respuesta.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertNotIn('token', respuesta.data)
+
+    def test_recurso_sin_token_responde_401(self):
+        respuesta = self.client.get(reverse('api:juegos'))
+
+        self.assertEqual(
+            respuesta.status_code,
+            status.HTTP_401_UNAUTHORIZED,
+        )
+
+    def test_cliente_con_token_puede_consultar(self):
+        self.autenticar_con_token(self.cliente)
+
+        respuesta = self.client.get(reverse('api:juegos'))
+
+        self.assertEqual(respuesta.status_code, status.HTTP_200_OK)
+
+    def test_cliente_con_token_no_puede_crear(self):
+        self.autenticar_con_token(self.cliente)
+
+        respuesta = self.client.post(
+            reverse('api:categorias'),
+            self.datos_categoria(),
+            format='json',
+        )
+
+        self.assertEqual(respuesta.status_code, status.HTTP_403_FORBIDDEN)
+        self.assertFalse(Categoria.objects.filter(slug='simulacion').exists())
+
+    def test_administrador_con_token_puede_crear(self):
+        self.autenticar_con_token(self.administrador)
+
+        respuesta = self.client.post(
+            reverse('api:categorias'),
+            self.datos_categoria(),
+            format='json',
+        )
+
+        self.assertEqual(respuesta.status_code, status.HTTP_201_CREATED)
+        self.assertTrue(Categoria.objects.filter(slug='simulacion').exists())
+
+    def test_filtra_juegos_por_nombre(self):
+        self.autenticar_con_token(self.cliente)
+
+        respuesta = self.client.get(
+            reverse('api:juegos'),
+            {'nombre': 'valorant'},
+        )
+
+        self.assertEqual(respuesta.status_code, status.HTTP_200_OK)
+        self.assertGreater(len(respuesta.data), 0)
+        self.assertTrue(
+            all('valorant' in juego['nombre'].lower() for juego in respuesta.data),
+        )
+
+    def test_filtra_juegos_por_categoria(self):
+        self.autenticar_con_token(self.cliente)
+
+        respuesta = self.client.get(
+            reverse('api:juegos'),
+            {'categoria': 'accion'},
+        )
+
+        esperados = Juego.objects.filter(categoria__slug='accion').count()
+        self.assertEqual(respuesta.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(respuesta.data), esperados)
+        self.assertTrue(
+            all(juego['categoria_nombre'] == 'Acción' for juego in respuesta.data),
+        )
+
+    def test_filtra_juegos_por_estado_y_gratuidad(self):
+        juego_oculto = Juego.objects.filter(precio=0).first()
+        juego_oculto.activo = False
+        juego_oculto.save(update_fields=('activo',))
+        self.autenticar_con_token(self.cliente)
+
+        respuesta = self.client.get(
+            reverse('api:juegos'),
+            {'activo': 'false', 'gratis': 'true'},
+        )
+
+        esperados = Juego.objects.filter(activo=False, precio=0).count()
+        self.assertEqual(respuesta.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(respuesta.data), esperados)
+        self.assertTrue(all(not juego['activo'] for juego in respuesta.data))
+        self.assertTrue(all(juego['gratis'] for juego in respuesta.data))
+
+    def test_filtro_booleano_invalido_responde_400(self):
+        self.autenticar_con_token(self.cliente)
+
+        respuesta = self.client.get(
+            reverse('api:juegos'),
+            {'activo': 'talvez'},
+        )
+
+        self.assertEqual(respuesta.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn('activo', respuesta.data)
