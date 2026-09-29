@@ -38,6 +38,9 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'rest_framework',
+    'rest_framework.authtoken',
+    'api.apps.ApiConfig',
     'tienda.apps.TiendaConfig',
 ]
 
@@ -152,3 +155,15 @@ EMAIL_BACKEND = os.environ.get(
 )
 DEFAULT_FROM_EMAIL = 'FreeGames <no-responder@freegames.local>'
 PASSWORD_RESET_TIMEOUT = 3600
+
+# La API usa tokens de Django REST Framework. Los permisos se definen de
+# forma restrictiva por defecto; las excepciones publicas, como la obtencion
+# del token, se declararan expresamente en sus vistas.
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework.authentication.TokenAuthentication',
+    ],
+    'DEFAULT_PERMISSION_CLASSES': [
+        'rest_framework.permissions.IsAuthenticated',
+    ],
+}

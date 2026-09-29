@@ -1,8 +1,14 @@
+import json
+from io import BytesIO
+from pathlib import Path
+from unittest.mock import patch
+from urllib.error import URLError
 from urllib.parse import urlsplit
 
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.contrib.staticfiles import finders
+from django.core.cache import cache
 from django.core import mail
 from django.db.models.deletion import ProtectedError
 from django.test import Client, SimpleTestCase, TestCase, override_settings
@@ -823,3 +829,128 @@ class CarritoYPedidosTests(TestCase):
             f"{reverse('tienda:compra_exitosa')}?pedido={pedido.pk}",
         )
         self.assertEqual(respuesta.status_code, 404)
+
+
+class ServicioRestPublicoTests(TestCase):
+    def setUp(self):
+        cache.clear()
+        self.datos_externos = [
+            {
+                'id': 540,
+                'title': 'Juego externo',
+                'thumbnail': 'https://www.freetogame.com/g/540/thumbnail.jpg',
+                'short_description': 'Juego gratuito obtenido desde la API.',
+                'game_url': 'https://www.freetogame.com/open/juego-externo',
+                'genre': 'Shooter',
+                'platform': 'PC (Windows)',
+                'publisher': 'Estudio de prueba',
+                'release_date': '2026-01-15',
+            },
+        ]
+
+    def respuesta_externa(self):
+        return BytesIO(json.dumps(self.datos_externos).encode('utf-8'))
+
+    def test_pagina_externa_es_publica_y_carga_su_javascript(self):
+        respuesta = self.client.get(reverse('tienda:descubrir_juegos'))
+
+        self.assertEqual(respuesta.status_code, 200)
+        self.assertTemplateUsed(respuesta, 'tienda/descubrir_juegos.html')
+        self.assertContains(respuesta, 'data-external-games')
+        self.assertContains(respuesta, 'tienda/js/servicio_juegos.js')
+        self.assertContains(respuesta, 'FreeToGame.com')
+
+    def test_javascript_usa_fetch_y_evitar_recarga(self):
+        ruta = finders.find('tienda/js/servicio_juegos.js')
+        contenido = Path(ruta).read_text(encoding='utf-8')
+
+        self.assertIn('fetch(', contenido)
+        self.assertIn('event.preventDefault()', contenido)
+        self.assertIn('replaceChildren()', contenido)
+        self.assertNotIn('innerHTML', contenido)
+
+    @patch('tienda.views.urlopen')
+    def test_servicio_normaliza_y_filtra_respuesta_externa(self, urlopen_mock):
+        urlopen_mock.return_value = self.respuesta_externa()
+
+        respuesta = self.client.get(
+            reverse('tienda:juegos_externos'),
+            {
+                'plataforma': 'windows',
+                'categoria': 'shooter',
+                'orden': 'release-date',
+            },
+        )
+
+        self.assertEqual(respuesta.status_code, 200)
+        datos = respuesta.json()
+        self.assertEqual(datos['fuente'], 'FreeToGame')
+        self.assertEqual(datos['total'], 1)
+        self.assertEqual(datos['juegos'][0]['titulo'], 'Juego externo')
+        self.assertEqual(datos['juegos'][0]['genero'], 'Shooter')
+
+        solicitud = urlopen_mock.call_args.args[0]
+        self.assertIn('platform=windows', solicitud.full_url)
+        self.assertIn('category=shooter', solicitud.full_url)
+        self.assertIn('sort-by=release-date', solicitud.full_url)
+
+    @patch('tienda.views.urlopen')
+    def test_servicio_usa_cache_para_reducir_solicitudes(self, urlopen_mock):
+        urlopen_mock.return_value = self.respuesta_externa()
+        ruta = reverse('tienda:juegos_externos')
+
+        primera = self.client.get(ruta)
+        segunda = self.client.get(ruta)
+
+        self.assertEqual(primera.status_code, 200)
+        self.assertEqual(segunda.status_code, 200)
+        urlopen_mock.assert_called_once()
+
+    @patch('tienda.views.urlopen')
+    def test_servicio_externo_no_disponible_responde_502(self, urlopen_mock):
+        urlopen_mock.side_effect = URLError('Servicio sin conexión')
+
+        respuesta = self.client.get(reverse('tienda:juegos_externos'))
+
+        self.assertEqual(respuesta.status_code, 502)
+        self.assertIn('detalle', respuesta.json())
+
+    @patch('tienda.views.urlopen')
+    def test_respuesta_externa_malformada_responde_502(self, urlopen_mock):
+        urlopen_mock.return_value = BytesIO(b'{"error": "sin lista"}')
+
+        respuesta = self.client.get(reverse('tienda:juegos_externos'))
+
+        self.assertEqual(respuesta.status_code, 502)
+        self.assertIn('detalle', respuesta.json())
+
+    def test_servicio_externo_solo_acepta_get(self):
+        respuesta = self.client.post(reverse('tienda:juegos_externos'))
+
+        self.assertEqual(respuesta.status_code, 405)
+
+    @patch('tienda.views.urlopen')
+    def test_filtro_externo_invalido_responde_400_sin_consultar(
+        self,
+        urlopen_mock,
+    ):
+        respuesta = self.client.get(
+            reverse('tienda:juegos_externos'),
+            {'plataforma': 'consola'},
+        )
+
+        self.assertEqual(respuesta.status_code, 400)
+        self.assertIn('plataforma', respuesta.json())
+        urlopen_mock.assert_not_called()
+
+    @patch('tienda.views.urlopen')
+    def test_servicio_descarta_enlaces_no_https(self, urlopen_mock):
+        self.datos_externos[0]['game_url'] = 'javascript:alert(1)'
+        self.datos_externos[0]['thumbnail'] = 'http://ejemplo.test/imagen.jpg'
+        urlopen_mock.return_value = self.respuesta_externa()
+
+        respuesta = self.client.get(reverse('tienda:juegos_externos'))
+
+        juego = respuesta.json()['juegos'][0]
+        self.assertEqual(juego['sitio'], '')
+        self.assertEqual(juego['imagen'], '')

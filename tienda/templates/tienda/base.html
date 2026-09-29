@@ -37,6 +37,7 @@
             <a class="nav-link{% if seccion_activa == 'deportes' %} active{% endif %}"{% if seccion_activa == 'deportes' %} aria-current="page"{% endif %} href="{% url 'tienda:categoria' slug='deportes' %}">Deportes</a>
             <a class="nav-link{% if seccion_activa == 'carreras' %} active{% endif %}"{% if seccion_activa == 'carreras' %} aria-current="page"{% endif %} href="{% url 'tienda:categoria' slug='carreras' %}">Carreras</a>
             <a class="nav-link{% if seccion_activa == 'estrategia' %} active{% endif %}"{% if seccion_activa == 'estrategia' %} aria-current="page"{% endif %} href="{% url 'tienda:categoria' slug='estrategia' %}">Estrategia</a>
+            <a class="nav-link{% if seccion_activa == 'descubrir' %} active{% endif %}"{% if seccion_activa == 'descubrir' %} aria-current="page"{% endif %} href="{% url 'tienda:descubrir_juegos' %}">Descubrir</a>
           {% endif %}
 
           {% if request.user.is_authenticated %}
