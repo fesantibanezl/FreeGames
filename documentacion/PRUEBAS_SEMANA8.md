@@ -165,3 +165,33 @@ cookies seguros sin activar. No se cambiaron esos valores aquí porque la
 instancia local usa HTTP; deben configurarse correctamente antes de publicar
 en un servidor real. La evidencia de participación equitativa en Git y la
 preparación del comprimido final corresponden a la parte 5.
+
+## Preparación de la entrega — parte 5 (4 de octubre de 2026)
+
+La rama local `codex/semana-8` contiene commits separados para las partes 1,
+2, 3 y 4. Al revisar `git shortlog -sne main..HEAD`, los cuatro figuran bajo
+`fesantibanezl <fe.santibanezl@duocuc.cl>`; esto demuestra continuidad en Git,
+**no** participación equitativa de varios integrantes. No se alteraron autores
+ni se crearon commits ficticios. El equipo debe aportar cambios reales si la
+rúbrica exige esa distribución.
+
+Se comprobó `origin` mediante `git ls-remote --heads origin`: `main` apunta a
+la integración de Semana 7 y todavía no existe una rama remota de Semana 8.
+`ENLACE_GITHUB.txt` se actualizó con el repositorio y la rama local usada,
+pero el enlace no demuestra aún el código nuevo en GitHub. Antes del envío hay
+que publicar la rama o integrarla en `main` y comprobar el resultado remoto.
+
+El script `documentacion/crear_entrega_semana8.ps1` genera
+`FreeGames_Semana8.zip` con los archivos del proyecto y verifica, al abrir el
+ZIP, que estén `manage.py`, `requirements.txt`, `README.md`,
+`ENLACE_GITHUB.txt` y los dos SQL solicitados. Se excluyen el entorno virtual,
+`.git`, `.env` y la base SQLite local. Si se modifica cualquier archivo después
+de generar el paquete, debe volver a construirse antes de entregar. No se
+sube automáticamente al AVA, que permite un solo intento.
+
+La auditoría `manage.py check --deploy` emitió siete advertencias de
+configuración para producción (HSTS, redirección HTTPS, clave secreta de
+desarrollo, cookies seguras, `DEBUG` y `ALLOWED_HOSTS`). Son coherentes con la
+instancia **local HTTP** utilizada para la actividad; no se activó HSTS ni
+redirección HTTPS sin un servidor TLS preparado. El proyecto y las cuentas de
+demostración no deben exponerse tal cual en Internet.

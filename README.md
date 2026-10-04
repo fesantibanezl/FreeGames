@@ -77,8 +77,31 @@ La entrega incluye archivos independientes para revisar la estructura y los dato
 - [`PRUEBAS_SEMANA7.md`](documentacion/PRUEBAS_SEMANA7.md): endpoints, ejemplos, matriz de pruebas y evidencia Git.
 - [`PLAN_SEMANA8.md`](documentacion/PLAN_SEMANA8.md): diagnóstico de la rúbrica y avance por partes.
 - [`PRUEBAS_SEMANA8.md`](documentacion/PRUEBAS_SEMANA8.md): demostración de las API propias, token, CORS y dos proveedores externos.
+- [`crear_entrega_semana8.ps1`](documentacion/crear_entrega_semana8.ps1): crea y verifica el `.zip` con los archivos del proyecto, sin incluir `.git`, `.venv`, la base SQLite local ni secretos en `.env`.
 
 Las instrucciones de ejecución y la relación entre estos scripts y las migraciones se encuentran en [`base_datos/README.md`](base_datos/README.md).
+
+## Preparación de la entrega de Semana 8
+
+Después de revisar los cambios, ejecuta desde PowerShell en la carpeta del
+proyecto:
+
+```powershell
+.\documentacion\crear_entrega_semana8.ps1
+```
+
+Esto genera `FreeGames_Semana8.zip` en la raíz del proyecto y comprueba que
+contiene el código, `ENLACE_GITHUB.txt`, `01_estructura_oracle.sql` y
+`02_datos_iniciales.sql`. El archivo comprimido se ignora en Git. El script
+se detiene si ya existe un `.zip` con ese nombre para evitar sobrescribirlo.
+Antes del único envío en AVA, publica el trabajo de Semana 8 en GitHub,
+comprueba el enlace del `.txt` y vuelve a generar el comprimido si cambió algún
+archivo. La evidencia de contribución grupal debe corresponder a aportes
+reales de sus integrantes; no se puede suplir con nombres de autor inventados.
+
+La configuración predeterminada es **solo para desarrollo local**: incluye
+`DEBUG`, cuentas y credenciales de demostración y usa HTTP. No publiques esta
+configuración ni las cuentas de prueba como un despliegue de producción.
 
 ## Funcionalidades implementadas
 

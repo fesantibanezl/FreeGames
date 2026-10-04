@@ -60,16 +60,17 @@ histórica; los resultados actuales se documentan en `PRUEBAS_SEMANA8.md`.
    FreeToGame y se integró GamerPower en `/descubrir/`; ambos cargan sin
    recarga, con filtros, caché, errores y atribución independientes. Las dos
    consultas reales devolvieron HTTP 200 el 4 de octubre de 2026.
-4. **Verificación integral (completada; pendiente de commit).** Se creó el
+4. **Verificación integral (implementada y confirmada en Git).** Se creó el
    esquema local `FREEGAMES` que faltaba en `XEPDB1`, se aplicaron las
    migraciones y se comprobó la aplicación real con Oracle. Se revisaron
    flujos de negocio, validaciones, GRID de 12 columnas y vistas de 390,
    768 y 1440 px. Se corrigió el margen interior de `/explorar-api/` en móvil
    y se ejecutó de nuevo la suite completa.
-5. **Entrega y colaboración.** Revisar participación real en Git, documentación
-   y configuración segura; actualizar el enlace del repositorio, preparar
-   `.zip`/`.7-zip` con código y ambos SQL, abrirlo para comprobarlo y solo
-   entonces realizar el envío único en AVA.
+5. **Entrega y colaboración (preparación local).** Revisar participación real
+   en Git y configuración de desarrollo; actualizar el enlace del repositorio,
+   preparar `.zip` con código y ambos SQL y abrirlo para comprobarlo. La
+   publicación en GitHub y el envío único en AVA son pasos separados que
+   requieren una instrucción expresa del estudiante.
 
 ## Riesgos que deben resolverse antes de la entrega
 
@@ -84,12 +85,16 @@ histórica; los resultados actuales se documentan en `PRUEBAS_SEMANA8.md`.
    interpretación del docente si es posible.
 4. **Atendido en el paso 2:** `/explorar-api/` consume las dos rutas propias
    con token y filtros sin recargar; debe incluirse en la demostración final.
-5. **Pendiente para el paso 5:** la participación equitativa del equipo no se
-   puede inferir de los autores locales; requiere evidencia real en Git. La
-   visualización en tres tamaños quedó documentada en la parte 4.
+5. **Pendiente de evidencia real del equipo:** los cuatro commits locales de
+   Semana 8 figuran con un único autor. No debe declararse participación
+   equitativa hasta que los demás integrantes aporten trabajo verificable.
+   La visualización en tres tamaños quedó documentada en la parte 4.
 6. **Antes de publicar:** revisar valores de desarrollo de la configuración
    (clave secreta, modo depuración y credenciales) y no presentar la
    configuración local como despliegue de producción.
 
-La parte 4 no incluye commit automático, push, merge ni entrega en AVA. El
-estudiante confirmará los cambios de cada parte antes de continuar.
+Al iniciar la parte 5, `origin/main` aún contiene Semana 7 y GitHub no muestra
+la rama `codex/semana-8`. El comprimido local es una preparación, no una
+entrega definitiva: después de publicar el código se debe comprobar el enlace
+y regenerar el archivo si hubo cambios. No se hace push, merge ni envío en
+AVA de forma automática.
