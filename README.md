@@ -266,4 +266,4 @@ python -m pip check
 
 Las pruebas automatizadas usan SQLite de manera temporal para poder crear y eliminar su base aislada. La aplicación y las migraciones de desarrollo utilizan Oracle de forma predeterminada.
 
-El resultado final es de **71 pruebas aprobadas**. La matriz de la Semana 6 permanece en [`documentacion/PRUEBAS_SEMANA6.md`](documentacion/PRUEBAS_SEMANA6.md) y la evidencia de API REST, seguridad, filtros y consumo externo se encuentra en [`documentacion/PRUEBAS_SEMANA7.md`](documentacion/PRUEBAS_SEMANA7.md).
+La suite actual suma **93 pruebas aprobadas**. La matriz de la Semana 6 permanece en [`documentacion/PRUEBAS_SEMANA6.md`](documentacion/PRUEBAS_SEMANA6.md); la evidencia de API REST, seguridad, filtros y consumo externo está en [`documentacion/PRUEBAS_SEMANA7.md`](documentacion/PRUEBAS_SEMANA7.md) y la verificación con Oracle y tres tamaños de pantalla en [`documentacion/PRUEBAS_SEMANA8.md`](documentacion/PRUEBAS_SEMANA8.md).

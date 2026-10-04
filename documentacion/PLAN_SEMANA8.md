@@ -1,9 +1,9 @@
 # Semana 8 — diagnóstico y plan de trabajo
 
 Actividad sumativa grupal «Desarrollando API REST». Este documento registra el
-**paso 1 de 5**: el estado inicial de FreeGames frente a las instrucciones,
-la rúbrica y la guía de aprendizaje de la Semana 8. No se modificó código de
-la aplicación durante este paso.
+diagnóstico inicial y el avance de las cinco partes frente a las instrucciones,
+la rúbrica y la guía de aprendizaje de la Semana 8. La línea base siguiente es
+histórica; los resultados actuales se documentan en `PRUEBAS_SEMANA8.md`.
 
 ## Fuentes y entrega solicitada
 
@@ -52,17 +52,20 @@ la aplicación durante este paso.
 
 1. **Diagnóstico (completado en este documento).** Registrar estado y riesgos
    antes de modificar la aplicación.
-2. **API y seguridad (implementado; pendiente de commit).** Se añadió una
+2. **API y seguridad (implementado y confirmado en Git).** Se añadió una
    página cliente de ambas API, pruebas de token y permisos por recurso y CORS
    restringido para aplicaciones de otros orígenes. Sigue pendiente confirmar
    con el docente si categorías y juegos satisfacen la expresión «dos API».
-3. **Dos servicios externos (implementado; pendiente de commit).** Se mantuvo
+3. **Dos servicios externos (implementado y confirmado en Git).** Se mantuvo
    FreeToGame y se integró GamerPower en `/descubrir/`; ambos cargan sin
    recarga, con filtros, caché, errores y atribución independientes. Las dos
    consultas reales devolvieron HTTP 200 el 4 de octubre de 2026.
-4. **Verificación integral.** Resolver la conexión Oracle local, revisar
-   flujos de negocio, validaciones, GRID de 12 columnas y tres tamaños de
-   pantalla; corregir regresiones y volver a ejecutar las pruebas.
+4. **Verificación integral (completada; pendiente de commit).** Se creó el
+   esquema local `FREEGAMES` que faltaba en `XEPDB1`, se aplicaron las
+   migraciones y se comprobó la aplicación real con Oracle. Se revisaron
+   flujos de negocio, validaciones, GRID de 12 columnas y vistas de 390,
+   768 y 1440 px. Se corrigió el margen interior de `/explorar-api/` en móvil
+   y se ejecutó de nuevo la suite completa.
 5. **Entrega y colaboración.** Revisar participación real en Git, documentación
    y configuración segura; actualizar el enlace del repositorio, preparar
    `.zip`/`.7-zip` con código y ambos SQL, abrirlo para comprobarlo y solo
@@ -72,18 +75,21 @@ la aplicación durante este paso.
 
 1. **Atendido en el paso 3:** GamerPower es un segundo proveedor público
    independiente; verificar de nuevo su disponibilidad antes del envío final.
-2. **Alto:** Oracle rechaza las credenciales locales; la validación SQLite no
-   sustituye la demostración con Oracle exigida por la actividad.
+2. **Resuelto en este equipo en el paso 4:** la instancia `XEPDB1` estaba
+   disponible, pero no existía el esquema local `FREEGAMES`. Tras crearlo y
+   aplicar migraciones, los flujos con Oracle funcionaron. En otro equipo hay
+   que preparar su propia instancia y ejecutar `migrate`.
 3. **Medio:** dos familias de endpoints pueden interpretarse como una sola API
    si no se demuestra y documenta cada recurso claramente. Confirmar la
    interpretación del docente si es posible.
 4. **Atendido en el paso 2:** `/explorar-api/` consume las dos rutas propias
    con token y filtros sin recargar; debe incluirse en la demostración final.
-5. **Medio:** la participación equitativa del equipo y la visualización en
-   tres tamaños aún no están evidenciadas de forma suficiente.
+5. **Pendiente para el paso 5:** la participación equitativa del equipo no se
+   puede inferir de los autores locales; requiere evidencia real en Git. La
+   visualización en tres tamaños quedó documentada en la parte 4.
 6. **Antes de publicar:** revisar valores de desarrollo de la configuración
    (clave secreta, modo depuración y credenciales) y no presentar la
    configuración local como despliegue de producción.
 
-Este paso no incluye commits, push, merge ni entrega en AVA. Cada parte se
-revisará antes de continuar con la siguiente.
+La parte 4 no incluye commit automático, push, merge ni entrega en AVA. El
+estudiante confirmará los cambios de cada parte antes de continuar.

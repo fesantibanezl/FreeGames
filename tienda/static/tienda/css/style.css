@@ -459,7 +459,7 @@ h1 { margin-bottom: 8px; font: 800 clamp(2rem, 5vw, 3.2rem)/1.15 Orbitron, sans-
 .giveaway-filters .button { grid-column: auto; white-space: nowrap; }
 
 /* Cliente de las dos API propias, con token conservado solo en memoria. */
-.api-page { min-height: 600px; padding: 60px 0 90px; }
+.api-page { min-height: 600px; padding-top: 60px; padding-bottom: 90px; }
 .api-panel {
   padding: 24px;
   margin-bottom: 24px;
