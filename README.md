@@ -1,6 +1,6 @@
 # FreeGames
 
-Proyecto para la asignatura **Programación Web — Experiencias de Aprendizaje 2 y 3**. FreeGames integra el FrontEnd con Django y Oracle, junto con autenticación, autorización por roles, mantenedores, carrito y pedidos persistentes. En la semana 7 incorpora una API REST propia con seguridad y filtros, además del consumo asincrónico de un servicio REST público.
+Proyecto para la asignatura **Programación Web — Experiencias de Aprendizaje 2 y 3**. FreeGames integra el FrontEnd con Django y Oracle, junto con autenticación, autorización por roles, mantenedores, carrito y pedidos persistentes. Sus recursos REST de categorías y juegos usan token; el sitio incluye un cliente que los consulta sin recargar y un catálogo asincrónico obtenido desde un servicio público.
 
 ## Cómo ejecutar el proyecto
 
@@ -50,6 +50,20 @@ python manage.py check
 
 La configuración admite reemplazar los valores locales mediante las variables `FREEGAMES_DB_NAME`, `FREEGAMES_DB_USER` y `FREEGAMES_DB_PASSWORD`. Para ejecutar comprobaciones sin Oracle puede definirse temporalmente `FREEGAMES_USE_SQLITE=1`.
 
+Para permitir que una aplicación web de **otro origen** consulte las rutas
+`/api/` desde el navegador, declara únicamente sus orígenes autorizados antes
+de iniciar Django. Por ejemplo, en PowerShell:
+
+```powershell
+$env:FREEGAMES_API_ORIGINS = 'http://localhost:3000,http://127.0.0.1:5173'
+```
+
+Si esta variable no está definida, no se autoriza ningún origen externo; el
+cliente incluido en FreeGames funciona por ser del mismo origen. CORS no
+elimina la exigencia del encabezado `Authorization: Token ...` y no habilita
+cookies entre sitios. En un despliegue real se deben usar HTTPS y orígenes
+concretos de confianza.
+
 ## Entregables de base de datos
 
 La entrega incluye archivos independientes para revisar la estructura y los datos sin tener que interpretar las migraciones de Python:
@@ -61,6 +75,8 @@ La entrega incluye archivos independientes para revisar la estructura y los dato
 - [`PRUEBAS_SEMANA6.md`](documentacion/PRUEBAS_SEMANA6.md): matriz de acceso y comprobaciones funcionales realizadas.
 - [`PLAN_SEMANA7.md`](documentacion/PLAN_SEMANA7.md): diseño técnico y avance de las cinco partes de la actividad.
 - [`PRUEBAS_SEMANA7.md`](documentacion/PRUEBAS_SEMANA7.md): endpoints, ejemplos, matriz de pruebas y evidencia Git.
+- [`PLAN_SEMANA8.md`](documentacion/PLAN_SEMANA8.md): diagnóstico de la rúbrica y avance por partes.
+- [`PRUEBAS_SEMANA8.md`](documentacion/PRUEBAS_SEMANA8.md): demostración de las API propias, token y CORS.
 
 Las instrucciones de ejecución y la relación entre estos scripts y las migraciones se encuentran en [`base_datos/README.md`](base_datos/README.md).
 
@@ -84,6 +100,8 @@ Las instrucciones de ejecución y la relación entre estos scripts y las migraci
 - API REST propia para consultar y mantener categorías y juegos mediante JSON.
 - Autenticación por token, lectura para usuarios autenticados y escritura exclusiva para administradores.
 - Filtros combinables de juegos por nombre, categoría, estado y gratuidad.
+- Página `/explorar-api/` que obtiene el token con la contraseña de la cuenta activa y consulta ambas API mediante `fetch()`; el token no se persiste en el almacenamiento del navegador.
+- CORS limitado a `/api/` y a los orígenes configurados para aplicaciones web externas.
 - Catálogo de FreeToGame integrado mediante `fetch()` sin recargar la página, con filtros, caché y recuperación ante errores.
 
 ## Rutas principales
@@ -102,6 +120,7 @@ Las instrucciones de ejecución y la relación entre estos scripts y las migraci
 | `/administracion/` | CRUD y mantenedores exclusivos del administrador. |
 | `/admin/` | Administrador Django para todos los modelos persistentes. |
 | `/descubrir/` | Catálogo dinámico obtenido desde el servicio público FreeToGame. |
+| `/explorar-api/` | Cliente autenticado que muestra categorías y filtra juegos desde las API propias, sin recarga. |
 | `/servicios/juegos-gratis/` | Adaptador JSON interno para consultar FreeToGame. |
 | `/api/token/` | Obtención de token mediante usuario y contraseña. |
 | `/api/categorias/`, `/api/categorias/<id>/` | Colección y detalle REST de categorías. |
@@ -182,6 +201,7 @@ La plantilla base concentra la navegación, los estilos y los módulos JavaScrip
 - Los juegos asociados a pedidos no se eliminan para conservar la integridad del historial; el mantenedor los oculta del catálogo.
 - Los tokens se almacenan en las tablas de `rest_framework.authtoken`; después de instalar las dependencias debe ejecutarse `python manage.py migrate`.
 - La autenticación por token debe publicarse mediante HTTPS fuera del entorno local.
+- El token de la página `/explorar-api/` vive solo en la memoria de esa pestaña. Limpiar la página no revoca el token en el servidor; no se debe reutilizar la cuenta de prueba fuera de desarrollo.
 - El servicio público se consulta desde Django para no depender de CORS ni exponer credenciales en el navegador.
 
 ## Evidencias de la semana 4

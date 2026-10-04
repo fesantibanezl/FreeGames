@@ -9,6 +9,7 @@ app_name = 'tienda'
 
 urlpatterns = [
     path('', views.inicio, name='inicio'),
+    path('explorar-api/', views.explorar_api, name='explorar_api'),
     path('descubrir/', views.descubrir_juegos, name='descubrir_juegos'),
     path(
         'servicios/juegos-gratis/',

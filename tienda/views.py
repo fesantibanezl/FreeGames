@@ -259,6 +259,17 @@ def inicio(request):
 
 
 @require_safe
+@login_required
+def explorar_api(request):
+    """Presenta un cliente de las dos API propias sin exponer tokens en HTML."""
+
+    return render(request, 'tienda/explorar_api.html', {
+        'encabezado_compacto': True,
+        'seccion_activa': 'explorar_api',
+    })
+
+
+@require_safe
 def descubrir_juegos(request):
     """Muestra juegos gratuitos obtenidos sin recargar la página."""
 

@@ -13,6 +13,7 @@ from django.core import mail
 from django.db.models.deletion import ProtectedError
 from django.test import Client, SimpleTestCase, TestCase, override_settings
 from django.urls import resolve, reverse
+from rest_framework.authtoken.models import Token
 
 from . import views
 from .models import (
@@ -79,6 +80,32 @@ class CatalogoViewsTests(TestCase):
                 self.assertEqual(respuesta.status_code, 200)
                 self.assertContains(respuesta, contenedor)
                 self.assertTemplateUsed(respuesta, template)
+
+
+class ExploradorApiViewsTests(TestCase):
+    def test_pagina_requiere_inicio_de_sesion(self):
+        respuesta = self.client.get(reverse('tienda:explorar_api'))
+
+        self.assertEqual(respuesta.status_code, 302)
+        self.assertIn('/login/?next=', respuesta.url)
+
+    def test_pagina_expone_rutas_pero_no_el_token(self):
+        usuario = get_user_model().objects.get(username='cliente')
+        token = Token.objects.create(user=usuario)
+        self.client.force_login(usuario)
+
+        respuesta = self.client.get(reverse('tienda:explorar_api'))
+
+        self.assertEqual(respuesta.status_code, 200)
+        self.assertTemplateUsed(respuesta, 'tienda/explorar_api.html')
+        self.assertContains(respuesta, 'data-token-url="/api/token/"')
+        self.assertContains(respuesta, 'data-categorias-url="/api/categorias/"')
+        self.assertContains(respuesta, 'data-juegos-url="/api/juegos/"')
+        self.assertContains(respuesta, '/static/tienda/js/explorar_api.js')
+        self.assertNotContains(respuesta, token.key)
+
+    def test_recurso_javascript_esta_disponible(self):
+        self.assertIsNotNone(finders.find('tienda/js/explorar_api.js'))
 
 
 class ConfiguracionDjangoTests(SimpleTestCase):

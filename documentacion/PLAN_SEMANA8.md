@@ -22,7 +22,7 @@ la aplicación durante este paso.
   repositorio dentro del mismo comprimido. La entrega es grupal, vale 25 % de
   la asignatura y dispone de un intento.
 
-## Estado comprobado el 4 de octubre de 2026
+## Línea base comprobada el 4 de octubre de 2026, antes de la parte 2
 
 | Criterio | Evidencia encontrada | Estado y acción pendiente |
 | --- | --- | --- |
@@ -52,8 +52,10 @@ la aplicación durante este paso.
 
 1. **Diagnóstico (completado en este documento).** Registrar estado y riesgos
    antes de modificar la aplicación.
-2. **API y seguridad.** Demostrar dos recursos API independientes, CRUD,
-   filtros, consumo desde cliente, token y permisos con pruebas completas.
+2. **API y seguridad (implementado; pendiente de commit).** Se añadió una
+   página cliente de ambas API, pruebas de token y permisos por recurso y CORS
+   restringido para aplicaciones de otros orígenes. Sigue pendiente confirmar
+   con el docente si categorías y juegos satisfacen la expresión «dos API».
 3. **Dos servicios externos.** Mantener FreeToGame e integrar un segundo
    proveedor relacionado con videojuegos, mostrar ambos sin recarga y
    gestionar errores, límites y atribución.
@@ -74,9 +76,8 @@ la aplicación durante este paso.
 3. **Medio:** dos familias de endpoints pueden interpretarse como una sola API
    si no se demuestra y documenta cada recurso claramente. Confirmar la
    interpretación del docente si es posible.
-4. **Medio:** la guía IL11 pide consumo de una API propia por la aplicación;
-   actualmente las páginas Django consultan los modelos directamente y el
-   JavaScript solo consulta el adaptador de FreeToGame.
+4. **Atendido en el paso 2:** `/explorar-api/` consume las dos rutas propias
+   con token y filtros sin recargar; debe incluirse en la demostración final.
 5. **Medio:** la participación equitativa del equipo y la visualización en
    tres tamaños aún no están evidenciadas de forma suficiente.
 6. **Antes de publicar:** revisar valores de desarrollo de la configuración
