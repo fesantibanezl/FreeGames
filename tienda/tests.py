@@ -1,4 +1,5 @@
 import json
+from datetime import timedelta
 from io import BytesIO
 from pathlib import Path
 from unittest.mock import patch
@@ -13,6 +14,7 @@ from django.core import mail
 from django.db.models.deletion import ProtectedError
 from django.test import Client, SimpleTestCase, TestCase, override_settings
 from django.urls import resolve, reverse
+from django.utils import timezone
 from rest_framework.authtoken.models import Token
 
 from . import views
@@ -981,3 +983,158 @@ class ServicioRestPublicoTests(TestCase):
         juego = respuesta.json()['juegos'][0]
         self.assertEqual(juego['sitio'], '')
         self.assertEqual(juego['imagen'], '')
+
+
+class GamerPowerTests(TestCase):
+    def setUp(self):
+        cache.clear()
+        fecha_futura = timezone.localdate() + timedelta(days=7)
+        self.datos_externos = [
+            {
+                'id': 3794,
+                'title': 'Juego <b>en oferta</b>',
+                'type': 'Game',
+                'status': 'Active',
+                'description': 'Consigue <strong>gratis</strong> este juego.',
+                'platforms': 'PC, Steam',
+                'worth': '$19.99',
+                'end_date': f'{fecha_futura.isoformat()} 23:59:00',
+                'thumbnail': 'https://www.gamerpower.com/offers/portada.jpg',
+                'gamerpower_url': 'https://www.gamerpower.com/juego-en-oferta',
+            },
+            {
+                'id': 3795,
+                'title': 'Contenido adicional',
+                'type': 'Loot',
+                'status': 'Active',
+                'end_date': 'N/A',
+            },
+            {
+                'id': 3796,
+                'title': 'Oferta vencida',
+                'type': 'Game',
+                'status': 'Active',
+                'end_date': '2020-01-01 00:00:00',
+            },
+        ]
+
+    def respuesta_externa(self):
+        return BytesIO(json.dumps(self.datos_externos).encode('utf-8'))
+
+    def test_pagina_muestra_ambos_proveedores_y_atribucion(self):
+        respuesta = self.client.get(reverse('tienda:descubrir_juegos'))
+
+        self.assertEqual(respuesta.status_code, 200)
+        self.assertContains(respuesta, 'FreeToGame.com')
+        self.assertContains(respuesta, 'GamerPower.com')
+        self.assertContains(respuesta, 'data-giveaways')
+        self.assertContains(respuesta, 'tienda/js/servicio_juegos.js')
+        self.assertContains(respuesta, 'tienda/js/servicio_ofertas.js')
+        self.assertContains(
+            respuesta,
+            'data-endpoint="/servicios/ofertas-juegos/"',
+        )
+
+    def test_javascript_de_ofertas_usa_fetch_sin_recargar(self):
+        ruta = finders.find('tienda/js/servicio_ofertas.js')
+        contenido = Path(ruta).read_text(encoding='utf-8')
+
+        self.assertIn('fetch(', contenido)
+        self.assertIn('event.preventDefault()', contenido)
+        self.assertIn('replaceChildren()', contenido)
+        self.assertNotIn('innerHTML', contenido)
+
+    @patch('tienda.views.urlopen')
+    def test_normaliza_ofertas_y_descarta_contenido_no_vigente(
+        self, urlopen_mock,
+    ):
+        urlopen_mock.return_value = self.respuesta_externa()
+
+        respuesta = self.client.get(
+            reverse('tienda:ofertas_juegos_externas'),
+            {'plataforma': 'steam'},
+        )
+
+        self.assertEqual(respuesta.status_code, 200)
+        datos = respuesta.json()
+        self.assertEqual(datos['fuente'], 'GamerPower')
+        self.assertEqual(datos['total'], 1)
+        oferta = datos['ofertas'][0]
+        self.assertEqual(oferta['titulo'], 'Juego en oferta')
+        self.assertEqual(oferta['descripcion'], 'Consigue gratis este juego.')
+        self.assertEqual(oferta['plataformas'], 'PC, Steam')
+        self.assertEqual(
+            oferta['sitio'],
+            'https://www.gamerpower.com/juego-en-oferta',
+        )
+
+        solicitud = urlopen_mock.call_args.args[0]
+        self.assertIn('type=game', solicitud.full_url)
+        self.assertIn('sort-by=date', solicitud.full_url)
+        self.assertIn('platform=steam', solicitud.full_url)
+
+    @patch('tienda.views.urlopen')
+    def test_cache_evitar_consultas_repetidas(self, urlopen_mock):
+        urlopen_mock.return_value = self.respuesta_externa()
+        ruta = reverse('tienda:ofertas_juegos_externas')
+
+        self.assertEqual(self.client.get(ruta).status_code, 200)
+        self.assertEqual(self.client.get(ruta).status_code, 200)
+        urlopen_mock.assert_called_once()
+
+    @patch('tienda.views.urlopen')
+    def test_respuesta_201_indica_sin_promociones(self, urlopen_mock):
+        respuesta_externa = BytesIO(b'')
+        respuesta_externa.status = 201
+        urlopen_mock.return_value = respuesta_externa
+
+        respuesta = self.client.get(reverse('tienda:ofertas_juegos_externas'))
+
+        self.assertEqual(respuesta.status_code, 200)
+        self.assertEqual(respuesta.json()['ofertas'], [])
+
+    @patch('tienda.views.urlopen')
+    def test_plataforma_invalida_responde_400_sin_consultar(self, urlopen_mock):
+        respuesta = self.client.get(
+            reverse('tienda:ofertas_juegos_externas'),
+            {'plataforma': 'sitio-desconocido'},
+        )
+
+        self.assertEqual(respuesta.status_code, 400)
+        self.assertIn('plataforma', respuesta.json())
+        urlopen_mock.assert_not_called()
+
+    @patch('tienda.views.urlopen')
+    def test_servicio_no_disponible_responde_502(self, urlopen_mock):
+        urlopen_mock.side_effect = URLError('Servicio sin conexión')
+
+        respuesta = self.client.get(reverse('tienda:ofertas_juegos_externas'))
+
+        self.assertEqual(respuesta.status_code, 502)
+        self.assertIn('detalle', respuesta.json())
+
+    @patch('tienda.views.urlopen')
+    def test_respuesta_malformada_responde_502(self, urlopen_mock):
+        urlopen_mock.return_value = BytesIO(b'{"error": "sin lista"}')
+
+        respuesta = self.client.get(reverse('tienda:ofertas_juegos_externas'))
+
+        self.assertEqual(respuesta.status_code, 502)
+        self.assertIn('detalle', respuesta.json())
+
+    @patch('tienda.views.urlopen')
+    def test_enlaces_inseguros_y_ajenos_son_descartados(self, urlopen_mock):
+        self.datos_externos[0]['thumbnail'] = 'http://ejemplo.test/imagen.jpg'
+        self.datos_externos[0]['gamerpower_url'] = 'https://ejemplo.test/oferta'
+        urlopen_mock.return_value = self.respuesta_externa()
+
+        respuesta = self.client.get(reverse('tienda:ofertas_juegos_externas'))
+
+        oferta = respuesta.json()['ofertas'][0]
+        self.assertEqual(oferta['imagen'], '')
+        self.assertEqual(oferta['sitio'], '')
+
+    def test_endpoint_solo_acepta_get(self):
+        respuesta = self.client.post(reverse('tienda:ofertas_juegos_externas'))
+
+        self.assertEqual(respuesta.status_code, 405)

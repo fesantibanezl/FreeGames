@@ -49,14 +49,47 @@ $env:FREEGAMES_USE_SQLITE = '1'
 node --check tienda\static\tienda\js\explorar_api.js
 ```
 
-Resultado del 4 de octubre de 2026: `manage.py check` sin problemas, **83
+Resultado de la parte 2: `manage.py check` sin problemas, **83
 pruebas correctas** y JavaScript sin errores de sintaxis. Las pruebas nuevas
 incluyen acceso sin token e inválido a ambas API, uso real de un token obtenido
 en `/api/token/`, verificación de que la sesión web no sustituye al token,
 denegación de escritura al cliente, escritura administrativa en juegos,
 renderizado protegido del cliente y preflight CORS restringido.
 
-No se ha validado aún la base Oracle de esta sesión porque sus credenciales
-locales generan `ORA-01017`. Tampoco se ha hecho la revisión visual en tres
-tamaños ni la integración del segundo servicio externo; corresponden a las
-partes 3 y 4.
+## Dos servicios públicos externos — parte 3
+
+La página `/descubrir/` presenta dos secciones y dos fuentes distintas:
+
+| Proveedor | API pública consultada por Django | Datos mostrados |
+| --- | --- | --- |
+| FreeToGame | `https://www.freetogame.com/api/games` | Catálogo de juegos gratuitos, plataforma, género y enlace externo. |
+| GamerPower | `https://www.gamerpower.com/api/giveaways?type=game` | Promociones de juegos completos, plataforma, vigencia, valor habitual y enlace al proveedor. |
+
+Los dos adaptadores devuelven JSON al navegador. JavaScript utiliza `fetch()`
+por separado para cargar y filtrar cada sección sin recargar la página. Si una
+fuente falla, la otra conserva su propio estado. La información de GamerPower
+se muestra con un [enlace activo de atribución](https://www.gamerpower.com/),
+conforme a sus [términos de API](https://www.gamerpower.com/api-read).
+
+El adaptador de GamerPower solo solicita `type=game`, valida la plataforma,
+descarta registros de otros tipos o vencidos, limita a doce ofertas, limpia
+el texto, conserva únicamente imágenes HTTPS y enlaces de destino HTTPS del
+dominio GamerPower. Una respuesta 201 del proveedor se presenta como lista
+vacía, no como error. Hay caché por plataforma de cinco minutos para reducir
+solicitudes y respetar el límite publicado por la API.
+
+El 4 de octubre de 2026 se consultaron **en vivo** ambos adaptadores con la
+configuración SQLite local: FreeToGame respondió HTTP 200 con doce juegos y
+GamerPower respondió HTTP 200 con doce ofertas normalizadas. Es una evidencia
+puntual; la disponibilidad externa puede cambiar.
+
+Después de esta parte, la suite completa terminó con **93 pruebas correctas**,
+`manage.py check` sin problemas y `node --check` sin errores para
+`servicio_ofertas.js`. Las diez pruebas nuevas abarcan renderizado de ambas
+fuentes, carga asincrónica, filtros, normalización, caché, respuesta sin
+ofertas, error de red, JSON malformado, enlaces inseguros y método no
+permitido.
+
+No se ha validado aún Oracle en esta sesión porque las credenciales locales
+generan `ORA-01017`. Tampoco se ha hecho la revisión visual en tres tamaños;
+corresponde a la parte 4.

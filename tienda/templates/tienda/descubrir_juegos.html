@@ -2,10 +2,11 @@
 {% load static %}
 
 {% block titulo %}Descubrir juegos gratuitos | FreeGames{% endblock %}
-{% block descripcion %}Explora juegos gratuitos obtenidos desde el servicio público FreeToGame.{% endblock %}
+{% block descripcion %}Explora juegos gratuitos de FreeToGame y promociones de GamerPower.{% endblock %}
 
 {% block scripts_extra %}
   <script src="{% static 'tienda/js/servicio_juegos.js' %}" defer></script>
+  <script src="{% static 'tienda/js/servicio_ofertas.js' %}" defer></script>
 {% endblock %}
 
 {% block contenido %}
@@ -17,9 +18,9 @@
     data-fallback-image="{% static 'tienda/img/accion.png' %}"
   >
     <header class="page-intro">
-      <p class="eyebrow">Servicio REST público</p>
+      <p class="eyebrow">Dos servicios REST públicos</p>
       <h1>Descubre más juegos gratuitos</h1>
-      <p>Consulta títulos disponibles para PC y navegador. Los resultados se actualizan sin recargar esta página.</p>
+      <p>Consulta el catálogo de FreeToGame y las promociones de GamerPower. Ambos resultados se actualizan sin recargar esta página.</p>
     </header>
 
     <section class="external-toolbar" aria-labelledby="external-filters-title">
@@ -72,5 +73,52 @@
     </section>
 
     <p class="external-source">Información proporcionada por <a href="https://www.freetogame.com/" target="_blank" rel="noopener noreferrer">FreeToGame.com</a>.</p>
+
+    <section
+      class="giveaway-section"
+      aria-labelledby="giveaway-title"
+      data-giveaways
+      data-endpoint="{% url 'tienda:ofertas_juegos_externas' %}"
+      data-fallback-image="{% static 'tienda/img/accion.png' %}"
+    >
+      <header class="giveaway-intro">
+        <p class="eyebrow">Segundo servicio público</p>
+        <h2 id="giveaway-title">Promociones de juegos completos</h2>
+        <p>GamerPower reúne ofertas temporales. La disponibilidad y las condiciones de canje dependen del proveedor externo; no forman parte del carrito de FreeGames.</p>
+      </header>
+
+      <div class="external-toolbar giveaway-toolbar">
+        <div>
+          <h3 id="giveaway-filters-title">Filtrar promociones</h3>
+          <p>Selecciona una plataforma para consultar las ofertas actuales.</p>
+        </div>
+        <form class="external-filters giveaway-filters" data-giveaway-filters aria-labelledby="giveaway-filters-title">
+          <label>
+            Plataforma
+            <select name="plataforma">
+              <option value="all">Todas</option>
+              <option value="pc">PC</option>
+              <option value="steam">Steam</option>
+              <option value="epic-games-store">Epic Games Store</option>
+              <option value="gog">GOG</option>
+              <option value="ps5">PlayStation 5</option>
+              <option value="xbox-series-xs">Xbox Series X/S</option>
+              <option value="switch">Nintendo Switch</option>
+            </select>
+          </label>
+          <button class="button button-primary" type="submit" data-load-giveaways>Buscar ofertas</button>
+        </form>
+      </div>
+
+      <p class="external-status" data-giveaway-status role="status" aria-live="polite">Preparando las promociones…</p>
+      <button class="button button-secondary external-retry" type="button" data-giveaway-retry hidden>Intentar nuevamente</button>
+
+      <div class="external-results-heading">
+        <h3 class="section-title">Resultados de GamerPower</h3>
+        <span data-giveaway-count></span>
+      </div>
+      <div class="games-grid external-grid" data-giveaway-grid aria-busy="true"></div>
+      <p class="external-source">Información proporcionada por <a href="https://www.gamerpower.com/" target="_blank" rel="noopener noreferrer">GamerPower.com</a>.</p>
+    </section>
   </main>
 {% endblock %}

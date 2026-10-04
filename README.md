@@ -1,6 +1,6 @@
 # FreeGames
 
-Proyecto para la asignatura **Programación Web — Experiencias de Aprendizaje 2 y 3**. FreeGames integra el FrontEnd con Django y Oracle, junto con autenticación, autorización por roles, mantenedores, carrito y pedidos persistentes. Sus recursos REST de categorías y juegos usan token; el sitio incluye un cliente que los consulta sin recargar y un catálogo asincrónico obtenido desde un servicio público.
+Proyecto para la asignatura **Programación Web — Experiencias de Aprendizaje 2 y 3**. FreeGames integra el FrontEnd con Django y Oracle, junto con autenticación, autorización por roles, mantenedores, carrito y pedidos persistentes. Sus recursos REST de categorías y juegos usan token; el sitio incluye un cliente que los consulta sin recargar y una página que consume dos servicios públicos independientes.
 
 ## Cómo ejecutar el proyecto
 
@@ -76,7 +76,7 @@ La entrega incluye archivos independientes para revisar la estructura y los dato
 - [`PLAN_SEMANA7.md`](documentacion/PLAN_SEMANA7.md): diseño técnico y avance de las cinco partes de la actividad.
 - [`PRUEBAS_SEMANA7.md`](documentacion/PRUEBAS_SEMANA7.md): endpoints, ejemplos, matriz de pruebas y evidencia Git.
 - [`PLAN_SEMANA8.md`](documentacion/PLAN_SEMANA8.md): diagnóstico de la rúbrica y avance por partes.
-- [`PRUEBAS_SEMANA8.md`](documentacion/PRUEBAS_SEMANA8.md): demostración de las API propias, token y CORS.
+- [`PRUEBAS_SEMANA8.md`](documentacion/PRUEBAS_SEMANA8.md): demostración de las API propias, token, CORS y dos proveedores externos.
 
 Las instrucciones de ejecución y la relación entre estos scripts y las migraciones se encuentran en [`base_datos/README.md`](base_datos/README.md).
 
@@ -103,6 +103,7 @@ Las instrucciones de ejecución y la relación entre estos scripts y las migraci
 - Página `/explorar-api/` que obtiene el token con la contraseña de la cuenta activa y consulta ambas API mediante `fetch()`; el token no se persiste en el almacenamiento del navegador.
 - CORS limitado a `/api/` y a los orígenes configurados para aplicaciones web externas.
 - Catálogo de FreeToGame integrado mediante `fetch()` sin recargar la página, con filtros, caché y recuperación ante errores.
+- Promociones de juegos completos de GamerPower en la misma página Descubrir, con filtro de plataforma, caché, control de ofertas vencidas, manejo de errores y atribución al proveedor.
 
 ## Rutas principales
 
@@ -119,9 +120,10 @@ Las instrucciones de ejecución y la relación entre estos scripts y las migraci
 | `/mis-compras/` | Historial persistente exclusivo del rol cliente. |
 | `/administracion/` | CRUD y mantenedores exclusivos del administrador. |
 | `/admin/` | Administrador Django para todos los modelos persistentes. |
-| `/descubrir/` | Catálogo dinámico obtenido desde el servicio público FreeToGame. |
+| `/descubrir/` | Catálogo de FreeToGame y ofertas de GamerPower, ambos cargados sin recargar la página. |
 | `/explorar-api/` | Cliente autenticado que muestra categorías y filtra juegos desde las API propias, sin recarga. |
 | `/servicios/juegos-gratis/` | Adaptador JSON interno para consultar FreeToGame. |
+| `/servicios/ofertas-juegos/` | Adaptador JSON interno para consultar GamerPower. |
 | `/api/token/` | Obtención de token mediante usuario y contraseña. |
 | `/api/categorias/`, `/api/categorias/<id>/` | Colección y detalle REST de categorías. |
 | `/api/juegos/`, `/api/juegos/<id>/` | Colección, filtros y detalle REST de juegos. |
@@ -202,7 +204,8 @@ La plantilla base concentra la navegación, los estilos y los módulos JavaScrip
 - Los tokens se almacenan en las tablas de `rest_framework.authtoken`; después de instalar las dependencias debe ejecutarse `python manage.py migrate`.
 - La autenticación por token debe publicarse mediante HTTPS fuera del entorno local.
 - El token de la página `/explorar-api/` vive solo en la memoria de esa pestaña. Limpiar la página no revoca el token en el servidor; no se debe reutilizar la cuenta de prueba fuera de desarrollo.
-- El servicio público se consulta desde Django para no depender de CORS ni exponer credenciales en el navegador.
+- Los dos servicios públicos se consultan desde Django para no depender de CORS de los proveedores ni exponer credenciales en el navegador.
+- Las ofertas de GamerPower son externas, temporales y no se agregan al carrito ni alteran el inventario local. La página incluye un enlace activo de atribución al proveedor.
 
 ## Evidencias de la semana 4
 

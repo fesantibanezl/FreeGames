@@ -16,6 +16,11 @@ urlpatterns = [
         views.juegos_externos,
         name='juegos_externos',
     ),
+    path(
+        'servicios/ofertas-juegos/',
+        views.ofertas_juegos_externas,
+        name='ofertas_juegos_externas',
+    ),
     path('carrito/', views.carrito, name='carrito'),
     path('carrito/agregar/<int:juego_id>/', views.agregar_carrito, name='agregar_carrito'),
     path('carrito/actualizar/<int:juego_id>/', views.actualizar_carrito, name='actualizar_carrito'),

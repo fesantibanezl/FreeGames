@@ -56,9 +56,10 @@ la aplicación durante este paso.
    página cliente de ambas API, pruebas de token y permisos por recurso y CORS
    restringido para aplicaciones de otros orígenes. Sigue pendiente confirmar
    con el docente si categorías y juegos satisfacen la expresión «dos API».
-3. **Dos servicios externos.** Mantener FreeToGame e integrar un segundo
-   proveedor relacionado con videojuegos, mostrar ambos sin recarga y
-   gestionar errores, límites y atribución.
+3. **Dos servicios externos (implementado; pendiente de commit).** Se mantuvo
+   FreeToGame y se integró GamerPower en `/descubrir/`; ambos cargan sin
+   recarga, con filtros, caché, errores y atribución independientes. Las dos
+   consultas reales devolvieron HTTP 200 el 4 de octubre de 2026.
 4. **Verificación integral.** Resolver la conexión Oracle local, revisar
    flujos de negocio, validaciones, GRID de 12 columnas y tres tamaños de
    pantalla; corregir regresiones y volver a ejecutar las pruebas.
@@ -69,8 +70,8 @@ la aplicación durante este paso.
 
 ## Riesgos que deben resolverse antes de la entrega
 
-1. **Alto:** falta el segundo servicio externo, indispensable para el máximo
-   puntaje del criterio correspondiente.
+1. **Atendido en el paso 3:** GamerPower es un segundo proveedor público
+   independiente; verificar de nuevo su disponibilidad antes del envío final.
 2. **Alto:** Oracle rechaza las credenciales locales; la validación SQLite no
    sustituye la demostración con Oracle exigida por la actividad.
 3. **Medio:** dos familias de endpoints pueden interpretarse como una sola API
