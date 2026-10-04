@@ -1,13 +1,14 @@
 FreeGames - Programación Web PGY3221
-Experiencia de Aprendizaje 2 - Semana 6
+Experiencia de Aprendizaje 3 - Semana 8
 
 Repositorio GitHub:
 https://github.com/fesantibanezl/FreeGames
 
-Rama de entrega final:
-main
+Código de entrega integrado en main:
+https://github.com/fesantibanezl/FreeGames/tree/main
 
-Rama de desarrollo de la semana 6:
-semana-6
+Rama de desarrollo de la Semana 8:
+https://github.com/fesantibanezl/FreeGames/tree/codex/semana-8
 
-Las instrucciones de instalación, las cuentas de prueba y las evidencias se encuentran en README.md.
+Las instrucciones de instalación y las evidencias están en README.md y
+documentacion/PRUEBAS_SEMANA8.md.

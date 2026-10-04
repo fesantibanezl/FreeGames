@@ -1,6 +1,6 @@
 # FreeGames
 
-Proyecto para la asignatura **Programación Web — Experiencias de Aprendizaje 2 y 3**. FreeGames integra el FrontEnd con Django y Oracle, junto con autenticación, autorización por roles, mantenedores, carrito y pedidos persistentes. En la semana 7 incorpora una API REST propia con seguridad y filtros, además del consumo asincrónico de un servicio REST público.
+Proyecto para la asignatura **Programación Web — Experiencias de Aprendizaje 2 y 3**. FreeGames integra el FrontEnd con Django y Oracle, junto con autenticación, autorización por roles, mantenedores, carrito y pedidos persistentes. Sus recursos REST de categorías y juegos usan token; el sitio incluye un cliente que los consulta sin recargar y una página que consume dos servicios públicos independientes.
 
 ## Cómo ejecutar el proyecto
 
@@ -50,6 +50,20 @@ python manage.py check
 
 La configuración admite reemplazar los valores locales mediante las variables `FREEGAMES_DB_NAME`, `FREEGAMES_DB_USER` y `FREEGAMES_DB_PASSWORD`. Para ejecutar comprobaciones sin Oracle puede definirse temporalmente `FREEGAMES_USE_SQLITE=1`.
 
+Para permitir que una aplicación web de **otro origen** consulte las rutas
+`/api/` desde el navegador, declara únicamente sus orígenes autorizados antes
+de iniciar Django. Por ejemplo, en PowerShell:
+
+```powershell
+$env:FREEGAMES_API_ORIGINS = 'http://localhost:3000,http://127.0.0.1:5173'
+```
+
+Si esta variable no está definida, no se autoriza ningún origen externo; el
+cliente incluido en FreeGames funciona por ser del mismo origen. CORS no
+elimina la exigencia del encabezado `Authorization: Token ...` y no habilita
+cookies entre sitios. En un despliegue real se deben usar HTTPS y orígenes
+concretos de confianza.
+
 ## Entregables de base de datos
 
 La entrega incluye archivos independientes para revisar la estructura y los datos sin tener que interpretar las migraciones de Python:
@@ -61,8 +75,33 @@ La entrega incluye archivos independientes para revisar la estructura y los dato
 - [`PRUEBAS_SEMANA6.md`](documentacion/PRUEBAS_SEMANA6.md): matriz de acceso y comprobaciones funcionales realizadas.
 - [`PLAN_SEMANA7.md`](documentacion/PLAN_SEMANA7.md): diseño técnico y avance de las cinco partes de la actividad.
 - [`PRUEBAS_SEMANA7.md`](documentacion/PRUEBAS_SEMANA7.md): endpoints, ejemplos, matriz de pruebas y evidencia Git.
+- [`PLAN_SEMANA8.md`](documentacion/PLAN_SEMANA8.md): diagnóstico de la rúbrica y avance por partes.
+- [`PRUEBAS_SEMANA8.md`](documentacion/PRUEBAS_SEMANA8.md): demostración de las API propias, token, CORS y dos proveedores externos.
+- [`crear_entrega_semana8.ps1`](documentacion/crear_entrega_semana8.ps1): crea y verifica el `.zip` con los archivos del proyecto, sin incluir `.git`, `.venv`, la base SQLite local ni secretos en `.env`.
 
 Las instrucciones de ejecución y la relación entre estos scripts y las migraciones se encuentran en [`base_datos/README.md`](base_datos/README.md).
+
+## Preparación de la entrega de Semana 8
+
+Después de revisar los cambios, ejecuta desde PowerShell en la carpeta del
+proyecto:
+
+```powershell
+.\documentacion\crear_entrega_semana8.ps1
+```
+
+Esto genera `e3_felipe_santibañez_s3.zip` en la raíz del proyecto y comprueba que
+contiene el código, `ENLACE_GITHUB.txt`, `01_estructura_oracle.sql` y
+`02_datos_iniciales.sql`. El archivo comprimido se ignora en Git. El script
+se detiene si ya existe un `.zip` con ese nombre para evitar sobrescribirlo.
+Antes del único envío en AVA, publica el trabajo de Semana 8 en GitHub,
+comprueba el enlace del `.txt` y vuelve a generar el comprimido si cambió algún
+archivo. La evidencia de contribución grupal debe corresponder a aportes
+reales de sus integrantes; no se puede suplir con nombres de autor inventados.
+
+La configuración predeterminada es **solo para desarrollo local**: incluye
+`DEBUG`, cuentas y credenciales de demostración y usa HTTP. No publiques esta
+configuración ni las cuentas de prueba como un despliegue de producción.
 
 ## Funcionalidades implementadas
 
@@ -84,7 +123,10 @@ Las instrucciones de ejecución y la relación entre estos scripts y las migraci
 - API REST propia para consultar y mantener categorías y juegos mediante JSON.
 - Autenticación por token, lectura para usuarios autenticados y escritura exclusiva para administradores.
 - Filtros combinables de juegos por nombre, categoría, estado y gratuidad.
+- Página `/explorar-api/` que obtiene el token con la contraseña de la cuenta activa y consulta ambas API mediante `fetch()`; el token no se persiste en el almacenamiento del navegador.
+- CORS limitado a `/api/` y a los orígenes configurados para aplicaciones web externas.
 - Catálogo de FreeToGame integrado mediante `fetch()` sin recargar la página, con filtros, caché y recuperación ante errores.
+- Promociones de juegos completos de GamerPower en la misma página Descubrir, con filtro de plataforma, caché, control de ofertas vencidas, manejo de errores y atribución al proveedor.
 
 ## Rutas principales
 
@@ -101,8 +143,10 @@ Las instrucciones de ejecución y la relación entre estos scripts y las migraci
 | `/mis-compras/` | Historial persistente exclusivo del rol cliente. |
 | `/administracion/` | CRUD y mantenedores exclusivos del administrador. |
 | `/admin/` | Administrador Django para todos los modelos persistentes. |
-| `/descubrir/` | Catálogo dinámico obtenido desde el servicio público FreeToGame. |
+| `/descubrir/` | Catálogo de FreeToGame y ofertas de GamerPower, ambos cargados sin recargar la página. |
+| `/explorar-api/` | Cliente autenticado que muestra categorías y filtra juegos desde las API propias, sin recarga. |
 | `/servicios/juegos-gratis/` | Adaptador JSON interno para consultar FreeToGame. |
+| `/servicios/ofertas-juegos/` | Adaptador JSON interno para consultar GamerPower. |
 | `/api/token/` | Obtención de token mediante usuario y contraseña. |
 | `/api/categorias/`, `/api/categorias/<id>/` | Colección y detalle REST de categorías. |
 | `/api/juegos/`, `/api/juegos/<id>/` | Colección, filtros y detalle REST de juegos. |
@@ -182,7 +226,9 @@ La plantilla base concentra la navegación, los estilos y los módulos JavaScrip
 - Los juegos asociados a pedidos no se eliminan para conservar la integridad del historial; el mantenedor los oculta del catálogo.
 - Los tokens se almacenan en las tablas de `rest_framework.authtoken`; después de instalar las dependencias debe ejecutarse `python manage.py migrate`.
 - La autenticación por token debe publicarse mediante HTTPS fuera del entorno local.
-- El servicio público se consulta desde Django para no depender de CORS ni exponer credenciales en el navegador.
+- El token de la página `/explorar-api/` vive solo en la memoria de esa pestaña. Limpiar la página no revoca el token en el servidor; no se debe reutilizar la cuenta de prueba fuera de desarrollo.
+- Los dos servicios públicos se consultan desde Django para no depender de CORS de los proveedores ni exponer credenciales en el navegador.
+- Las ofertas de GamerPower son externas, temporales y no se agregan al carrito ni alteran el inventario local. La página incluye un enlace activo de atribución al proveedor.
 
 ## Evidencias de la semana 4
 
@@ -243,4 +289,4 @@ python -m pip check
 
 Las pruebas automatizadas usan SQLite de manera temporal para poder crear y eliminar su base aislada. La aplicación y las migraciones de desarrollo utilizan Oracle de forma predeterminada.
 
-El resultado final es de **71 pruebas aprobadas**. La matriz de la Semana 6 permanece en [`documentacion/PRUEBAS_SEMANA6.md`](documentacion/PRUEBAS_SEMANA6.md) y la evidencia de API REST, seguridad, filtros y consumo externo se encuentra en [`documentacion/PRUEBAS_SEMANA7.md`](documentacion/PRUEBAS_SEMANA7.md).
+La suite actual suma **93 pruebas aprobadas**. La matriz de la Semana 6 permanece en [`documentacion/PRUEBAS_SEMANA6.md`](documentacion/PRUEBAS_SEMANA6.md); la evidencia de API REST, seguridad, filtros y consumo externo está en [`documentacion/PRUEBAS_SEMANA7.md`](documentacion/PRUEBAS_SEMANA7.md) y la verificación con Oracle y tres tamaños de pantalla en [`documentacion/PRUEBAS_SEMANA8.md`](documentacion/PRUEBAS_SEMANA8.md).

@@ -1,4 +1,5 @@
 import json
+from datetime import date
 from urllib.error import URLError
 from urllib.parse import urlencode, urlparse
 from urllib.request import Request as UrlRequest, urlopen
@@ -16,6 +17,8 @@ from django.core.cache import cache
 from django.http import Http404, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
+from django.utils import timezone
+from django.utils.html import strip_tags
 from django.utils.http import url_has_allowed_host_and_scheme
 from django.utils.text import slugify
 from django.views.decorators.http import (
@@ -47,6 +50,7 @@ from .models import (
 Usuario = get_user_model()
 CLAVE_CARRITO = 'freegames_carrito'
 FREE_TO_GAME_URL = 'https://www.freetogame.com/api/games'
+GAMERPOWER_URL = 'https://www.gamerpower.com/api/giveaways'
 PLATAFORMAS_EXTERNAS = {'all', 'windows', 'browser'}
 CATEGORIAS_EXTERNAS = {
     'all',
@@ -61,6 +65,10 @@ ORDENES_EXTERNOS = {
     'release-date',
     'alphabetical',
     'relevance',
+}
+PLATAFORMAS_OFERTAS = {
+    'all', 'pc', 'steam', 'epic-games-store', 'gog', 'ps5',
+    'xbox-series-xs', 'switch',
 }
 
 
@@ -189,6 +197,54 @@ def _normalizar_juegos_externos(datos):
     return juegos
 
 
+def _normalizar_ofertas_externas(datos):
+    """Conserva juegos vigentes y enlaces seguros del segundo proveedor."""
+
+    if not isinstance(datos, list):
+        raise ValueError('La respuesta de ofertas no contiene una lista.')
+
+    ofertas = []
+    hoy = timezone.localdate()
+    for registro in datos:
+        if not isinstance(registro, dict):
+            continue
+        titulo = strip_tags(str(registro.get('title') or '')).strip()
+        if not titulo or str(registro.get('type', '')).lower() != 'game':
+            continue
+        if str(registro.get('status', '')).lower() != 'active':
+            continue
+
+        fecha_fin = str(registro.get('end_date') or '').strip()
+        try:
+            fecha_calendario = date.fromisoformat(fecha_fin[:10])
+        except ValueError:
+            fecha_calendario = None
+        if fecha_calendario and fecha_calendario < hoy:
+            continue
+
+        sitio = _url_externa_segura(registro.get('gamerpower_url'))
+        if urlparse(sitio).hostname not in {
+            'gamerpower.com', 'www.gamerpower.com',
+        }:
+            sitio = ''
+
+        ofertas.append({
+            'id': registro.get('id'),
+            'titulo': titulo[:140],
+            'descripcion': ' '.join(
+                strip_tags(str(registro.get('description') or '')).split(),
+            )[:260],
+            'plataformas': str(registro.get('platforms') or '').strip()[:120],
+            'valor': str(registro.get('worth') or '').strip()[:30],
+            'fecha_fin': fecha_fin if fecha_calendario else '',
+            'imagen': _url_externa_segura(registro.get('thumbnail')),
+            'sitio': sitio,
+        })
+        if len(ofertas) == 12:
+            break
+    return ofertas
+
+
 def _contexto_administracion(
     request,
     *,
@@ -259,6 +315,17 @@ def inicio(request):
 
 
 @require_safe
+@login_required
+def explorar_api(request):
+    """Presenta un cliente de las dos API propias sin exponer tokens en HTML."""
+
+    return render(request, 'tienda/explorar_api.html', {
+        'encabezado_compacto': True,
+        'seccion_activa': 'explorar_api',
+    })
+
+
+@require_safe
 def descubrir_juegos(request):
     """Muestra juegos gratuitos obtenidos sin recargar la página."""
 
@@ -324,6 +391,58 @@ def juegos_externos(request):
         'fuente': 'FreeToGame',
         'total': len(juegos),
         'juegos': juegos,
+    })
+
+
+@require_GET
+def ofertas_juegos_externas(request):
+    """Consulta promociones de juegos completos de GamerPower."""
+
+    plataforma = request.GET.get('plataforma', 'all').strip().lower()
+    if plataforma not in PLATAFORMAS_OFERTAS:
+        return JsonResponse(
+            {'plataforma': 'El valor seleccionado no está permitido.'},
+            status=400,
+        )
+
+    parametros = {'type': 'game', 'sort-by': 'date'}
+    if plataforma != 'all':
+        parametros['platform'] = plataforma
+
+    clave_cache = f'freegames:ofertas:{plataforma}'
+    ofertas = cache.get(clave_cache)
+    if ofertas is None:
+        solicitud = UrlRequest(
+            f'{GAMERPOWER_URL}?{urlencode(parametros)}',
+            headers={
+                'Accept': 'application/json',
+                'User-Agent': 'FreeGames-Semana8/1.0',
+            },
+        )
+        try:
+            with urlopen(solicitud, timeout=8) as respuesta:
+                if getattr(respuesta, 'status', 200) == 201:
+                    ofertas = []
+                else:
+                    ofertas = _normalizar_ofertas_externas(
+                        json.load(respuesta),
+                    )
+        except (OSError, URLError, ValueError, json.JSONDecodeError):
+            return JsonResponse(
+                {
+                    'detalle': (
+                        'Las ofertas externas no están disponibles en este '
+                        'momento. Intenta nuevamente.'
+                    ),
+                },
+                status=502,
+            )
+        cache.set(clave_cache, ofertas, timeout=300)
+
+    return JsonResponse({
+        'fuente': 'GamerPower',
+        'total': len(ofertas),
+        'ofertas': ofertas,
     })
 
 

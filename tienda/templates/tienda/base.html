@@ -41,6 +41,7 @@
           {% endif %}
 
           {% if request.user.is_authenticated %}
+            <a class="nav-link{% if seccion_activa == 'explorar_api' %} active{% endif %}"{% if seccion_activa == 'explorar_api' %} aria-current="page"{% endif %} href="{% url 'tienda:explorar_api' %}">API propia</a>
             {% if rol_actual == 'cliente' %}
               <a class="nav-link{% if seccion_activa == 'carrito' %} active{% endif %}" href="{% url 'tienda:carrito' %}">Carrito <span class="cart-count"{% if not cantidad_carrito %} hidden{% endif %}>{{ cantidad_carrito }}</span></a>
               <a class="nav-link{% if seccion_activa == 'perfil' %} active{% endif %}" href="{% url 'tienda:perfil' %}">Mi perfil: {{ request.user.username }}</a>

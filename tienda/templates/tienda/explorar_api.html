@@ -1,0 +1,92 @@
+{% extends 'tienda/base.html' %}
+{% load static %}
+
+{% block titulo %}Explorar API propia | FreeGames{% endblock %}
+{% block descripcion %}Consulta las API propias de categorías y juegos con acceso por token y filtros dinámicos.{% endblock %}
+
+{% block scripts_extra %}
+  <script src="{% static 'tienda/js/explorar_api.js' %}" defer></script>
+{% endblock %}
+
+{% block contenido %}
+  <main
+    class="api-page container"
+    id="contenido-principal"
+    data-api-explorer
+    data-token-url="{% url 'api:token' %}"
+    data-categorias-url="{% url 'api:categorias' %}"
+    data-juegos-url="{% url 'api:juegos' %}"
+  >
+    <header class="page-intro">
+      <p class="eyebrow">API REST propias</p>
+      <h1>Explora el catálogo mediante la API</h1>
+      <p>Esta página consulta por separado las API de categorías y juegos. Obtiene un token con tu cuenta y actualiza los resultados sin recargar.</p>
+    </header>
+
+    <div class="row g-4 align-items-start">
+      <div class="col-12 col-lg-4">
+        <section class="api-panel" aria-labelledby="api-access-title">
+          <h2 id="api-access-title">Acceso por token</h2>
+          <p>Confirma tu contraseña para consultar los recursos. El token permanece solo en la memoria de esta página y se pierde al cerrarla o recargarla.</p>
+          <form data-api-login>
+            <div class="api-field">
+              <label for="api-username">Usuario</label>
+              <input id="api-username" name="username" type="text" value="{{ request.user.username }}" autocomplete="username" readonly>
+            </div>
+            <div class="api-field">
+              <label for="api-password">Contraseña</label>
+              <input id="api-password" name="password" type="password" autocomplete="current-password" required>
+            </div>
+            <button class="button button-primary" type="submit" data-api-login-button>Conectar con token</button>
+          </form>
+          <p class="api-status" data-api-access-status role="status" aria-live="polite">Ingresa tu contraseña para comenzar.</p>
+          <button class="button button-secondary" type="button" data-api-clear hidden>Limpiar acceso de esta página</button>
+        </section>
+      </div>
+
+      <div class="col-12 col-lg-8">
+        <section class="api-panel" aria-labelledby="api-categories-title">
+          <h2 id="api-categories-title">Categorías desde <code>/api/categorias/</code></h2>
+          <p>Las categorías de este filtro se cargan directamente desde la primera API propia.</p>
+          <div class="api-category-list" data-api-categories-list aria-live="polite">Conecta tu cuenta para ver las categorías.</div>
+        </section>
+
+        <section class="api-panel api-results-panel" aria-labelledby="api-games-title">
+          <h2 id="api-games-title">Juegos desde <code>/api/juegos/</code></h2>
+          <form class="row g-3 api-filters" data-api-filters>
+            <div class="col-12 col-md-6">
+              <label for="api-name">Nombre</label>
+              <input id="api-name" name="nombre" type="search" maxlength="100" placeholder="Buscar título">
+            </div>
+            <div class="col-12 col-md-6">
+              <label for="api-category">Categoría</label>
+              <select id="api-category" name="categoria"><option value="">Todas</option></select>
+            </div>
+            <div class="col-12 col-sm-6">
+              <label for="api-active">Estado</label>
+              <select id="api-active" name="activo">
+                <option value="">Todos</option>
+                <option value="true">Activos</option>
+                <option value="false">Inactivos</option>
+              </select>
+            </div>
+            <div class="col-12 col-sm-6">
+              <label for="api-free">Precio</label>
+              <select id="api-free" name="gratis">
+                <option value="">Todos</option>
+                <option value="true">Gratis</option>
+                <option value="false">De pago</option>
+              </select>
+            </div>
+            <div class="col-12">
+              <button class="button button-primary" type="submit" data-api-filter-button disabled>Aplicar filtros</button>
+            </div>
+          </form>
+          <p class="api-status" data-api-games-status role="status" aria-live="polite">Conecta tu cuenta para consultar juegos.</p>
+          <p class="api-count" data-api-count></p>
+          <div class="api-game-list" data-api-games-list aria-busy="false"></div>
+        </section>
+      </div>
+    </div>
+  </main>
+{% endblock %}

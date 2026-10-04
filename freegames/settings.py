@@ -38,6 +38,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'corsheaders',
     'rest_framework',
     'rest_framework.authtoken',
     'api.apps.ApiConfig',
@@ -46,6 +47,7 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -167,3 +169,13 @@ REST_FRAMEWORK = {
         'rest_framework.permissions.IsAuthenticated',
     ],
 }
+
+# Solo los orígenes declarados pueden usar la API desde otro navegador. CORS
+# no reemplaza la autenticación por token y no habilita cookies entre sitios.
+CORS_ALLOWED_ORIGINS = [
+    origen.strip()
+    for origen in os.environ.get('FREEGAMES_API_ORIGINS', '').split(',')
+    if origen.strip()
+]
+CORS_URLS_REGEX = r'^/api/'
+CORS_ALLOW_CREDENTIALS = False
