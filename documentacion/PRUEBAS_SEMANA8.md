@@ -175,14 +175,13 @@ La rama local `codex/semana-8` contiene commits separados para las partes 1,
 ni se crearon commits ficticios. El equipo debe aportar cambios reales si la
 rúbrica exige esa distribución.
 
-Se comprobó `origin` mediante `git ls-remote --heads origin`: `main` apunta a
-la integración de Semana 7 y todavía no existe una rama remota de Semana 8.
-`ENLACE_GITHUB.txt` se actualizó con el repositorio y la rama local usada,
-pero el enlace no demuestra aún el código nuevo en GitHub. Antes del envío hay
-que publicar la rama o integrarla en `main` y comprobar el resultado remoto.
+En la revisión previa a la publicación se comprobó `origin` mediante
+`git ls-remote --heads origin`: `main` apuntaba a la integración de Semana 7
+y todavía no existía una rama remota de Semana 8. El enlace de entrega debe
+señalar el código publicado y verificarse nuevamente después del push y merge.
 
 El script `documentacion/crear_entrega_semana8.ps1` genera
-`FreeGames_Semana8.zip` con los archivos del proyecto y verifica, al abrir el
+`e3_felipe_santibañez_s3.zip` con los archivos del proyecto y verifica, al abrir el
 ZIP, que estén `manage.py`, `requirements.txt`, `README.md`,
 `ENLACE_GITHUB.txt` y los dos SQL solicitados. Se excluyen el entorno virtual,
 `.git`, `.env` y la base SQLite local. Si se modifica cualquier archivo después

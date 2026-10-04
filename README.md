@@ -90,7 +90,7 @@ proyecto:
 .\documentacion\crear_entrega_semana8.ps1
 ```
 
-Esto genera `FreeGames_Semana8.zip` en la raíz del proyecto y comprueba que
+Esto genera `e3_felipe_santibañez_s3.zip` en la raíz del proyecto y comprueba que
 contiene el código, `ENLACE_GITHUB.txt`, `01_estructura_oracle.sql` y
 `02_datos_iniciales.sql`. El archivo comprimido se ignora en Git. El script
 se detiene si ya existe un `.zip` con ese nombre para evitar sobrescribirlo.

@@ -3,7 +3,7 @@
 $ErrorActionPreference = 'Stop'
 
 $repositorio = (Resolve-Path -LiteralPath (Join-Path $PSScriptRoot '..')).Path
-$salida = Join-Path $repositorio 'FreeGames_Semana8.zip'
+$salida = Join-Path $repositorio 'e3_felipe_santibañez_s3.zip'
 if (Test-Path -LiteralPath $salida) {
     throw "Ya existe $salida. Revísalo y cámbiale el nombre antes de generar otro paquete."
 }

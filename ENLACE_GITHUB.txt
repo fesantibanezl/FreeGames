@@ -4,10 +4,11 @@ Experiencia de Aprendizaje 3 - Semana 8
 Repositorio GitHub:
 https://github.com/fesantibanezl/FreeGames
 
-Rama de desarrollo de esta actividad:
-codex/semana-8
+Código de entrega integrado en main:
+https://github.com/fesantibanezl/FreeGames/tree/main
 
-Antes de enviar este archivo al AVA, comprobar que los commits de Semana 8
-estén publicados en GitHub, ya sea en la rama indicada o integrados en main.
+Rama de desarrollo de la Semana 8:
+https://github.com/fesantibanezl/FreeGames/tree/codex/semana-8
+
 Las instrucciones de instalación y las evidencias están en README.md y
 documentacion/PRUEBAS_SEMANA8.md.
